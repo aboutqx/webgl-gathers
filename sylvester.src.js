@@ -385,11 +385,9 @@ Matrix.prototype = {
     return true;
   },
 
-  // Returns a copy of the matrix
   dup: function() {
     return Matrix.create(this.elements);
   },
-
   // Maps the matrix to another matrix (of the same dimensions) according to the given function
   map: function(fn) {
     var els = [], ni = this.elements.length, ki = ni, i, nj, kj = this.elements[0].length, j;
@@ -722,7 +720,18 @@ Matrix.prototype = {
     return this;
   }
 };
-
+Matrix.createFromArray=function(arr){
+  var M=new Matrix();
+  M.elements=[];
+  for(var i=0;i<4;i++){
+    var tmp=[];
+    for(var j=0;j<4;j++){
+      tmp.push(arr[i*4+j])
+    };
+    M.elements[i]=tmp;
+  }
+  return M;
+};
 // Constructor function
 Matrix.create = function(elements) {
   var M = new Matrix();

@@ -6,6 +6,7 @@
     <title>oculus rift effect</title>
     <script src="webgl-utils.js"></script>
     <script src="matrixTrans.js"></script>
+    <script src="sylvester.src.js"></script>
 </head>
 
 <body>
@@ -21,12 +22,46 @@
         precision mediump float; // Passed in from the vertex shader. 
         varying vec4 v_color; void main() { gl_FragColor = v_color; }
     </script>
+    <script id="shader-vs" type="x-shader/x-vertex">
+        varying vec2 vUv;
+            void main() {
+               vUv = uv;
+               gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+            }
+    </script>
+    <script id="shader-fs" type="x-shader/x-fragment">
+        uniform vec2 scale;
+        uniform vec2 scaleIn;
+        uniform vec2 lensCenter;
+        uniform vec4 hmdWarpParam;
+        uniform vec4 chromAbParam;
+        uniform sampler2D texid;
+        varying vec2 vUv;
+        void main()
+            {
+            vec2 uv = (vUv*2.0)-1.0; // range from [0,1] to [-1,1]
+            vec2 theta = (uv-lensCenter)*scaleIn;
+            float rSq = theta.x*theta.x + theta.y*theta.y;
+            vec2 rvector = theta*(hmdWarpParam.x + hmdWarpParam.y*rSq + hmdWarpParam.z*rSq*rSq + hmdWarpParam.w*rSq*rSq*rSq);
+            vec2 rBlue = rvector * (chromAbParam.z + chromAbParam.w * rSq);
+            vec2 tcBlue = (lensCenter + scale * rBlue);
+            tcBlue = (tcBlue+1.0)/2.0;// range from [-1,1] to [0,1]
+             if (any(bvec2(clamp(tcBlue, vec2(0.0,0.0), vec2(1.0,1.0))-tcBlue))) {
+               gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+               return;}
+            vec2 tcGreen = lensCenter + scale * rvector;
+            tcGreen = (tcGreen+1.0)/2.0; // range from [-1,1] to [0,1]
+            vec2 rRed = rvector * (chromAbParam.x + chromAbParam.y * rSq);
+            vec2 tcRed = lensCenter + scale * rRed;
+            tcRed = (tcRed+1.0)/2.0; // range from [-1,1] to [0,1]
+            gl_FragColor = vec4(texture2D(texid, tcRed).r, texture2D(texid, tcGreen).g, texture2D(texid, tcBlue).b, 1);
+            }
+    </script>
     <canvas id="canvas" width="900" height="600"></canvas>
     <script>
     document.addEventListener('DOMContentLoaded', main);
     var worldFactor = 1.0;
     var HMD = {
-
         hResolution: 960,
         vResolution: 640,
         hScreenSize: 0.12576,
@@ -46,17 +81,17 @@
     // But with lens distortion it is increased (see Oculus SDK Documentation)
     var r = -1.0 - (4 * (HMD.hScreenSize / 4 - HMD.lensSeparationDistance / 2) / HMD.hScreenSize);
     distScale = (HMD.distortionK[0] + HMD.distortionK[1] * Math.pow(r, 2) + HMD.distortionK[2] * Math.pow(r, 4) + HMD.distortionK[3] * Math.pow(r, 6));
-    /*var fov = THREE.Math.radToDeg(2 * Math.atan2(HMD.vScreenSize * distScale, 2 * HMD.eyeToScreenDistance));
+    var fov = radToDeg(2 * Math.atan2(HMD.vScreenSize * distScale, 2 * HMD.eyeToScreenDistance));
 
     // Compute camera projection matrices
-    var proj = (new THREE.Matrix4()).makePerspective(fov, aspect, 0.3, 10000);
+    var proj = makePerspective(fov, aspect, 0.3, 10000);
     var h = 4 * (HMD.hScreenSize / 4 - HMD.interpupillaryDistance / 2) / HMD.hScreenSize;
-    left.proj = ((new THREE.Matrix4()).makeTranslation(h, 0.0, 0.0)).multiply(proj);
-    right.proj = ((new THREE.Matrix4()).makeTranslation(-h, 0.0, 0.0)).multiply(proj);
-    */
+    left.proj = matrixMultiply(makeTranslation(h, 0.0, 0.0),proj);
+    right.proj = matrixMultiply(makeTranslation(-h, 0.0, 0.0),proj);
+    
     // Compute camera transformation matrices
-    left.tranform = [-worldFactor * HMD.interpupillaryDistance / 2, 0.0, 0.0];
-    right.tranform = [worldFactor * HMD.interpupillaryDistance / 2, 0.0, 0.0];
+    left.tranform = [-worldFactor * HMD.interpupillaryDistance / 2, 0.0, 0.0,0.0];
+    right.tranform = [worldFactor * HMD.interpupillaryDistance / 2, 0.0, 0.0,0.0];
 
     // Compute Viewport
     left.viewport = [0, 0, HMD.hResolution / 2, HMD.vResolution];
@@ -109,13 +144,7 @@
         // Set Colors.
         setColors(gl);
 
-        function radToDeg(r) {
-            return r * 180 / Math.PI;
-        }
-
-        function degToRad(d) {
-            return d * Math.PI / 180;
-        }
+      
 
         var cameraAngleRadians = degToRad(0);
         var fieldOfViewRadians = degToRad(60);
@@ -150,10 +179,17 @@
             var cameraMatrix = makeTranslation(0, 0, radius * 1.5);
             cameraMatrix = matrixMultiply(
                 cameraMatrix, makeYRotation(cameraAngleRadians));
-
+            
             // Make a view matrix from the camera matrix.
             var viewMatrix = makeInverse(cameraMatrix);
 
+            var pCamera={};
+            pCamera.projectionMatrix=Matrix.createFromArray(left.proj);//set perspective projection
+
+            pCamera.matrix=Matrix.createFromArray(cameraMatrix).multiply(left.tranform);// set position
+            console.log(Matrix.createFromArray(cameraMatrix))
+            gl.viewport(left.viewport[0], left.viewport[1], left.viewport[2], left.viewport[3]);
+            console.log(pCamera)
             // Draw 'F's in a circle
             for (var ii = 0; ii < numFs; ++ii) {
                 var angle = ii * Math.PI * 2 / numFs;
@@ -164,16 +200,19 @@
 
                 // Multiply the matrices.
                 var matrix = translationMatrix;
-                matrix = matrixMultiply(matrix, viewMatrix);
-                matrix = matrixMultiply(matrix, projectionMatrix);
-                matrix = matrixMultiply(matrix, left.tranform);
+                matrix = matrixMultiply(matrix, makeInverse(pCamera.matrix));
+                matrix = matrixMultiply(matrix, pCamera.projectionMatrix);
+        
                 
                 // Set the matrix.
                 gl.uniformMatrix4fv(matrixLocation, false, matrix);
-                gl.viewport(left.viewport[0], left.viewport[1], left.viewport[2], left.viewport[3]);
-                // Draw the geometry.
+                    // Draw the geometry.
                 gl.drawArrays(gl.TRIANGLES, 0, 16 * 6);
+               
             }
+
+
+
         }
     }
 

@@ -8,7 +8,7 @@ __d("createExponentialMovingAverage", [], function a(b, c, d, e, f, g) {
     if (c.__markCompiled) c.__markCompiled();
 
     function h(k) {
-        var l = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1],
+        var l = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[ 1],
             m = l;
         return function(n) {
             return m += k * (n - m); }; }

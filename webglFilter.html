@@ -1,0 +1,114 @@
+<style>
+#container div{
+font-size:18px;margin-top:20px;margin-left:5px;display:inline-block;background:#ccc;height:30px;line-height:30px;padding:0 5px;border-radius:4px;cursor: pointer;
+}
+#container .active{
+	background: #CD7;
+}
+</style>
+<canvas width="500" height="375" style="width:600px; height:450px;"></canvas>
+<div id="container" style="max-width: 739px;"></div>
+<script src="webgl-image-filter.js"></script>
+<script>
+(function(){
+var effects=[
+'normal',
+'brightness','saturation','desaturate','contrast','negative','hue','desaturateLuminance','sepia','brownie','vintagePinhole','kodachrome','technicolor','polaroid','shiftToBGR',
+
+'detectEdges','sobelX','sobelY','sharpen','emboss','blur',
+
+'1977','Brannan','Gotham','Hefe','Inkwell','Lord Kelvin','Nashville','X-PRO II'
+];
+var presets = [
+	{name: 'none'},
+	{name: 'negative'},
+	{name: 'brightness', args:[1.5]},
+	{name: 'saturation', args:[1.5]},
+	{name: 'contrast', args:[1.5]},
+	{name: 'hue', args:[180]},
+	{name: 'desaturate'},
+	{name: 'desaturateLuminance'},
+	{name: 'brownie'},
+	{name: 'sepia'},
+	{name: 'vintagePinhole'},
+	{name: 'kodachrome'},
+	{name: 'technicolor'},
+	{name: 'detectEdges'},
+	{name: 'sharpen'},
+	{name: 'emboss'},
+	{name: 'blur', args:[4]}
+];
+var container=document.getElementById('container')
+effects.forEach(function(effect){
+	var div=document.createElement('div');
+	div.className='effect';
+	div.innerHTML =effect;
+	container.appendChild(div);
+})
+// Get the 2d context from the canvas and load an image
+var canvas = document.querySelector('canvas');
+var ctx = canvas.getContext('2d');
+ctx.textAlign = 'center';
+ctx.fillStyle = '#000';
+ctx.fillRect(0,0, canvas.width, canvas.height);
+ctx.fillStyle = '#fff';
+ctx.fillText("Loading...", canvas.width/2, canvas.height/2);
+
+// Create the filter
+try {
+	var filter = new WebGLImageFilter();
+}
+catch( err ) {
+	ctx.fillStyle = '#000';
+	ctx.fillRect(0,0, canvas.width, canvas.height);
+	ctx.fillStyle = '#fff';
+	ctx.fillText("This browser doesn't support WebGL", canvas.width/2, canvas.height/2);
+	return;
+}
+
+var img = new Image();
+img.src = 'photo.jpg';
+img.onload = function() {
+	canvas.width = img.width;
+	canvas.height = img.height;
+	container.addEventListener('click',function(e){
+		if(e.target.className=='effect'){
+			container.querySelector('.active')&&(container.querySelector('.active').className='effect');
+			e.target.className='effect active';
+			var effect=e.target.innerHTML;
+			filter.reset();
+			if(!(has(presets,'name',effect)==-1)){
+				if(presets[has(presets,'name',effect)].args)
+				filter.addFilter(effect,presets[has(presets,'name',effect)].args[0]);
+				else filter.addFilter(effect);
+			}else if(!(['1977','Brannan','Hefe','Lord Kelvin','Nashville','X-PRO II'].indexOf(effect)==-1)){
+				filter.addFilter('instagramFilter',effect);
+			}
+			else if(effect=='Gotham'){
+				filter.addFilter('instagramFilter','Gotham');
+				filter.addFilter('Inkwell');
+			}
+			else if(effect=='normal'){
+				ctx.drawImage(img,0,0);
+				return;
+			}
+			else filter.addFilter(effect);
+			var filteredImage = filter.apply(img);
+
+			ctx.drawImage(filteredImage,0,0);
+			
+		}
+	})
+
+	ctx.drawImage(img,0,0);
+
+}
+function has(arr, key, value) { //array child object has key-value
+    if (!arr||!arr.length) return -1;
+    for (var i = 0; i < arr.length; i++) {
+        if (arr[i][key] == value) return i;
+    }
+    return -1;
+}
+})()
+</script>
