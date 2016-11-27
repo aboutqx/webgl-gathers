@@ -21,17 +21,12 @@ var vertexColorAttribute;
 var textureCoordAttribute;
 var perspectiveMatrix;
 var tmpBuffer;
-//
-// start
-//
-// Called when the canvas is created to get the ball rolling.
-//
+
 function start() {
     canvas = document.getElementById("glcanvas");
 
     initWebGL(canvas); // Initialize the GL context
 
-    // Only continue if WebGL is available and working
 
     if (gl) {
         gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
@@ -39,19 +34,10 @@ function start() {
         gl.enable(gl.DEPTH_TEST); // Enable depth testing
         gl.depthFunc(gl.LEQUAL); // Near things obscure far things
 
-        // Initialize the shaders; this is where all the lighting for the
-        // vertices and so forth is established.
         this.$SphericalRenderer1 = gl;
         initShaders();
-
-        // Here's where we call the routine that builds all the objects
-        // we'll be drawing.
-
         initBuffers();
-
         initTextures();
-
-
     }
 }
 var cubeTexture;
@@ -74,14 +60,9 @@ function handleTextureLoaded(image, texture) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.bindTexture(gl.TEXTURE_2D, null);
 
-    setInterval(drawScene, 15);
+    setTimeout(drawScene, 15);
 }
-//
-// initWebGL
-//
-// Initialize WebGL, returning the GL context or null if
-// WebGL isn't available or could not be initialized.
-//
+
 function initWebGL() {
     gl = null;
 
@@ -89,19 +70,12 @@ function initWebGL() {
         gl = canvas.getContext("webgl");
     } catch (e) {}
 
-    // If we don't have a GL context, give up now
-
     if (!gl) {
         alert("Unable to initialize WebGL. Your browser may not support it.");
     }
 }
 
-//
-// initBuffers
-//
-// Initialize the buffers we'll need. For this demo, we just have
-// one object -- a simple two-dimensional cube.
-//
+
 function initBuffers() {
 
     o = 3;
@@ -161,11 +135,7 @@ function initBuffers() {
     this.$SphericalRenderer15.numItems = fa.length;
 }
 
-//
-// drawScene
-//
-// Draw the scene.
-//
+
 var worldFactor = 1.0;
 var HMD = {
 
@@ -210,24 +180,11 @@ left.lensCenter = [lensShift, 0.0];
 right.lensCenter = [-lensShift, 0.0];
 
 function drawScene() {
-    // Clear the canvas before we start drawing on it.
-
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    // Establish the perspective with which we want to view the
-    // scene. Our field of view is 45 degrees, with a width/height
-    // ratio of 640:480, and we only want to see objects between 0.1 units
-    // and 100 units away from the camera.
-
     perspectiveMatrix = makePerspective(45, 640.0 / 480.0, 0.1, 100.0);
 
-    // Set the drawing position to the "identity" point, which is
-    // the center of the scene.
 
     loadIdentity();
-
-    // Now move the drawing position a bit to where we want to start
-    // drawing the cube.
 
     mvTranslate([-0.0, 0.0, -6.0]);
 
@@ -247,36 +204,17 @@ function drawScene() {
 
     gl.viewport(right.viewport[0], right.viewport[1], right.viewport[2], right.viewport[3]);
     draw(true);
-    // Draw the cube by binding the array buffer to the cube's vertices
-    // array, setting attributes, and pushing it to GL.
 
-
-
-    // Update the rotation for the next draw, if it's time to do so.
-    /*
-      var currentTime = (new Date).getTime();
-      if (lastCubeUpdateTime) {
-        var delta = currentTime - lastCubeUpdateTime;
-        if(delta<1111) return;
-        cubeRotation += (30 * delta) / 1000.0;
-        cubeXOffset += xIncValue * ((30 * delta) / 1000.0);
-        cubeYOffset += yIncValue * ((30 * delta) / 1000.0);
-        cubeZOffset += zIncValue * ((30 * delta) / 1000.0);
-
-        if (Math.abs(cubeYOffset) > 2.5) {
-          xIncValue = -xIncValue;
-          yIncValue = -yIncValue;
-          zIncValue = -zIncValue;
-        }
-      }
-
-      lastCubeUpdateTime = currentTime;*/
 }
 
 function draw(flag) {
     
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, cubeTexture);
+
+    
+
+
     gl.uniform1i(this.$SphericalRenderer4.samplerUniform, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.$SphericalRenderer14);
@@ -295,19 +233,37 @@ function draw(flag) {
     gl.uniformMatrix4fv(this.$SphericalRenderer4.pMatrixUniform, false, perspectiveMatrix.flatten());
     gl.uniformMatrix4fv(this.$SphericalRenderer4.mvMatrixUniform, false, mvMatrix.flatten());
     
+    var tmp=createFramebufferTexture(canvas.width,canvas.height);
+    var program=new WebGLProgram(gl,vertexShader,fragmentShader);
+    
+    gl.bindFramebuffer(gl.FREAMEBUFFER,tmp.fbo);
+    gl.uniform2f(program.scale,1.0,1.0)
+    gl.uniform2f(program.scaleIn,1.0,1.0)
+    gl.uniform2f(program.lensCenter,0.0,0.0)
+    gl.uniform4f(program.hmdWarpParam,1.0,0.0,0.0,0.0)
+    gl.uniform4f(program.chromAbParam,1.0,0.0,0.0,0.0);
+    var vertices = new Float32Array([
+        -1, -1, 0, 1,  1, -1, 1, 1,  -1, 1, 0, 0,
+        -1, 1, 0, 0,  1, -1, 1, 1,  1, 1, 1, 0
+      ]);
+    _vertexBuffer = gl.createBuffer(),
+    gl.bindBuffer(gl.ARRAY_BUFFER, _vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    var floatSize = Float32Array.BYTES_PER_ELEMENT;
+    var vertSize = 4 * floatSize;
+    gl.enableVertexAttribArray(program.attribute.pos);
+    gl.vertexAttribPointer(program.attribute.pos, 2, gl.FLOAT, false, vertSize , 0 * floatSize);
+    gl.enableVertexAttribArray(program.attribute.uv);
+    gl.vertexAttribPointer(program.attribute.uv, 2, gl.FLOAT, false, vertSize, 2 * floatSize);
+    
     if(flag)  gl.drawElements(gl.TRIANGLES, tmpBuffer.numItems, gl.UNSIGNED_SHORT, 0);
     else gl.drawElements(gl.TRIANGLES, this.$SphericalRenderer15.numItems, gl.UNSIGNED_SHORT, 0);
 }
-//
-// initShaders
-//
-// Initialize the shaders, so WebGL knows how to light our scene.
-//
+
 function initShaders() {
     var fragmentShader = getShader(gl, "shader-fs");
     var vertexShader = getShader(gl, "shader-vs");
-
-    // Create the shader program
 
     shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, vertexShader);
@@ -332,23 +288,13 @@ function initShaders() {
     this.$SphericalRenderer4.samplerUniform = gl.getUniformLocation(this.$SphericalRenderer4, 'uSampler');
 }
 
-//
-// getShader
-//
-// Loads a shader program by scouring the current document,
-// looking for a script with the specified ID.
-//
+
 function getShader(gl, id) {
     var shaderScript = document.getElementById(id);
-
-    // Didn't find an element with the specified ID; abort.
 
     if (!shaderScript) {
         return null;
     }
-
-    // Walk through the source element's children, building the
-    // shader source string.
 
     var theSource = "";
     var currentChild = shaderScript.firstChild;
@@ -360,10 +306,6 @@ function getShader(gl, id) {
 
         currentChild = currentChild.nextSibling;
     }
-
-    // Now figure out what type of shader script we have,
-    // based on its MIME type.
-
     var shader;
 
     if (shaderScript.type == "x-shader/x-fragment") {
@@ -374,15 +316,8 @@ function getShader(gl, id) {
         return null; // Unknown shader type
     }
 
-    // Send the source to the shader object
-
     gl.shaderSource(shader, theSource);
-
-    // Compile the shader program
-
     gl.compileShader(shader);
-
-    // See if it compiled successfully
 
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
         alert("An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader));
@@ -391,6 +326,7 @@ function getShader(gl, id) {
 
     return shader;
 }
+
 
 //
 // Matrix utility functions
