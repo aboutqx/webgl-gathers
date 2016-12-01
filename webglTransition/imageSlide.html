@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf8" />
+    <title>图像渐变</title>
+    <style>
+      body{
+        background: #f6f6f6
+      }
+    	canvas{
+    		display: block;
+        border-radius: 4px;
+    	}
+      #image-index{
+        height: 20px;
+        margin:20px 40px;
+      }
+    	#transi-name{
+    		margin: 40px 0 20px 43px;
+    		font-family: '-webkit-pictograph',serif;
+    	}
+    	.time-container{
+    		margin: 48px 0 0 50px;
+    	}
+      .left-arrow,.right-arrow{
+        cursor: pointer;
+        color: white;
+        font-size: 52px;
+        width: 59px;
+        position: absolute;
+        top: 50%;
+        margin-top: -29px;
+        user-select:none;
+        -moz-user-select:none;
+        -webkit-user-select:none;
+        -ms-user-select: none;
+      }
+      .left-arrow{
+        left: 15px;
+      }
+      .right-arrow{
+        right: -15px;
+      }
+      #container{
+        position: relative;
+        width: 960px;
+        margin-left: 40px;
+        transform: translate3d(0,0,0);
+        box-shadow: 0px 1px 6px #999999;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body> 
+  	
+    <select id="transi-name"></select>
+    <div id="image-index">1</div>
+    <div id="container">
+      <canvas id="target"></canvas>
+      <div class="left-arrow">&lt;</div><div class="right-arrow">&gt;</div>
+    </div>
+
+    <div class="time-container">
+	    <input type="range" id="time" min=100 max=4000 value=1000>
+	    <div id="time-dept">Time:1000ms</div>
+
+	  </div>
+    <script src="dist/build.js"></script>
+  </body>
+</html>
