@@ -1,69 +1,53 @@
-/* 
-WebGLImageFilter - MIT Licensed
-
-2013, Dominic Szablewski - phoboslab.org
-*/
-
-(function(window){
-
-var WebGLProgram = function( gl, vertexSource, fragmentSource ) {
-
-	var _collect = function( source, prefix, collection ) {
-		var r = new RegExp('\\b' + prefix + ' \\w+ (\\w+)', 'ig');
-		source.replace(r, function(match, name) {
-			collection[name] = 0;
-			return match;
-		});
-	};
-
-	var _compile = function( gl, source, type ) {
-		var shader = gl.createShader(type);
-		gl.shaderSource(shader, source);
-		gl.compileShader(shader);
-
-		if( !gl.getShaderParameter(shader, gl.COMPILE_STATUS) ) {
-			console.log(gl.getShaderInfoLog(shader));
-			return null;
+import TweenMax from 'gsap';
+import dat from 'dat-gui';
+import Program from '../libs/glProgram';
+import {ArrayBuffer} from '../libs/glBuffer';
+dat.GUI.prototype.removeFolders = function() {
+	var t = Object.keys(this.__folders);
+	for(var i=0;i<t.length;i++){
+		var folder = this.__folders[t[i]];
+		if (!folder) {
+			return;
 		}
-		return shader;
-	};
-
-
-	this.uniform = {};
-	this.attribute = {};
-
-	var _vsh = _compile(gl, vertexSource, gl.VERTEX_SHADER);
-	var _fsh = _compile(gl, fragmentSource, gl.FRAGMENT_SHADER);
-
-	this.id = gl.createProgram();
-	gl.attachShader(this.id, _vsh);
-	gl.attachShader(this.id, _fsh);
-	gl.linkProgram(this.id);
-
-	if( !gl.getProgramParameter(this.id, gl.LINK_STATUS) ) {
-		console.log(gl.getProgramInfoLog(this.id));
+		folder.close();
+		this.__ul.removeChild(folder.domElement.parentNode);
+		delete this.__folders[t[i]];
 	}
+    this.onResize();
+}
+window.gui = new dat.GUI({ width:300 });
 
-	gl.useProgram(this.id);
+var DRAW = { INTERMEDIATE: 1 };
 
-	// Collect attributes
-	_collect(vertexSource, 'attribute', this.attribute);
-	for( var a in this.attribute ) {
-		this.attribute[a] = gl.getAttribLocation(this.id, a);
-	}
+var SHADER = {};
+SHADER.VERTEX_IDENTITY = [
+	'precision highp float;',
+	'attribute vec2 pos;',
+	'attribute vec2 uv;',
+	'varying vec2 vUv;',
+	'uniform float flipY;',
 
-	// Collect uniforms
-	_collect(vertexSource, 'uniform', this.uniform);
-	_collect(fragmentSource, 'uniform', this.uniform);
-	for( var u in this.uniform ) {
-		this.uniform[u] = gl.getUniformLocation(this.id, u);
-	}
-};
+	'void main(void) {',
+		'vUv = uv;',
+		'gl_Position = vec4(pos.x, pos.y*flipY, 0.0, 1.);',
+	'}'
+].join('\n');
 
+SHADER.FRAGMENT_IDENTITY = [
+	'precision highp float;',
+	'varying vec2 vUv;',
+	'uniform sampler2D texture;',
+
+	'void main(void) {',
+		'gl_FragColor = texture2D(texture, vUv);',
+	'}',
+].join('\n');
+
+
+var _filter = {},vBuffer;
 
 var WebGLImageFilter = window.WebGLImageFilter = function() {
-	var 
-		gl = null,
+	var gl = null,
 		_drawCount = 0,
 		_sourceTexture = null,
 		_lastInChain = false,
@@ -72,16 +56,14 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 		_filterChain = [],
 		_width = -1, 
 		_height = -1,
-		_vertexBuffer = null,
 		_currentProgram = null,
-		_canvas = document.createElement('canvas');
+		_canvas = document.querySelector('canvas');
 
-	var gl = _canvas.getContext("webgl") || _canvas.getContext("experimental-webgl");
+	gl = _canvas.getContext("webgl") || _canvas.getContext("experimental-webgl");
 	if( !gl ) {
 		throw "Couldn't get WebGL context";
 	}
 
-	
 	this.addFilter = function( name ) {
 		var args = Array.prototype.slice.call(arguments, 1);
 		var filter = _filter[name];
@@ -92,9 +74,19 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 	this.reset = function() {
 		_filterChain = [];
 	};
-	
-	this.apply = function( image ) {
+
+	this.prepare = function(){
+		gui.removeFolders();
+
+		for( var i = 0; i < _filterChain.length; i++ ) {
+			var f = _filterChain[i];
+			f.func.prepare&&f.func.prepare();
+		}
+	};
+
+	this.render = function( image ) {
 		_resize( image.width, image.height );
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		_drawCount = 0;
 
 		// Create the texture for the input image
@@ -107,16 +99,17 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
 		// No filters? Just draw
+
 		if( _filterChain.length == 0 ) {
 			var program = _compileShader(SHADER.FRAGMENT_IDENTITY);
-			_draw();
+			_lastInChain=true;
+			_draw(0);
 			return _canvas;
 		}
 
 		for( var i = 0; i < _filterChain.length; i++ ) {
 			_lastInChain = (i == _filterChain.length-1);
 			var f = _filterChain[i];
-
 			f.func.apply(this, f.args || []);
 		}
 
@@ -127,26 +120,24 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 		// Same width/height? Nothing to do here
 		if( width == _width && height == _height ) { return; }
 
-
 		_canvas.width = _width = width;
 		_canvas.height = _height = height;
 
 		// Create the context if we don't have it yet
-		if( !_vertexBuffer ) {
-			// Create the vertex buffer for the two triangles [x, y, u, v] * 6
-			var vertices = new Float32Array([
-				-1, -1, 0, 1,  1, -1, 1, 1,  -1, 1, 0, 0,
-				-1, 1, 0, 0,  1, -1, 1, 1,  1, 1, 1, 0
-			]);
-			_vertexBuffer = gl.createBuffer(),
-			gl.bindBuffer(gl.ARRAY_BUFFER, _vertexBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
-			// Note sure if this is a good idea; at least it makes texture loading
-			// in Ejecta instant.
-			gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-		}
+		// Create the vertex buffer for the two triangles [x, y, u, v] * 6
+		var vertices = new Float32Array([
+			-1, -1, 0, 1,  1, -1, 1, 1,  -1, 1, 0, 0,
+			-1, 1, 0, 0,  1, -1, 1, 1,  1, 1, 1, 0
+		]);
+		vBuffer = new ArrayBuffer(gl);
+		vBuffer.attrib("pos", 2, gl.FLOAT),
+        vBuffer.attrib("uv", 2, gl.FLOAT)
+		vBuffer.data(vertices)
 
+		// Note sure if this is a good idea; at least it makes texture loading
+		// in Ejecta instant.
+		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 		gl.viewport(0, 0, _width, _height);
 
 		// Delete old temp framebuffers
@@ -201,8 +192,7 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 		}
 		_drawCount++;
 
-
-		// Set up the target
+     	// Set up the target
 		if( _lastInChain && !(flags & DRAW.INTERMEDIATE) ) {
 			// Last filter in our chain - draw directly to the WebGL Canvas. We may
 			// also have to flip the image vertically now
@@ -214,72 +204,28 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 			_currentFramebufferIndex = (_currentFramebufferIndex+1) % 2;
 			target = _getTempFramebuffer(_currentFramebufferIndex).fbo;
 		}
-
+		
 		// Bind the source and target and draw the two triangles
 		gl.bindTexture(gl.TEXTURE_2D, source);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, target);
 
-		gl.uniform1f(_currentProgram.uniform.flipY, (flipY ? -1 : 1) );
+		gl.uniform1f(_currentProgram.flipY(), (flipY ? -1 : 1) );
 		gl.drawArrays(gl.TRIANGLES, 0, 6);
 	};
-
 	var _compileShader = function( fragmentSource ) {
-		if( fragmentSource.__program ) {
-			_currentProgram = fragmentSource.__program;
-			gl.useProgram(_currentProgram.id);
-			return _currentProgram;
-		}
-
 		// Compile shaders
-		_currentProgram = new WebGLProgram( gl, SHADER.VERTEX_IDENTITY, fragmentSource );
-
-		var floatSize = Float32Array.BYTES_PER_ELEMENT;
-		var vertSize = 4 * floatSize;
-		gl.enableVertexAttribArray(_currentProgram.attribute.pos);
-		gl.vertexAttribPointer(_currentProgram.attribute.pos, 2, gl.FLOAT, false, vertSize , 0 * floatSize);
-		gl.enableVertexAttribArray(_currentProgram.attribute.uv);
-		gl.vertexAttribPointer(_currentProgram.attribute.uv, 2, gl.FLOAT, false, vertSize, 2 * floatSize);
-
-		fragmentSource.__program = _currentProgram;
+		_currentProgram = new Program(gl);
+		_currentProgram.compile( SHADER.VERTEX_IDENTITY, fragmentSource )
+		_currentProgram.use();
+		vBuffer.attribPointer(_currentProgram)
 		return _currentProgram;
 	};
-
-
-	var DRAW = { INTERMEDIATE: 1 };
-
-	var SHADER = {};
-	SHADER.VERTEX_IDENTITY = [
-		'precision highp float;',
-		'attribute vec2 pos;',
-		'attribute vec2 uv;',
-		'varying vec2 vUv;',
-		'uniform float flipY;',
-
-		'void main(void) {',
-			'vUv = uv;',
-			'gl_Position = vec4(pos.x, pos.y*flipY, 0.0, 1.);',
-		'}'
-	].join('\n');
-
-	SHADER.FRAGMENT_IDENTITY = [
-		'precision highp float;',
-		'varying vec2 vUv;',
-		'uniform sampler2D texture;',
-
-		'void main(void) {',
-			'gl_FragColor = texture2D(texture, vUv);',
-		'}',
-	].join('\n');
-
-
-	var _filter = {};
-
 
 
 	// ----------------------------------------------------------------------------
 	// Color Matrix Filter
 
-	_filter.colorMatrix = function( matrix ) {
+	_filter.colorMatrix = function( matrix , isInter) {
 		// Create a Float32 Array and normalize the offset component to 0-1
 		var m = new Float32Array(matrix);
 		m[4] /= 255;
@@ -293,8 +239,10 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 			: _filter.colorMatrix.SHADER.WITH_ALPHA;
 		
 		var program = _compileShader(shader);
-		gl.uniform1fv(program.uniform.m, m);
-		_draw();
+		gl.uniform1fv(program.m(), m);
+		if(isInter){
+			_draw(DRAW.INTERMEDIATE)
+		} else _draw();
 	};
 
 	_filter.colorMatrix.SHADER = {};
@@ -309,7 +257,7 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 			'gl_FragColor.r = m[0] * c.r + m[1] * c.g + m[2] * c.b + m[3] * c.a + m[4];',
 			'gl_FragColor.g = m[5] * c.r + m[6] * c.g + m[7] * c.b + m[8] * c.a + m[9];',
 			'gl_FragColor.b = m[10] * c.r + m[11] * c.g + m[12] * c.b + m[13] * c.a + m[14];',
-			'gl_FragColor.a = m[15] * c.r + m[16] * c.g + m[17] * c.b + m[18] * c.a + m[19];',
+			'gl_FragColor.a = m[15] * c.r + m[16] * c.g + m[17] * c.b + m[18] * c.a + m[19];',		
 		'}',
 	].join('\n');
 	_filter.colorMatrix.SHADER.WITHOUT_ALPHA = [
@@ -466,8 +414,8 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 		var pixelSizeY = 1 / _height;
 
 		var program = _compileShader(_filter.convolution.SHADER);
-		gl.uniform1fv(program.uniform.m, m);
-		gl.uniform2f(program.uniform.px, pixelSizeX, pixelSizeY);
+		gl.uniform1fv(program.m(), m);
+		gl.uniform2f(program.px(), pixelSizeX, pixelSizeY);
 		_draw();
 	};
 
@@ -508,21 +456,21 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 		]);
 	};
 
-        _filter.sobelX = function() {
-                _filter.convolution.call(this, [
-                        -1, 0, 1,
-                        -2, 0, 2,
-                        -1, 0, 1
-                ]);
-        };
+    _filter.sobelX = function() {
+            _filter.convolution.call(this, [
+                    -1, 0, 1,
+                    -2, 0, 2,
+                    -1, 0, 1
+            ]);
+    };
 
-        _filter.sobelY = function() {
-                _filter.convolution.call(this, [
-                        -1, -2, -1,
-                         0,  0,  0,
-                         1,  2,  1
-                ]);
-        };
+    _filter.sobelY = function() {
+            _filter.convolution.call(this, [
+                    -1, -2, -1,
+                     0,  0,  0,
+                     1,  2,  1
+            ]);
+    };
 
 	_filter.sharpen = function( amount ) {
 		var a = amount || 1;
@@ -545,47 +493,28 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 
 	// ----------------------------------------------------------------------------
 	// Blur Filter
+	
 
-	_filter.blur = function( size ) {
-		var blurSizeX = (size/7) / _width;
-		var blurSizeY = (size/7) / _height;
-
-		var program = _compileShader(_filter.blur.SHADER);
-
+	_filter.triangleBlur = function( size ) {
+		var program = _compileShader(_filter.triangleBlur.SHADER);
 		// Vertical
-		gl.uniform2f(program.uniform.px, 0, blurSizeY);
+		gl.uniform2f(program.delta(), 0, (params.size) / _height);
 		_draw(DRAW.INTERMEDIATE);
 
 		// Horizontal
-		gl.uniform2f(program.uniform.px, blurSizeX, 0);
+		gl.uniform2f(program.delta(), (params.size) / _width, 0);
 		_draw();
 	};
+	_filter.triangleBlur.prepare=function(){
+		window.params={
+			size:30
+		}
+		var folder=gui.addFolder('blur')
+		folder.add(params,'size',0,200).step(1);
+		folder.open()
+	}
 
-	_filter.blur.SHADER = [
-		'precision highp float;',
-		'varying vec2 vUv;',
-		'uniform sampler2D texture;',
-		'uniform vec2 px;',
-
-		'void main(void) {',
-			'gl_FragColor = vec4(0.0);',
-			'gl_FragColor += texture2D(texture, vUv + vec2(-7.0*px.x, -7.0*px.y))*0.0044299121055113265;',
-			'gl_FragColor += texture2D(texture, vUv + vec2(-6.0*px.x, -6.0*px.y))*0.00895781211794;',
-			'gl_FragColor += texture2D(texture, vUv + vec2(-5.0*px.x, -5.0*px.y))*0.0215963866053;',
-			'gl_FragColor += texture2D(texture, vUv + vec2(-4.0*px.x, -4.0*px.y))*0.0443683338718;',
-			'gl_FragColor += texture2D(texture, vUv + vec2(-3.0*px.x, -3.0*px.y))*0.0776744219933;',
-			'gl_FragColor += texture2D(texture, vUv + vec2(-2.0*px.x, -2.0*px.y))*0.115876621105;',
-			'gl_FragColor += texture2D(texture, vUv + vec2(-1.0*px.x, -1.0*px.y))*0.147308056121;',
-			'gl_FragColor += texture2D(texture, vUv                             )*0.159576912161;',
-			'gl_FragColor += texture2D(texture, vUv + vec2( 1.0*px.x,  1.0*px.y))*0.147308056121;',
-			'gl_FragColor += texture2D(texture, vUv + vec2( 2.0*px.x,  2.0*px.y))*0.115876621105;',
-			'gl_FragColor += texture2D(texture, vUv + vec2( 3.0*px.x,  3.0*px.y))*0.0776744219933;',
-			'gl_FragColor += texture2D(texture, vUv + vec2( 4.0*px.x,  4.0*px.y))*0.0443683338718;',
-			'gl_FragColor += texture2D(texture, vUv + vec2( 5.0*px.x,  5.0*px.y))*0.0215963866053;',
-			'gl_FragColor += texture2D(texture, vUv + vec2( 6.0*px.x,  6.0*px.y))*0.00895781211794;',
-			'gl_FragColor += texture2D(texture, vUv + vec2( 7.0*px.x,  7.0*px.y))*0.0044299121055113265;',
-		'}',
-	].join('\n');
+	_filter.triangleBlur.SHADER = require('./shaders/triangleBlur.frag')
 
 
 	var filters = {
@@ -637,10 +566,10 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
     	var curves=filters[curvesName].curves;
 
 		var program = _compileShader(_filter.instagramFilter.SHADER);
-		gl.uniform1fv(program.uniform.curvesR, curves.r);
-		gl.uniform1fv(program.uniform.curvesG, curves.g);
-		gl.uniform1fv(program.uniform.curvesB, curves.b);
-		gl.uniform1fv(program.uniform.curvesA, curves.a);
+		gl.uniform1fv(program.curvesR(), curves.r);
+		gl.uniform1fv(program.curvesG(), curves.g);
+		gl.uniform1fv(program.curvesB(), curves.b);
+		//gl.uniform1fv(program.curvesA(), curves.a);
 		_draw();
 	};
 
@@ -651,7 +580,7 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 		'uniform float curvesR[257];',
 		'uniform float curvesG[257];',
 		'uniform float curvesB[257];',
-		'uniform float curvesA[257];',
+		//'uniform float curvesA[257];',
 		'float getData(int id,float data[257]) {',
 			'float tmp;',
 		    'for (int i=0; i<257; i++) {',
@@ -682,6 +611,41 @@ var WebGLImageFilter = window.WebGLImageFilter = function() {
 			'gl_FragColor=vec4( texture2D(texture,vUv).r+(avarage-texture2D(texture,vUv).r*saturation),texture2D(texture,vUv).g+avarage-texture2D(texture,vUv).g*saturation,texture2D(texture,vUv).b+avarage-texture2D(texture,vUv).b*saturation,1.0);',
 		'}'
 	].join('\n');
-};
 
-})(window);
+	
+	_filter.grayFocus=function(){
+		var program = _compileShader(_filter.grayFocus.SHADER);
+	
+		gl.uniform1f(program.lt(), params.lt);
+		gl.uniform1f(program.gt(), params.gt);
+		gl.uniform1f(program.clamp(), params.clamp?1:0);
+		_draw();
+
+	};
+	_filter.grayFocus.prepare=function(){
+		window.params={
+			lt:.2,
+			gt:.98,
+			clamp:false
+		}
+		var folder=gui.addFolder('grayFocus')
+		folder.add(params,'lt',0,1).step(0.01);
+		folder.add(params,'gt',0,1).step(0.01);
+		folder.add(params,'clamp')
+		folder.open()
+	}
+	_filter.grayFocus.SHADER= require('./shaders/grayFocus.frag')
+
+	_filter.cartoon=function(){
+		var program = _compileShader(_filter.cartoon.SHADER);
+
+		gl.uniform1fv(program.HueLevels(),[0.0,80.0,160.0,240.0,320.0,360.0]);
+		gl.uniform1fv(program.SatLevels(),[0.0,0.15,0.3,0.45,0.6,0.8,1.0]);
+		gl.uniform1fv(program.ValLevels(),[0.0,0.3,0.6,1.0]);
+		gl.uniform2fv(program.textureSize(),[gl.drawingBufferWidth,gl.drawingBufferHeight]);
+		_draw();
+
+	};
+
+	_filter.cartoon.SHADER= require('./shaders/cartoon.frag')
+};
