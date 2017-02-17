@@ -9,7 +9,7 @@ font-size:18px;margin-top:20px;margin-left:5px;display:inline-block;background:#
 <canvas></canvas>
 <input type="file" id="change-target">
 <div id="container" style="max-width: 739px;"></div>
-<script src="../bundle.js"></script>
+<script src="../dist/bundle.js"></script>
 <script>
 (function(){
 var effects=[
@@ -18,7 +18,7 @@ var effects=[
 
 'detectEdges','sobelX','sobelY','sharpen','emboss','triangleBlur',
 
-'1977','Brannan','Gotham','Hefe','Inkwell','Lord Kelvin','Nashville','X-PRO II','grayFocus','cartoon'
+'1977','Brannan','Gotham','Hefe','Inkwell','Lord Kelvin','Nashville','X-PRO II','grayFocus','cartoon','notebookDrawing'
 ];
 var presets = [
 	{name: 'none'},
@@ -39,7 +39,8 @@ var presets = [
 	{name: 'emboss'},
 	{name: 'triangleBlur', args:[30]},
 	{name: 'grayFocus',arg:['r']},
-	{name: 'cartoon'}
+	{name: 'cartoon'},
+	{name: 'notebookDrawing'}
 ];
 var container=document.getElementById('container'),canvas=document.querySelector('canvas'),file=document.querySelector('#change-target');
 effects.forEach(function(effect){
@@ -91,27 +92,51 @@ img.onload = function() {
 }
 file.addEventListener('change',function(e){
 	var t=e.target.files[0];
+	if(!t) return;
 	if(isImg(t.name)){
 		var reader = new FileReader();
         reader.addEventListener('load', function(event) {
+        	img = new Image();
             img.src = event.target.result;
             img.onload = function(){//覆盖原方法
             	document.querySelector('.effect:last-child').click()
             }
         }, false);
         reader.readAsDataURL(t);
-	}else if(isVideo()){
+	}else if(isVideo(t.name)){
+		document.querySelector('#target-video')&&document.body.removeChild(document.querySelector('#target-video'))
+		var video = document.createElement('video');
+		video.setAttribute('id','target-video')
+		video.setAttribute('controls',true)
+		video.setAttribute('autoplay',true)
+		video.setAttribute('loop',true)
+		video.style.display='none';
 
+		var reader = new FileReader();
+        reader.addEventListener('load', function(event) {
+            video.src = event.target.result;
+            document.body.appendChild(video)
+        }, false);
+        reader.readAsDataURL(t);
+        video.addEventListener('loadeddata',function() {
+        	
+        	img=video
+        	delete video
+        })
 	} 
 })
 
-
-function animation(){
+var then=0;
+function animation(now){
+	now*=0.001;
 	requestAnimationFrame(animation)
-	filter.render(img)
+	try{
+		filter.render(img)
+	}catch(e){}
 }
+
 function isImg(name){
-	var allowedExtension = ['jpeg', 'jpg', 'png', 'gif', 'bmp'];
+	var allowedExtension = ['jpeg', 'jpg', 'png', 'gif', 'bmp'],isValidFile;
 	var t=name.split('.').pop().toLowerCase()
 	 for(var index in allowedExtension) {
         if(t === allowedExtension[index]) {
@@ -121,8 +146,8 @@ function isImg(name){
     }
     return isValidFile;
 }
-function isVideo(){
-	var allowedExtension = ['mp4'];
+function isVideo(name){
+	var allowedExtension = ['mp4','webm','ogg'],isValidFile;
 	var t=name.split('.').pop().toLowerCase()
 	 for(var index in allowedExtension) {
         if(t === allowedExtension[index]) {

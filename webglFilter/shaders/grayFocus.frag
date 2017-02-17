@@ -34,7 +34,7 @@ void main(void) {
             gl_FragColor = vec4(y, y, y, c.a);
         }
     } else {
-        if(t.r <lt&&t.r>gt) {
+        if(t.r <=lt&&t.r>=gt) {
             gl_FragColor = c;
         } else {
             //apply B&W image.

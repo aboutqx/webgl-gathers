@@ -8,9 +8,9 @@ const serverIp          = ip.address();
 function getOutput() {
 
   if(prod) {
-    return path.resolve(__dirname, "/" )  
+    return path.resolve(__dirname, "dist/" )  
   } else {
-    return path.resolve(__dirname, "/" )  
+    return path.resolve(__dirname, "dist/" )  
   }
   
 }
@@ -19,7 +19,7 @@ module.exports = {
     output: {
         path: getOutput(),
         filename: 'bundle.js',
-        publicPath: isDevelopment ? `http://${serverIp}:8081/` : '/'
+        publicPath: isDevelopment ? `http://${serverIp}:8081/dist` : '/'
         //libraryTarget: "var",
         //library: "app"
     },
