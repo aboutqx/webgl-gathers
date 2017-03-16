@@ -1,1 +1,1 @@
-import './webglFilter/webgl-image-filter'
+import './webglFilter/app'

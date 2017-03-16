@@ -19,7 +19,7 @@ module.exports = {
     output: {
         path: getOutput(),
         filename: 'bundle.js',
-        publicPath: isDevelopment ? `http://${serverIp}:8081/dist` : '/'
+        publicPath: isDevelopment ? `http://${serverIp}:8080/dist` : '/'
         //libraryTarget: "var",
         //library: "app"
     },
