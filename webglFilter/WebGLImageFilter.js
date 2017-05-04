@@ -24,24 +24,21 @@ window.gui = new dat.GUI({ width: 300 });
 const SHADER = {};
 SHADER.VERTEX_IDENTITY = [
     'precision highp float;',
-    'attribute vec2 pos;',
-    'attribute vec2 uv;',
-    'varying vec2 vUv;',
+    'attribute vec2 position;',
     'uniform float flipY;',
-
+    'varying vec2 uv;',
     'void main(void) {',
-    'vUv = uv;',
-    'gl_Position = vec4(pos.x, pos.y*flipY, 0.0, 1.);',
+      'gl_Position = vec4(position.x, position.y*flipY, 0.0, 1.);',
+      'uv = position*.5+.5;',
     '}'
 ].join('\n');
 
 SHADER.FRAGMENT_IDENTITY = [
     'precision highp float;',
-    'varying vec2 vUv;',
     'uniform sampler2D texture;',
-
+    'varying vec2 uv;',
     'void main(void) {',
-    'gl_FragColor = texture2D(texture, vUv);',
+      'gl_FragColor = texture2D(texture, uv);',
     '}',
 ].join('\n');
 
@@ -69,15 +66,15 @@ class WebGLImageFilter  {
             throw "Couldn't get WebGL context";
         }
         this._filter = filter;
+        //big triangle
+        let data = new Float32Array([-1, -1, -1, 4, 4, -1]);
 
-        // Create the vertex buffer for the two triangles [x, y, u, v] * 6
-        var vertices = new Float32Array([-1, -1, 0, 1, 1, -1, 1, 1, -1, 1, 0, 0, -1, 1, 0, 0, 1, -1, 1, 1, 1, 1, 1, 0]);
-        let vBuffer = new ArrayBuffer(this.gl);
-        vBuffer.attrib("pos", 2, this.gl.FLOAT),
-            vBuffer.attrib("uv", 2, this.gl.FLOAT)
-        vBuffer.data(vertices)
+        let vBuffer = new ArrayBuffer(this.gl,data);
+        vBuffer.attrib("position", 2, this.gl.FLOAT);
+        vBuffer._stride = 0;
 
-        this.vBuffer=vBuffer;
+        this.vBuffer = vBuffer;
+
     }
 
     setImageData(data){
@@ -114,6 +111,7 @@ class WebGLImageFilter  {
         this.texture.bind(0);
 
         this._resize(data.width, data.height);
+        gl.clearColor(161/255, 161/255, 161/255, 1)
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
         //gl.getParameter(gl.ACTIVE_TEXTURE);
         this._drawCount = 0;
@@ -197,8 +195,8 @@ class WebGLImageFilter  {
         gl.bindTexture(gl.TEXTURE_2D, source);
         gl.bindFramebuffer(gl.FRAMEBUFFER, target);
         gl.uniform1f(this.prg.flipY(), this.flipY ? -1 : 1);
-
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        gl.uniform2fv(this.prg.iResolution(),[gl.drawingBufferWidth, gl.drawingBufferHeight])
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
     _compilePrg (fshader,vshader) {

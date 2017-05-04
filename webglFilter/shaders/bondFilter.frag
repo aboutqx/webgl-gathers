@@ -1,5 +1,5 @@
 precision highp float;
-varying vec2 vUv;
+uniform vec2 iResolution;
 uniform vec3 filterBg;
 
 uniform float filterRange;
@@ -24,11 +24,13 @@ vec3 rgb2hsb( in vec3 c ){
 }
 
 void main(void) {
-    vec4 c = texture2D(texture, vUv);
+    vec2 uv = gl_FragCoord.xy/iResolution.xy;
+    uv.y = 1.-uv.y;
+    vec4 c = texture2D(texture, uv);
     vec3 t = rgb2hsb(c.rgb);
 
     if(abs(t.r-rgb2hsb(filterBg).r)<filterRange) {
-        gl_FragColor = texture2D(targetBg,vUv);
+        gl_FragColor = texture2D(targetBg,uv);
 
 
     } else {

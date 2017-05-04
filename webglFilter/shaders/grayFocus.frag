@@ -1,9 +1,9 @@
 precision highp float;
-varying vec2 vUv;
 uniform float lt;
 uniform float gt;
 uniform float clamp;
 uniform sampler2D texture;
+uniform vec2 iResolution;
 
 vec3 rgb2hsb( in vec3 c ){
     vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -21,7 +21,9 @@ vec3 rgb2hsb( in vec3 c ){
 }
 
 void main(void) {
-	vec4 c = texture2D(texture, vUv);
+    vec2 uv = gl_FragCoord.xy/iResolution.xy;
+    uv.y = 1.-uv.y;
+	vec4 c = texture2D(texture, uv);
 	vec3 t = rgb2hsb(c.rgb);
     if (clamp < 0.5) {
         if(t.r <lt||t.r>gt) {
@@ -44,5 +46,4 @@ void main(void) {
             gl_FragColor = vec4(y, y, y, c.a);
         }        
     }
-	
 }

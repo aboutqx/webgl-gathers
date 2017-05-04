@@ -1,7 +1,7 @@
 //http://www.geeks3d.com/20140523/glsl-shader-library-toonify-post-processing-filter/
 precision highp float;
 uniform sampler2D texture;
-varying vec2 vUv;
+uniform vec2 iResolution;
 uniform float HueLevels[6];
 uniform float SatLevels[7];
 uniform float ValLevels[4];
@@ -186,13 +186,15 @@ float IsEdge(vec2 coords){
 }
 
 void main(void)
-{
-    vec4 colorOrg = texture2D( texture, vUv );
+{   
+    vec2 uv = gl_FragCoord.xy/iResolution.xy;
+    uv.y = 1.-uv.y;
+    vec4 colorOrg = texture2D( texture, uv );
     vec3 vHSV =  RGBtoHSV(colorOrg.r,colorOrg.g,colorOrg.b);
     vHSV.x = nearestLevel0(vHSV.x);
     vHSV.y = nearestLevel1(vHSV.y);
     vHSV.z = nearestLevel2(vHSV.z);
-    float edg = IsEdge(vUv);
+    float edg = IsEdge(uv);
     vec3 vRGB = (edg >= 0.3)? vec3(0.0,0.0,0.0):HSVtoRGB(vHSV.x,vHSV.y,vHSV.z);
     //gl_FragColor = vec4(vRGB.x,vRGB.y,vRGB.z,1.0);
     gl_FragColor =vec4(vRGB.x,vRGB.y,vRGB.z,1.);

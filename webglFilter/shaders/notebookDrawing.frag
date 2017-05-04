@@ -13,7 +13,7 @@ uniform sampler2D iChannel1;
 uniform float iGlobalTime;
 varying vec2 vUv;
 
-#define Res  iResolution.xy
+
 
 #define randSamp iChannel1
 #define colorSamp iChannel0
@@ -21,12 +21,15 @@ varying vec2 vUv;
 
 vec4 getRand(vec2 pos)
 {
-    return texture2D(iChannel1,pos/Res1/iResolution.y*1080., 0.0);
+    vec2 Res=iResolution.xy;
+    return vec4(texture2D(iChannel1,pos, 0.0).xyz,1.);
+
 }
 
 vec4 getCol(vec2 pos)
 {
     vec2 Res0 = iResolution.xy;
+    vec2 Res=iResolution.xy;
     // take aspect ratio into account
     vec2 uv=((pos-Res.xy*.5)/Res.y*Res0.y)/Res0.xy+.5;
     
@@ -65,6 +68,7 @@ vec2 getGrad(vec2 pos, float eps)
 
 void main()
 {   
+    vec2 Res=iResolution.xy;
     vec2 tmp = vec2(gl_FragCoord.x,Res.y-gl_FragCoord.y);
     vec2 pos = tmp.xy+4.0*sin(iGlobalTime*1.*vec2(1,1.7))*iResolution.y/400.;
     vec3 col = vec3(0);
@@ -112,5 +116,6 @@ void main()
     float r=length(pos-iResolution.xy*.5)/iResolution.x;
     float vign=1.-r*r*r;
 	gl_FragColor = vec4(vec3(col.x*col2*karo*vign),1);
-    //gl_FragColor=texture2D(iChannel1,vUv);
+    // gl_FragColor = getColHT(vec2(gl_FragCoord.x,Res.y-gl_FragCoord.y));
+    
 }

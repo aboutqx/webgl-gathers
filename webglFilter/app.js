@@ -9,7 +9,7 @@ const assets = [
     { id: 'source3',url: './textures/p3.jpg'},
     { id: 'source2',url: './textures/p2.jpg'},
     { id: 'source1',url: './textures/p1.jpg'},
-    { id: 'noise', url: './textures/tex11.png' }
+    { id: 'noise256', url: './textures/noise256.png' }
 ];
 
 window.getAsset = function(id) { return window.assets.find((a) => a.id === id).file; }
@@ -28,7 +28,6 @@ const presets = [
     { name: 'contrast', args: [1.5] },
     { name: 'hue', args: [180] },
     { name: 'triangleBlur', args: [30] },
-    { name: 'grayFocus', arg: ['r'] },
 ];
 let container = document.getElementById('container'),
     canvas = document.querySelector('canvas'),
@@ -70,7 +69,7 @@ let img, filter;
 
 function _onImageLoaded(o) {
     window.assets = o;
-    img = getAsset('source7');
+    img = getAsset('source3');
 
     canvas.width = img.width;
     canvas.height = img.height;
@@ -96,14 +95,14 @@ function _onImageLoaded(o) {
             } else if (effect !== 'normal') {
                 filter.addFilter(effect);
             }
-            
+
             let filteredImage = filter.render(img);
         }
 
     })
 
     //for dubug
-    document.querySelector('.effect:last-child').click()
+    document.querySelector('.effect:nth-child(32)').click()
     animation();
 }
 
