@@ -1,7 +1,7 @@
 let program;
 const DRAW = { INTERMEDIATE: 1 };
 var _filter = {
-    
+
 }
 // -----------------Color Matrix Filter----------------------------------//
 _filter.colorMatrix = function(matrix, isInter) {
@@ -370,7 +370,7 @@ _filter.Inkwell = function() {
     this._draw();
 };
 _filter.Inkwell.prepare = function(){
-    
+
 }
 _filter.Inkwell.SHADER = [
     'precision highp float;',
@@ -383,93 +383,5 @@ _filter.Inkwell.SHADER = [
     '}'
 ].join('\n');
 
-
-_filter.grayFocus = function() {
-    let gl=this.gl;
-    
-    program.use();
-    vBuffer.attribPointer(program)
-
-    gl.uniform1f(program.lt(), params.lt);
-    gl.uniform1f(program.gt(), params.gt);
-    gl.uniform1f(program.clamp(), params.clamp ? 1 : 0);
-    this._draw();
-
-};
-
-_filter.grayFocus.prepare = function() {
-    window.params = {
-        lt: .2,
-        gt: .98,
-        clamp: false
-    }
-    var folder = gui.addFolder('grayFocus')
-    folder.add(params, 'lt', 0, 1).step(0.01);
-    folder.add(params, 'gt', 0, 1).step(0.01);
-    folder.add(params, 'clamp')
-    folder.open()
-
-    program = this._compileShader(_filter.grayFocus.SHADER);
-}
-_filter.grayFocus.SHADER = require('./shaders/grayFocus.frag')
-
-_filter.cartoon = function() {
-    let gl=this.gl;
-    
-    program.use();
-    vBuffer.attribPointer(program)
-
-    gl.uniform1fv(program.HueLevels(), [0.0, 80.0, 160.0, 240.0, 320.0, 360.0]);
-    gl.uniform1fv(program.SatLevels(), [0.0, 0.15, 0.3, 0.45, 0.6, 0.8, 1.0]);
-    gl.uniform1fv(program.ValLevels(), [0.0, 0.3, 0.6, 1.0]);
-    gl.uniform2fv(program.textureSize(), [gl.drawingBufferWidth, gl.drawingBufferHeight]);
-    this._draw();
-
-};
-_filter.cartoon.prepare = function(){
-    program = this._compileShader(_filter.cartoon.SHADER);
-}
-_filter.cartoon.SHADER = require('./shaders/cartoon.frag')
-
-_filter.notebookDrawing = function() {
-    let gl=this.gl;
-
-    program.use();
-    vBuffer.attribPointer(program)
-
-    if(!_filter.texture2) return;
-
-    gl.uniform1i(program.iChannel0(), 0);  
-    gl.uniform1i(program.iChannel1(), 1);  
-
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, this._sourceTexture);
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, _filter.texture2);
-
-    gl.uniform2fv(program.iResolution(), [gl.drawingBufferWidth, gl.drawingBufferHeight]);
-    gl.uniform2fv(program.Res1(), [gl.drawingBufferWidth, gl.drawingBufferHeight]);
-    gl.uniform1f(program.iGlobalTime(), new Date().getTime() / 1000)
-    gl.uniform1f(program.flipY(),1);
-
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
-}
-_filter.notebookDrawing.prepare = function() {
-    let gl=this.gl;
-    program = this._compileShader(_filter.notebookDrawing.fSHADER,_filter.notebookDrawing.vSHADER);
-    var i = new Image();
-    i.src = "./textures/tex11.png";
-    i.onload = function() {
-        _filter.texture2 = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, _filter.texture2);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, i);
-    }
-}
-_filter.notebookDrawing.vSHADER = require('./shaders/simple2d.vert')
-_filter.notebookDrawing.fSHADER = require('./shaders/notebookDrawing.frag')
 
 module.exports=_filter;

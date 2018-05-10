@@ -4,16 +4,17 @@
 // trying to resemle some hand drawing style
 
 
-precision highp float;
+#define SHADERTOY
+#ifdef SHADERTOY
+#define Res0 iChannelResolution[0].xy
+#define Res1 iChannelResolution[1].xy
+#else
+#define Res0 textureSize(iChannel0,0)
+#define Res1 textureSize(iChannel1,0)
+#define iResolution Res0
+#endif
 
-uniform vec2 iResolution;
-uniform vec2 Res1;
-uniform sampler2D iChannel0;
-uniform sampler2D iChannel1;
-uniform float iGlobalTime;
-varying vec2 vUv;
-
-
+#define Res  iResolution.xy
 
 #define randSamp iChannel1
 #define colorSamp iChannel0
@@ -21,19 +22,14 @@ varying vec2 vUv;
 
 vec4 getRand(vec2 pos)
 {
-    vec2 Res=iResolution.xy;
-    return vec4(texture2D(iChannel1,pos, 0.0).xyz,1.);
-
+    return textureLod(iChannel1,pos/Res1/iResolution.y*1080., 0.0);
 }
 
 vec4 getCol(vec2 pos)
 {
-    vec2 Res0 = iResolution.xy;
-    vec2 Res=iResolution.xy;
     // take aspect ratio into account
     vec2 uv=((pos-Res.xy*.5)/Res.y*Res0.y)/Res0.xy+.5;
-    
-    vec4 c1=texture2D(iChannel0,uv);
+    vec4 c1=texture(iChannel0,uv);
     vec4 e=smoothstep(vec4(-0.05),vec4(-0.0),vec4(uv,vec2(1)-uv));
     c1=mix(vec4(1,1,1,0),c1,e.x*e.y*e.z*e.w);
     float d=clamp(dot(c1.xyz,vec3(-.5,1.,-.5)),0.0,1.0);
@@ -66,11 +62,9 @@ vec2 getGrad(vec2 pos, float eps)
 #define SampNum 16
 #define PI2 6.28318530717959
 
-void main()
-{   
-    vec2 Res=iResolution.xy;
-    vec2 tmp = vec2(gl_FragCoord.x,Res.y-gl_FragCoord.y);
-    vec2 pos = tmp.xy+4.0*sin(iGlobalTime*1.*vec2(1,1.7))*iResolution.y/400.;
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    vec2 pos = fragCoord+4.0*sin(iTime*1.*vec2(1,1.7))*iResolution.y/400.;
     vec3 col = vec3(0);
     vec3 col2 = vec3(0);
     float sum=0.;
@@ -93,10 +87,10 @@ void main()
             	g=getGrad(pos2,.4);
             	fact=dot(g,v)-.5*abs(dot(g,v.yx*vec2(1,-1)))/**(1.-getVal(pos2))*/;
             	fact2=dot(normalize(g+vec2(.0001)),v.yx*vec2(1,-1));
-                
+
                 fact=clamp(fact,0.,.05);
                 fact2=abs(fact2);
-                
+
                 fact*=1.-float(j)/float(SampNum);
             	col += fact;
             	col2 += fact2*getColHT(pos3).xyz;
@@ -115,7 +109,6 @@ void main()
     karo-=.5*vec3(.25,.1,.1)*dot(exp(-s*s*80.),vec2(1));
     float r=length(pos-iResolution.xy*.5)/iResolution.x;
     float vign=1.-r*r*r;
-	gl_FragColor = vec4(vec3(col.x*col2*karo*vign),1);
-    // gl_FragColor = getColHT(vec2(gl_FragCoord.x,Res.y-gl_FragCoord.y));
-    
+	fragColor = vec4(vec3(col.x*col2*karo*vign),1);
+    //fragColor=getCol(fragCoord);
 }

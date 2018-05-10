@@ -6,6 +6,7 @@ uniform float HueLevels[6];
 uniform float SatLevels[7];
 uniform float ValLevels[4];
 uniform vec2 textureSize;
+varying vec2 uv;
 #define HueLevCount 6
 #define SatLevCount 7
 #define ValLevCount 4
@@ -18,7 +19,7 @@ vec3 RGBtoHSV( float r, float g, float b) {
    minv = min(min(r, g), b);
    maxv = max(max(r, g), b);
    res.z = maxv;            // v
-   
+
    delta = maxv - minv;
 
    if( maxv != 0.0 )
@@ -40,7 +41,7 @@ vec3 RGBtoHSV( float r, float g, float b) {
    res.x = res.x * 60.0;            // degrees
    if( res.x < 0.0 )
       res.x = res.x + 360.0;
-      
+
    return res;
 }
 
@@ -89,13 +90,13 @@ vec3 HSVtoRGB(float h, float s, float v ) {
         res.y = p;
         res.z = q;
    }
-   
+
    return res;
 }
 vec3 hsb2rgb( in vec3 c ){
     vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),
-                             6.0)-3.0)-1.0, 
-                     0.0, 
+                             6.0)-3.0)-1.0,
+                     0.0,
                      1.0 );
     rgb = rgb*rgb*(3.0-2.0*rgb);
     return c.z * mix(vec3(1.0), rgb, c.y);
@@ -107,8 +108,8 @@ float nearestLevel0(float col) {
         if (col >= HueLevels[i] && col <= HueLevels[i+1]) {
           return HueLevels[i+1];
         }
-     
- 
+
+
    }
 }
 float nearestLevel1(float col) {
@@ -118,7 +119,7 @@ float nearestLevel1(float col) {
         if (col >= SatLevels[i] && col <= SatLevels[i+1]) {
           return SatLevels[i+1];
         }
-     
+
    }
 }
 float nearestLevel2(float col) {
@@ -186,9 +187,7 @@ float IsEdge(vec2 coords){
 }
 
 void main(void)
-{   
-    vec2 uv = gl_FragCoord.xy/iResolution.xy;
-    uv.y = 1.-uv.y;
+{
     vec4 colorOrg = texture2D( texture, uv );
     vec3 vHSV =  RGBtoHSV(colorOrg.r,colorOrg.g,colorOrg.b);
     vHSV.x = nearestLevel0(vHSV.x);

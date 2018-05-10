@@ -1,5 +1,5 @@
 
-var _UID = 0;
+var _UID = 0
 
 /**
  * Program constructor. Create gl program and shaders. You can pass optional shader code to immediatly compile shaders
@@ -20,21 +20,22 @@ var _UID = 0;
  *              Once compiled, the Program object list all used uniforms/attributes and provide getter/setter function for each one. See {@link Program} constructor.
  *
  */
-function Program( gl, vert, frag, defs  ){
-  this.gl = gl;
-  this.program = gl.createProgram();
-  this.vShader = gl.createShader( gl.VERTEX_SHADER );
-  this.fShader = gl.createShader( gl.FRAGMENT_SHADER );
-  this.dyns    = [];
-  this.ready   = false;
-  gl.attachShader(this.program, this.vShader);
-  gl.attachShader(this.program, this.fShader);
+function Program (gl, vert, frag, defs) {
+  this.gl = gl
+  this.program = gl.createProgram()
+  this.vShader = gl.createShader(gl.VERTEX_SHADER)
+  this.fShader = gl.createShader(gl.FRAGMENT_SHADER)
+  this.dyns = []
+  this.uniforms = []
+  this.ready = false
+  gl.attachShader(this.program, this.vShader)
+  gl.attachShader(this.program, this.fShader)
 
-  this._uid    = (_UID++)|0; 
-  this._cuid   = (_UID++)|0; 
+  this._uid = (_UID++) | 0
+  this._cuid = (_UID++) | 0
 
-  if( vert !== undefined && frag !== undefined ){
-    this.compile( vert, frag, defs );
+  if (vert !== undefined && frag !== undefined) {
+    this.compile(vert, frag, defs)
   }
 }
 
@@ -42,9 +43,7 @@ function Program( gl, vert, frag, defs  ){
  * Program.debug
  *   can be set to true to check and log compilation and linking errors (default to false)
  */
-Program.debug = true;
-
-
+Program.debug = true
 
 Program.prototype = {
 
@@ -52,23 +51,33 @@ Program.prototype = {
    * Shortcut for gl.useProgram()
    * alias program.bind()
    */
-  use : function(){
-    if( !this.ready ){
-      this._grabParameters();
+  use: function () {
+    if (!this.ready) {
+      this._grabParameters()
     }
-    this.gl.useProgram( this.program );
+    this.gl.useProgram(this.program)
   },
 
-  style:function(opt) {
-    if (!opt) {
-        return
+  style: function (opt) {
+    if (JSON.stringify(opt) === '{}' && this.uniforms.length === 0) {
+      return
+    } else if (JSON.stringify(opt) === '{}' && this.uniforms.length > 0) {
+      throw new Error('active uniform not assigned:' + this.uniforms)
     }
-    for (let k in opt) {     
-        if (typeof this[k] == 'function') {
-            this[k](opt[k])
-        }
-        
+    for (let k in opt) {
+      if (typeof this[k] === 'function') {
+        this[k](opt[k])
+      } else {
+        throw new Error('not find in shader:' + k)
+      }
     }
+    let unAssigned = []
+    this.uniforms.map((v) => {
+      if (!(v in opt)) {
+        unAssigned.push(v)
+      }
+    })
+    if (unAssigned.length > 0) throw new Error('active uniform not assigned: ' + unAssigned)
   },
   /**
    * Compile vertex and fragment shader then link gl program
@@ -77,44 +86,44 @@ Program.prototype = {
    *  @param {String} frag fragment shader code
    *  @param {String} [prefix=''] an optional string append to both fragment and vertex code
    */
-  compile : function( vert, frag, prefix ){
-    this.ready   = false;
+  compile: function (vert, frag, prefix) {
+    this.ready = false
 
-    prefix = ( prefix || '' ) + '\n';
+    prefix = (prefix || '') + '\n'
 
-    var gl = this.gl;
+    var gl = this.gl
 
-    if( !( compileShader( gl, this.fShader, prefix + frag ) &&
-           compileShader( gl, this.vShader, prefix + vert ) ) ) {
-      return false;
+    if (!(compileShader(gl, this.fShader, prefix + frag) &&
+           compileShader(gl, this.vShader, prefix + vert))) {
+      return false
     }
 
-    gl.linkProgram(this.program);
+    gl.linkProgram(this.program)
 
-    if ( Program.debug && !gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-      warn(gl.getProgramInfoLog(this.program));
-      return false;
+    if (Program.debug && !gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
+      warn(gl.getProgramInfoLog(this.program))
+      return false
     }
 
     // delete old accessors
-    while (this.dyns.length>0) {
-      delete this[this.dyns.pop()];
+    while (this.dyns.length > 0) {
+      delete this[this.dyns.pop()]
     }
 
-    this._cuid   = (_UID++)|0; 
+    this._cuid = (_UID++) | 0
 
-    return true;
+    return true
   },
 
   /**
     * Delete program and shaders
     */
-  dispose : function() {
-    if( this.gl !== null ){
-      this.gl.deleteProgram( this.program );
-      this.gl.deleteShader(  this.fShader  );
-      this.gl.deleteShader(  this.vShader  );
-      this.gl = null;
+  dispose: function () {
+    if (this.gl !== null) {
+      this.gl.deleteProgram(this.program)
+      this.gl.deleteShader( this.fShader)
+      this.gl.deleteShader(this.vShader )
+      this.gl = null
     }
   },
 
@@ -125,75 +134,69 @@ Program.prototype = {
    *     create a method
    *        program.uDirection( 1, 0, 0 );
    */
-  _grabParameters : function(){
+  _grabParameters: function () {
     var gl = this.gl,
-        prg = this.program;
+      prg = this.program
 
     // Uniforms
     // ========
 
-    var numUniforms = gl.getProgramParameter( prg, gl.ACTIVE_UNIFORMS );
+    var numUniforms = gl.getProgramParameter(prg, gl.ACTIVE_UNIFORMS)
     var context = {
-      texIndex : 0
-    };
+      texIndex: 0
+    }
 
-    for ( var uniformIndex = 0; uniformIndex < numUniforms; ++uniformIndex )
-    {
-      var uniform = gl.getActiveUniform( prg, uniformIndex );
+    for (var uniformIndex = 0; uniformIndex < numUniforms; ++uniformIndex) {
+      var uniform = gl.getActiveUniform(prg, uniformIndex)
 
       // safari 8.0 issue,
       // when recompiling shader and link the progam again, old uniforms are kept in ACTIVE_UNIFORMS count but return null here
-      if( uniform === null ){
-        gl.getError(); // also flush error
+      if (uniform === null) {
+        gl.getError() // also flush error
         continue;
       }
 
-      var uName   = uniform.name,
-          n       = uName.indexOf('[');
+      var uName = uniform.name,
+        n = uName.indexOf('[')
 
-      if( n >= 0 ){
-        uName = uName.substring(0, n);
+      if (n >= 0) {
+        uName = uName.substring(0, n)
       }
 
-      var uLocation = gl.getUniformLocation( prg, uniform.name );
-      this[uName] = getUniformSetter( uniform.type, uLocation, gl, context );
-      this.dyns.push( uName );
+      var uLocation = gl.getUniformLocation(prg, uniform.name)
+      this[uName] = getUniformSetter(uniform.type, uLocation, gl, context)
+      this.dyns.push(uName)
+      this.uniforms.push(uName)
     }
 
     // Attributes
     // ==========
 
-    var numAttribs = gl.getProgramParameter( prg, gl.ACTIVE_ATTRIBUTES );
+    var numAttribs = gl.getProgramParameter(prg, gl.ACTIVE_ATTRIBUTES)
 
-    for (var aIndex = 0; aIndex < numAttribs; ++aIndex )
-    {
-      var attribName = gl.getActiveAttrib( prg, aIndex ).name;
-      var aLocation  = gl.getAttribLocation( prg, attribName );
-      this[attribName] = getAttribAccess( aLocation );
-      this.dyns.push( attribName );
+    for (var aIndex = 0; aIndex < numAttribs; ++aIndex) {
+      var attribName = gl.getActiveAttrib(prg, aIndex).name
+      var aLocation = gl.getAttribLocation(prg, attribName)
+      this[attribName] = getAttribAccess(aLocation)
+      this.dyns.push(attribName)
     }
 
-    this.ready   = true;
+    this.ready = true
   }
 
-
-};
+}
 
 /**
  * alias to Program.use()
  */
-Program.prototype.bind = Program.prototype.use;
-
-
+Program.prototype.bind = Program.prototype.use
 
 /*
  * internal logs
  */
-function warn(str){
-  console.warn(str);
+function warn (str) {
+  console.warn(str)
 }
-
-
 
 // -------------------------------------------------
 //                    UTILITIES
@@ -203,145 +206,140 @@ function warn(str){
  * Shader logging utilities
  */
 
-var __pads = ['','   ','  ',' ',''];
+var __pads = ['', '   ', '  ', ' ', '']
 
-function appendLine( l, i ){
-  return __pads[String(i+1).length] + ( i+1 ) + ': ' + l;
+function appendLine (l, i) {
+  return __pads[String(i + 1).length] + (i + 1) + ': ' + l
 }
 
 /*
  * Format shader code
  * add padded lines number
  */
-function formatCode( shader ) {
-  return shader.split( '\n' ).map( appendLine ).join( '\n' );
+function formatCode (shader) {
+  return shader.split('\n').map(appendLine).join('\n')
 }
 
 /*
  * Shader compilation utility
  */
-function compileShader( gl, shader, code ){
-  gl.shaderSource( shader, code );
-  gl.compileShader( shader );
+function compileShader (gl, shader, code) {
+  gl.shaderSource(shader, code)
+  gl.compileShader(shader)
 
   if (Program.debug && !gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    warn( gl.getShaderInfoLog(shader) );
-    warn( formatCode( code ) );
-    return false;
+    warn(gl.getShaderInfoLog(shader))
+    warn(formatCode(code))
+    return false
   }
 
-  return true;
+  return true
 }
 
-
-
-var USetFMap = {};
-USetFMap[ 5126  /*FLOAT       */ ] = '1f';
-USetFMap[ 35664 /*FLOAT_VEC2  */ ] = '2f';
-USetFMap[ 35665 /*FLOAT_VEC3  */ ] = '3f';
-USetFMap[ 35666 /*FLOAT_VEC4  */ ] = '4f';
-USetFMap[ 35670 /*BOOL        */ ] =
-USetFMap[ 5124  /*INT         */ ] =
-USetFMap[ 35678 /*SAMPLER_2D  */ ] =
-USetFMap[ 35680 /*SAMPLER_CUBE*/ ] = '1i';
-USetFMap[ 35671 /*BOOL_VEC2   */ ] =
-USetFMap[ 35667 /*INT_VEC2    */ ] = '2i';
-USetFMap[ 35672 /*BOOL_VEC3   */ ] =
-USetFMap[ 35668 /*INT_VEC3    */ ] = '3i';
-USetFMap[ 35673 /*BOOL_VEC4   */ ] =
-USetFMap[ 35669 /*INT_VEC4    */ ] = '4i';
-USetFMap[ 35674 /*FLOAT_MAT2  */ ] = 'Matrix2f';
-USetFMap[ 35675 /*FLOAT_MAT3  */ ] = 'Matrix3f';
-USetFMap[ 35676 /*FLOAT_MAT4  */ ] = 'Matrix4f';
+var USetFMap = {}
+USetFMap[ 5126 /* FLOAT       */ ] = '1f'
+USetFMap[ 35664 /* FLOAT_VEC2  */ ] = '2f'
+USetFMap[ 35665 /* FLOAT_VEC3  */ ] = '3f'
+USetFMap[ 35666 /* FLOAT_VEC4  */ ] = '4f'
+USetFMap[ 35670 /* BOOL        */ ] =
+USetFMap[ 5124 /* INT         */ ] =
+USetFMap[ 35678 /* SAMPLER_2D  */ ] =
+USetFMap[ 35680 /*SAMPLER_CUBE */ ] = '1i'
+USetFMap[ 35671 /* BOOL_VEC2   */ ] =
+USetFMap[ 35667 /* INT_VEC2    */ ] = '2i'
+USetFMap[ 35672 /* BOOL_VEC3   */ ] =
+USetFMap[ 35668 /* INT_VEC3    */ ] = '3i'
+USetFMap[ 35673 /* BOOL_VEC4   */ ] =
+USetFMap[ 35669 /* INT_VEC4    */ ] = '4i'
+USetFMap[ 35674 /* FLOAT_MAT2  */ ] = 'Matrix2f'
+USetFMap[ 35675 /* FLOAT_MAT3  */ ] = 'Matrix3f'
+USetFMap[ 35676 /* FLOAT_MAT4  */ ] = 'Matrix4f'
 
 /*
  * Uniform upload utilities
  */
 
-function getUniformSetFunctionName( type ){
-  type = String(type);
-  return 'uniform' + USetFMap[type];
+function getUniformSetFunctionName (type) {
+  type = String(type)
+  return 'uniform' + USetFMap[type]
 }
 
 /*
  * For a given uniform's type, return the proper setter function
  */
-function getUniformSetter( type, location, gl, context ){
-  switch( type ){
-    case gl.FLOAT_MAT2  :
-    case gl.FLOAT_MAT3  :
-    case gl.FLOAT_MAT4  :
-      return getMatrixSetFunction( type, location, gl, context );
+function getUniformSetter (type, location, gl, context) {
+  switch (type) {
+    case gl.FLOAT_MAT2 :
+    case gl.FLOAT_MAT3 :
+    case gl.FLOAT_MAT4 :
+      return getMatrixSetFunction(type, location, gl, context)
 
-    case gl.SAMPLER_2D  :
+    case gl.SAMPLER_2D :
     case gl.SAMPLER_CUBE:
-      return getSamplerSetFunction( type, location, gl, context );
+      return getSamplerSetFunction(type, location, gl, context)
 
-    default  :
-      return getUniformSetFunction( type, location, gl, context );
+    default :
+      return getUniformSetFunction(type, location, gl, context)
   }
 }
-
 
 /*
  * setter factory for vector uniforms
  * return a function wich take both array or arguments
  */
-function getUniformSetFunction( type, location, gl, context ){
-  context;
-  var fname = getUniformSetFunctionName( type );
-  return function(){
-    if( arguments.length === 1 && arguments[0].length !== undefined ){
-      gl[fname+'v']( location, arguments[0] );
-    } else if( arguments.length > 0) {
-      gl[fname].apply( gl, Array.prototype.concat.apply( location, arguments) );
+function getUniformSetFunction (type, location, gl, context) {
+  context
+  var fname = getUniformSetFunctionName(type)
+  return function () {
+    if (arguments.length === 1 && arguments[0].length !== undefined) {
+      gl[fname + 'v'](location, arguments[0])
+    } else if (arguments.length > 0) {
+      gl[fname].apply(gl, Array.prototype.concat.apply(location, arguments))
     }
-    return location;
+    return location
   };
 }
 
 /*
  * setter factory for matrix uniforms
  */
-function getMatrixSetFunction( type, location, gl, context ){
-  context;
-  var fname = getUniformSetFunctionName( type );
-  return function(){
-    if( arguments.length > 0 && arguments[0].length !== undefined ){
-      var transpose = (arguments.length > 1) ? !!arguments[1] : false;
-      gl[fname+'v']( location, transpose, arguments[0] );
+function getMatrixSetFunction (type, location, gl, context) {
+  context
+  var fname = getUniformSetFunctionName(type)
+  return function () {
+    if (arguments.length > 0 && arguments[0].length !== undefined) {
+      var transpose = (arguments.length > 1) ? !!arguments[1] : false
+      gl[fname + 'v'](location, transpose, arguments[0])
     }
-    return location;
+    return location
   };
 }
 
 /*
  * setter factory for sampler uniforms
  */
-function getSamplerSetFunction( type, location, gl, context ){
-  var unit = context.texIndex++;
-  return function(){
-    if( arguments.length === 1 ) {
-      if( arguments[0].bind !== undefined ){ // is texture
-        arguments[0].bind( unit );
-        gl.uniform1i( location, unit );
+function getSamplerSetFunction (type, location, gl, context) {
+  var unit = context.texIndex++
+  return function () {
+    if (arguments.length === 1) {
+      if (arguments[0].bind !== undefined) { // is texture
+        arguments[0].bind(unit)
+        gl.uniform1i(location, unit)
       } else {
-        gl.uniform1i( location, arguments[0] );
+        gl.uniform1i(location, arguments[0])
       }
     }
-    return location;
+    return location
   };
 }
 
 /*
  * getter factory for attributes
  */
-function getAttribAccess( attrib ){
-  return function(){
-    return attrib;
+function getAttribAccess (attrib) {
+  return function () {
+    return attrib
   };
 }
 
-
-
-module.exports = Program;
+module.exports = Program

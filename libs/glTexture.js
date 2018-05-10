@@ -1,5 +1,5 @@
-var _UID = 0;
-var T2D = 0x0DE1;
+var _UID = 0
+var T2D = 0x0DE1
 
 /*
  * compute filtering enum, return one of the following :
@@ -10,10 +10,9 @@ var T2D = 0x0DE1;
  *  NEAREST_MIPMAP_LINEAR
  *  LINEAR_MIPMAP_LINEAR
  */
-function getFilter( smooth, mipmap, miplinear ){
-  return 0x2600 | (+smooth) | (+mipmap<<8) | ( +( mipmap && miplinear )<<1 );
+function getFilter (smooth, mipmap, miplinear) {
+  return 0x2600 | (+smooth) | (+mipmap << 8) | (+(mipmap && miplinear) << 1)
 }
-
 
 /**
  * @class
@@ -22,20 +21,19 @@ function getFilter( smooth, mipmap, miplinear ){
  *  @param {WebGLRenderingContext} gl webgl context the texture belongs to
  *  @param {GLenum} [format=GL_RGB] the pixel format, default to gl.RGB (can be gl.RGB, gl.RGBA, gl.LUMINANCE...)
  */
-function Texture( gl, format ){
-  this._uid = _UID++;
-  this.gl = gl;
-  this.id = this.gl.createTexture();
-  this.width  = 0;
-  this.height = 0;
-  this.format = format || gl.RGB;
-  this.type   = gl.UNSIGNED_BYTE;
+function Texture (gl, format) {
+  this._uid = _UID++
+  this.gl = gl
+  this.id = this.gl.createTexture()
+  this.width = 0
+  this.height = 0
+  this.format = format || gl.RGB
+  this.type = gl.UNSIGNED_BYTE
 
-  gl.bindTexture( T2D, this.id );
-  this.setFilter( true );
+  gl.bindTexture(T2D, this.id)
+  this.setFilter(true)
 
 }
-
 
 Texture.prototype = {
 
@@ -43,14 +41,14 @@ Texture.prototype = {
    * set texture data from html source
    *   @param {TexImageSource} img the source. Can be ImageBitmap, ImageData, HTMLImageElement, HTMLCanvasElement, HTMLVideoElement
    */
-  fromImage : function( img ){
-    var gl = this.gl;
+  fromImage: function (img) {
+    var gl = this.gl
 
-    this.width  = img.width;
-    this.height = img.height;
+    this.width = img.width
+    this.height = img.height
 
-    gl.bindTexture( T2D, this.id );
-    gl.texImage2D(  T2D, 0, this.format, this.format, this.type, img );
+    gl.bindTexture(T2D, this.id)
+    gl.texImage2D(T2D, 0, this.format, this.format, this.type, img)
   },
 
   /**
@@ -60,39 +58,39 @@ Texture.prototype = {
    *  @param {TypedArray} [data=null]  TypedArray of texture data, can be null
    *  @param {GLenum} [dataType=GL_UNSIGNED_BYTE] can be gl.UNSIGNED_BYTE, gl.FLOAT, half.HALF_FLOAT_OES etc depending on available extensions
    */
-  fromData : function( width, height, data, dataType ){
-    var gl = this.gl;
+  fromData: function (width, height, data, dataType) {
+    var gl = this.gl
 
-    this.width  = width;
-    this.height = height;
+    this.width = width
+    this.height = height
 
-    data = data || null;
-    this.type = dataType || gl.UNSIGNED_BYTE;
+    data = data || null
+    this.type = dataType || gl.UNSIGNED_BYTE
 
-    gl.bindTexture( T2D, this.id );
-    gl.texImage2D( T2D, 0, this.format, width, height, 0, this.format, this.type, data );
+    gl.bindTexture(T2D, this.id)
+    gl.texImage2D(T2D, 0, this.format, width, height, 0, this.format, this.type, data)
   },
 
   /**
    * Bind the texture
    *   @param {uint} [unit=undefined] optional texture unit to make active before binding
    */
-  bind : function( unit ){
-    var gl = this.gl;
-    if( unit !== undefined ){
-      gl.activeTexture( gl.TEXTURE0 + (0|unit) );
+  bind: function (unit) {
+    var gl = this.gl
+    if (unit !== undefined) {
+      gl.activeTexture(gl.TEXTURE0 + (0 | unit))
     }
-    gl.bindTexture( T2D, this.id );
+    gl.bindTexture(T2D, this.id)
   },
 
   /**
    * delete the webgl texture
    *
    */
-  dispose : function( ){
-    this.gl.deleteTexture( this.id );
-    this.id = null;
-    this.gl = null;
+  dispose: function () {
+    this.gl.deleteTexture(this.id)
+    this.id = null
+    this.gl = null
   },
 
   /**
@@ -101,44 +99,44 @@ Texture.prototype = {
    *   @param {boolean} [mipmap=false]    if true, enable mipmaping
    *   @param {boolean} [miplinear=false] if true, use linear Mipmapping
    */
-  setFilter : function( smooth, mipmap, miplinear ){
-    var gl = this.gl;
-    var filter = getFilter( !!smooth, !!mipmap, !!miplinear);
-    gl.texParameteri( T2D, gl.TEXTURE_MAG_FILTER, getFilter( !!smooth, false, false ) );
-    gl.texParameteri( T2D, gl.TEXTURE_MIN_FILTER, filter );
+  setFilter: function (smooth, mipmap, miplinear) {
+    var gl = this.gl
+    var filter = getFilter(!!smooth, !!mipmap, !!miplinear)
+    gl.texParameteri(T2D, gl.TEXTURE_MAG_FILTER, getFilter(!!smooth, false, false))
+    gl.texParameteri(T2D, gl.TEXTURE_MIN_FILTER, filter)
   },
 
   /**
    * Set both WRAP_S and WRAP_T property to gl.REPEAT
    */
-  repeat : function( ){
-    this.wrap( this.gl.REPEAT );
+  repeat: function () {
+    this.wrap(this.gl.REPEAT)
   },
 
   /**
    * Set both WRAP_S and WRAP_T property to gl.CLAMP_TO_EDGE
    */
-  clamp : function( ){
-    this.wrap( this.gl.CLAMP_TO_EDGE );
+  clamp: function () {
+    this.wrap(this.gl.CLAMP_TO_EDGE)
   },
 
   /**
    * Set both WRAP_S and WRAP_T property to gl.MIRRORED_REPEAT
    */
-  mirror : function( ){
-    this.wrap( this.gl.MIRRORED_REPEAT );
+  mirror: function () {
+    this.wrap(this.gl.MIRRORED_REPEAT)
   },
 
   /**
    * Set both WRAP_S and WRAP_T property to the given value
    *  @param {GLenum} wrap the wrap enum
    */
-  wrap : function( wrap ) {
-    var gl = this.gl;
-    gl.texParameteri( T2D, gl.TEXTURE_WRAP_S, wrap );
-    gl.texParameteri( T2D, gl.TEXTURE_WRAP_T, wrap );
+  wrap: function (wrap) {
+    var gl = this.gl
+    gl.texParameteri(T2D, gl.TEXTURE_WRAP_S, wrap)
+    gl.texParameteri(T2D, gl.TEXTURE_WRAP_T, wrap)
   }
 
-};
+}
 
-module.exports = Texture;
+module.exports = Texture
