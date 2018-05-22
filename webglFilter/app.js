@@ -131,17 +131,18 @@ file.addEventListener('change', (e) => {
   if (!t) return
   if (isType(t.name, 'img')) {
 
-    readerFile(t, (event) => {
+    readFile(t, (event) => {
       app.imgs[0] = new Image()
       app.imgs[0].src = event.target.result
 
     })
   } else if (isType(t.name, 'video')) {
 
-      append(document.body,
-        `<video id="target-Video" controls autoplay loop style="display:none"></video>`
+      const video = append(document.body,
+        `<video id="target-Video" controls autoplay loop style="display:none"></video>`,
+        'once'
       )
-      readerFile('load', (event) => {
+      readFile(t, (event) => {
         video.src = event.target.result
       })
       video.addEventListener('loadeddata', () => {
@@ -183,21 +184,21 @@ function has(arr, key, value) { // array child object has key-value
 function append(parent, child, option) {
   let elm
   if(typeof child ==='string'){
-    elm = document.createComment('div')
-    elm.outerHTML = child
+    elm = document.createElement('div')
   }
   // use id or class as identity
   if(option === 'once') {
     let exist
-    if (elm.id) {
-      exist = document.getElementById(elm.id)
-    } else if (elm.getAttribute('className')) {
-      exist = document.getElementsByClassName()[0]
+    if (/id="?(.+?)"?/.test(child)) {
+      exist = document.getElementById(RegExp.$1)
+    } else if (/class="?(.+?)"?/.test(child)) {
+      exist = document.getElementsByClassName(RegExp.$1)[0]
     }
     if (exist)
       return exist
   }
-  parent.add(elm)
+  parent.appendChild(elm)
+  elm.outerHTML = child
   return elm
 }
 function toggle(parent, child ,className) {
