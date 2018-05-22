@@ -72,10 +72,14 @@ class Filter {
     t.clamp()
   }
 
+
   _setDefaultGUI () {
     let folder = gui.addFolder('canvas')
     folder.add(this.params, 'canvasWidth', 0, 500).step(1)
     folder.add(this.params, 'canvasHeight', 0, 500).step(1)
+  }
+  _setGUI() {
+
   }
   addGUIParams (o) {
     let params = {}
