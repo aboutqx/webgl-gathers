@@ -34,6 +34,11 @@ function glsl (strings, ...variables) {
 }
 
 class Filter {
+  params = {
+    canvasWidth: 400,
+    canvasHeight: 400
+  }
+
   constructor (filterWrapper) {
     this._wrapper = filterWrapper
     this._prepare()
@@ -41,13 +46,17 @@ class Filter {
   render () {
     this._useProgram()
     this._draw(this._wrapper)
+    // canvas.width = this.params.canvasWidth
+    // canvas.height = this.params.canvasHeight
   }
   _prepare () {
     this.prg = this._wrapper._compilePrg(this._wrapper.fShader)
     this.texture = this._wrapper.texture
     this._initTextures(this._wrapper.gl)
     gui.removeFolders()
+    this._setDefaultGUI()
     this._setGUI()
+
   }
   _useProgram () {
     this._wrapper.prg.use()
@@ -62,8 +71,11 @@ class Filter {
     t.setFilter(false)
     t.clamp()
   }
-  _setGUI () {
 
+  _setDefaultGUI () {
+    let folder = gui.addFolder('canvas')
+    folder.add(this.params, 'canvasWidth', 0, 500).step(1)
+    folder.add(this.params, 'canvasHeight', 0, 500).step(1)
   }
   addGUIParams (o) {
     let params = {}

@@ -20,16 +20,18 @@ SHADER.FRAGMENT_IDENTITY = require('./shaders/frg_identity.frag')
 const _canvas = document.querySelector('canvas')
 
 class FilterApp {
+  _drawCount = 0
+  _sourceTexture = null
+  _lastInChain = false
+  _curFBOIndex = -1
+  _tmpFBO = [null, null]
+  _filterChain = []
+  _width = -1
+  _height = -1
+  prg = null
+  
   constructor (img) {
-    this._drawCount = 0
-    this._sourceTexture = null
-    this._lastInChain = false
-    this._curFBOIndex = -1
-    this._tmpFBO = [null, null]
-    this._filterChain = []
-    this._width = -1
-    this._height = -1
-    this.prg = null
+
     this._createGL()
     this._initTexture(img)
   }

@@ -82,14 +82,13 @@ class App {
 
     canvasWrapper.addEventListener('click', (e) => {
       if (e.target.className === 'effect') {
-        canvasWrapper.querySelector('.active') && canvasWrapper.querySelector('.active').classList.remove('active')
-        e.target.classList.add('active')
+        toggle(canvasWrapper, e.target, 'active')
         const effect = e.target.innerHTML
         this.filterApp.reset()
 
         if (presets.includes(effect)) {
           this.filterApp.addFilter(effect, presets[effect][0])
-        } else if (['1977', 'Brannan', 'Hefe', 'Lord Kelvin', 'Nashville', 'X-PRO II', 'Gotham'].indexOf(effect) !== -1) {
+        } else if (['1977', 'Brannan', 'Hefe', 'Lord Kelvin', 'Nashville', 'X-PRO II', 'Gotham'].includes(effect)){
           this.filterApp.addFilter('instagramFilter', effect)
           if (effect === 'Gotham') this.filterApp.addFilter('Inkwell')
         } else if (effect !== 'normal') {
@@ -122,53 +121,47 @@ class App {
   }
 }
 
-new App().init()
+const app = new App()
+app.init()
 
 
 file.addEventListener('change', (e) => {
+
   let t = e.target.files[0]
   if (!t) return
-  if (isImg(t.name)) {
-    let reader = new FileReader()
-    reader.addEventListener('load', (event) => {
-      img = new Image()
-      img.src = event.target.result
+  if (isType(t.name, 'img')) {
 
-    }, false)
-    reader.readAsDataURL(t)
-  } else if (isVideo(t.name)) {
-    if(!document.querySelector('#target-video')){
-      let video = document.createElement('video')
-      document.body.appendChild(video)
-      video.outerHTML = '<video id="target-Video" controls autoplay loop style="display:none"></video>'
-      let reader = new FileReader()
-      reader.addEventListener('load', (event) => {
+    readerFile(t, (event) => {
+      app.imgs[0] = new Image()
+      app.imgs[0].src = event.target.result
+
+    })
+  } else if (isType(t.name, 'video')) {
+
+      append(document.body,
+        `<video id="target-Video" controls autoplay loop style="display:none"></video>`
+      )
+      readerFile('load', (event) => {
         video.src = event.target.result
-      }, false)
-      reader.readAsDataURL(t)
-      video.addEventListener('loadeddata', () => {
-        img = video
       })
-    }
+      video.addEventListener('loadeddata', () => {
+        app.imgs[0] = video
+      })
   }
 })
 
-
-function isImg(name) {
-  let allowedExtension = ['jpeg', 'jpg', 'png', 'gif', 'bmp']
-  let isValidFile
-  let t = name.split('.').pop().toLowerCase()
-  for (let index in allowedExtension) {
-    if (t === allowedExtension[index]) {
-      isValidFile = true
-      break
-    }
-  }
-  return isValidFile
+function readFile(file, loadCall){
+  let reader = new FileReader()
+  reader.addEventListener('load', (event) => {
+    loadCall(event)
+  })
+  reader.readAsDataURL(file)
 }
-
-function isVideo(name) {
-  let allowedExtension = ['mp4', 'webm', 'ogg']
+function isType(name, type) {
+  let allowedExtension
+  if (type === 'img') allowedExtension= ['jpeg', 'jpg', 'png', 'gif', 'bmp']
+  else if(type === 'video') allowedExtension = ['mp4', 'webm', 'ogg']
+  else return false
   let isValidFile
   let t = name.split('.').pop().toLowerCase()
   for (let index in allowedExtension) {
@@ -187,7 +180,30 @@ function has(arr, key, value) { // array child object has key-value
   }
   return -1
 }
-
+function append(parent, child, option) {
+  let elm
+  if(typeof child ==='string'){
+    elm = document.createComment('div')
+    elm.outerHTML = child
+  }
+  // use id or class as identity
+  if(option === 'once') {
+    let exist
+    if (elm.id) {
+      exist = document.getElementById(elm.id)
+    } else if (elm.getAttribute('className')) {
+      exist = document.getElementsByClassName()[0]
+    }
+    if (exist)
+      return exist
+  }
+  parent.add(elm)
+  return elm
+}
+function toggle(parent, child ,className) {
+  parent.querySelector(`.${className}`) && parent.querySelector(`.${className}`).classList.remove(className)
+  child.classList.add(className)
+}
 function Toast(message) {
   if (typeof message === 'string') {
     const div = document.createElement('div')
