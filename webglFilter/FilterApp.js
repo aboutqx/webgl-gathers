@@ -5,23 +5,22 @@ import { ArrayBuffer } from '../libs/glBuffer'
 import filter from './Filter'
 
 const SHADER = {}
-SHADER.VERTEX_IDENTITY = [
-  'precision highp float;',
-  'attribute vec2 position;',
-  'uniform float flipY;',
-  'varying vec2 uv;',
-  'void main(void) {',
-  'gl_Position = vec4(-position.x, position.y*flipY, 0.0, 1.);',
-  'uv = -position*.5+.5;',
-  '}'
-].join('\n')
+SHADER.VERTEX_IDENTITY = `
+  precision highp float;
+  attribute vec2 position;
+  uniform float flipY;
+  varying vec2 uv;
+  void main(void) {
+  gl_Position = vec4(-position.x, position.y*flipY, 0.0, 1.);
+  uv = -position*.5+.5;
+  }`
 
 SHADER.FRAGMENT_IDENTITY = require('./shaders/frg_identity.frag')
 
 const _canvas = document.querySelector('canvas')
 
-class WebGLImageFilter {
-  constructor () {
+class FilterApp {
+  constructor (img) {
     this._drawCount = 0
     this._sourceTexture = null
     this._lastInChain = false
@@ -31,10 +30,11 @@ class WebGLImageFilter {
     this._width = -1
     this._height = -1
     this.prg = null
-    this._setupGL()
+    this._createGL()
+    this._initTexture(img)
   }
 
-  _setupGL () {
+  _createGL () {
     this.gl = _canvas.getContext('webgl') || _canvas.getContext('experimental-webgl')
     if (!this.gl) {
       throw new Error("Couldn't get WebGL context")
@@ -50,13 +50,15 @@ class WebGLImageFilter {
     this.vBuffer = vBuffer
   }
 
-  setImageData (data) {
+  _initTexture (data) {
     let gl = this.gl
     this.texture = new Texture(gl, gl.RGBA)
     this.texture.fromImage(data)
     this.texture.setFilter(false)
     this.texture.clamp()
     this._sourceTexture = this.texture.id
+
+    this._resize(data.width, data.height)
   }
 
   addFilter (name) {
@@ -68,22 +70,24 @@ class WebGLImageFilter {
 
   reset () {
     this._filterChain = []
-  };
+  }
 
-  render (data) {
+  _setupGL (data) {
     let gl = this.gl
-
     if (data.nodeName.toLowerCase() === 'video') {
       data.width = data.videoWidth
       data.height = data.videoHeight
     }
-
-    this.texture.fromImage(data)
-    this.texture.bind(0)
-
     this._resize(data.width, data.height)
     gl.clearColor(161 / 255, 161 / 255, 161 / 255, 1)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+  }
+
+  render (data) {
+    this._setupGL(data)
+    this.texture.fromImage(data)
+    this.texture.bind(0)
+
     // gl.getParameter(gl.ACTIVE_TEXTURE);
     this._drawCount = 0
 
@@ -100,7 +104,7 @@ class WebGLImageFilter {
       }
     }
     return _canvas
-  };
+  }
 
   _resize (width, height) {
     let gl = this.gl
@@ -119,7 +123,7 @@ class WebGLImageFilter {
 
     // Delete old temp framebuffers
     this._tmpFBO = [null, null]
-  };
+  }
 
   _getFbo (index) {
     this._tmpFBO[index] =
@@ -127,14 +131,14 @@ class WebGLImageFilter {
       this._createFbo(this._width, this._height)
 
     return this._tmpFBO[index]
-  };
+  }
 
   _createFbo (width, height) {
     let gl = this.gl
     var fbo = new Fbo()
     fbo.resize(width, height)
     return { fbo: fbo.fbo, texture: fbo.color }
-  };
+  }
 
   _draw (toScreen) {
     let source = null
@@ -164,7 +168,7 @@ class WebGLImageFilter {
     gl.bindFramebuffer(gl.FRAMEBUFFER, target)
     gl.uniform1f(this.prg.flipY(), this.flipY ? -1 : 1)
     gl.drawArrays(gl.TRIANGLES, 0, 3)
-  };
+  }
 
   _compilePrg (fshader, vshader) {
     // Compile shaders
@@ -172,8 +176,7 @@ class WebGLImageFilter {
     this.prg = new Program(gl)
     this.prg.compile(vshader || SHADER.VERTEX_IDENTITY, fshader)
     return this.prg
-  };
+  }
 }
-window.WebGLImageFilter = WebGLImageFilter
 
-export default WebGLImageFilter
+export default FilterApp

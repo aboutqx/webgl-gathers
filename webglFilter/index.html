@@ -1,12 +1,23 @@
-<style>
-#container div{
-font-size:18px;margin-top:20px;margin-left:5px;display:inline-block;background:#ccc;height:30px;line-height:30px;padding:0 5px;border-radius:4px;cursor: pointer;
-}
-#container .active{
-	background: #CD7;
-}
-</style>
-<canvas></canvas>
-<input type="file" id="change-target">
-<div id="container" style="max-width: 739px;"></div>
-<script src="../bundle.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <div id="container" >
+    <div class="img-wrapper"></div>
+    <img src="assets/img/arrow.png" alt="">
+    <div class="canvas-wrapper">
+      <canvas></canvas>
+      <input type="file" id="change-target" multiple>
+    </div>
+
+  </div>
+  <script src="../bundle.js"></script>
+</body>
+</html>
+
+

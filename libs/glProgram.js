@@ -342,4 +342,4 @@ function getAttribAccess (attrib) {
   };
 }
 
-module.exports = Program
+export default Program

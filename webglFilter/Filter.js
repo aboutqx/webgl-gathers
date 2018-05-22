@@ -16,7 +16,7 @@ dat.GUI.prototype.removeFolders = function () {
   }
   this.onResize()
 }
-
+// deal with color
 function glsl (strings, ...variables) {
   variables = variables.map(v => {
     var rgb = colorString.get(v).value
@@ -55,7 +55,7 @@ class Filter {
   }
   _initTextures (gl) {
     if (!this._wrapper.texture2Name) return
-    let i = getAsset(this._wrapper.texture2Name)
+    let i = window.getAssets[this._wrapper.texture2Name]
     this.texture2 = new Texture(gl, gl.RGBA)
     let t = this.texture2
     t.fromImage(i)
@@ -65,9 +65,16 @@ class Filter {
   _setGUI () {
 
   }
+  addGUIParams (o) {
+    let params = {}
+    for (let key in this.params) {
+      params[key] = this.params[key]
+    }
+    return Object.assign(o, params)
+  }
 }
 class grayFocus extends Filter {
-  constructor(filterWrapper) {
+  constructor (filterWrapper) {
     filterWrapper.fShader = require('./shaders/grayFocus.frag')
     super(filterWrapper)
   }
@@ -75,23 +82,23 @@ class grayFocus extends Filter {
     let gl = wrapper.gl
 
     this.prg.style({
-      lt: params.lt,
-      gt: params.gt,
-      clamp: params.clamp ? 1 : 0
+      lt: this.params.lt,
+      gt: this.params.gt,
+      clamp: this.params.clamp ? 1 : 0
     })
 
     wrapper._draw()
   }
   _setGUI () {
-    window.params = {
+    this.params = {
       lt: 0.2,
       gt: 0.98,
       clamp: false
     }
     var folder = gui.addFolder('grayFocus')
-    folder.add(params, 'lt', 0, 1).step(0.01)
-    folder.add(params, 'gt', 0, 1).step(0.01)
-    folder.add(params, 'clamp')
+    folder.add(this.params, 'lt', 0, 1).step(0.01)
+    folder.add(this.params, 'gt', 0, 1).step(0.01)
+    folder.add(this.params, 'clamp')
     folder.open()
   }
 }
@@ -153,7 +160,7 @@ class Bond extends Filter {
 
   _draw (wrapper) {
     let gl = wrapper.gl
-    let t = glsl`${params.filterColor}`.split(',')
+    let t = glsl`${this.params.filterColor}`.split(',')
 
     gl.uniform1i(this.prg.texture(), 1)
     gl.uniform1i(this.prg.targetBg(), 0)
@@ -162,7 +169,7 @@ class Bond extends Filter {
     wrapper.texture2.bind(1)
 
     this.prg.style({
-      filterRange: params.filterRange,
+      filterRange: this.params.filterRange,
       filterBg: t,
       iResolution: [gl.drawingBufferWidth, gl.drawingBufferHeight],
       flipY: -1
@@ -172,13 +179,13 @@ class Bond extends Filter {
   }
 
   _setGUI () {
-    window.params = {
+    this.params = {
       filterColor: '#0DA226',
       filterRange: 0.05
     }
     var folder = gui.addFolder('bondFilter')
-    folder.addColor(params, 'filterColor')
-    folder.add(params, 'filterRange', 0, 0.1).step(0.001)
+    folder.addColor(this.params, 'filterColor')
+    folder.add(this.params, 'filterRange', 0, 0.1).step(0.001)
     folder.open()
   }
 }
@@ -208,15 +215,35 @@ class Cloth extends Filter {
     let gl = wrapper.gl
     // this._time += 1 / 16;
 
-    this.prg.style({
-      texture: 0,
-      targetBg: 1,
-      flipY: 1
-    })
+    this.prg.style(
+      this.addGUIParams({
+        texture: 0,
+        targetBg: 1,
+        flipY: 1
+      })
+    )
+
     this.texture.bind(0)
     this.texture2.bind(1)
 
     gl.drawArrays(gl.TRIANGLES, 0, 3)
+  }
+  _setGUI () {
+    this.params = {
+      c1X: 100,
+      c1Y: 100,
+      c2X: 100,
+      c2Y: 100
+    }
+    let folder1 = gui.addFolder('cloth1')
+    folder1.add(this.params, 'c1X', -this._wrapper._width, this._wrapper._width).step(1)
+    folder1.add(this.params, 'c1Y', -this._wrapper._height, this._wrapper._height).step(1)
+    folder1.open()
+
+    let folder2 = gui.addFolder('cloth2')
+    folder2.add(this.params, 'c2X', -this._wrapper._width, this._wrapper._width).step(1)
+    folder2.add(this.params, 'c2Y', -this._wrapper._height, this._wrapper._height).step(1)
+    folder2.open()
   }
 }
 export default { grayFocus, notebookDrawing, cartoon, Bond, bloom, Cloth }

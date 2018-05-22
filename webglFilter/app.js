@@ -1,26 +1,33 @@
-import WebGLImageFilter from './WebGLImageFilter'
-import AssetsLoader from 'assets-loader'
+import FilterApp from './FilterApp'
+import load from 'load-asset'
 import Filter from './Filter'
+import './assets/scss/simple-ui.scss'
+import './assets/scss/main.scss'
+// import React from 'react'
+// import styled from 'styled-components'
 
-const assets = [
-  { id: 'p7', url: './textures/p7.jpg' },
-  { id: 'p6', url: './textures/p6.jpg' },
-  { id: 'p5', url: './textures/p5.jpg' },
-  { id: 'p4', url: './textures/p4.jpg' },
-  { id: 'p3', url: './textures/p3.jpg' },
-  { id: 'p2', url: './textures/p2.jpg' },
-  { id: 'p1', url: './textures/p1.jpg' },
-  { id: 'noise256', url: './textures/noise256.png' },
-  { id: 'pants', url: './textures/pants.jpg' },
-  { id: 'shirt', url: './textures/shirt.jpg' }
-]
+const urlPre = './textures/'
+const assets = {
+  'p7': 'p7.jpg',
+  'p6': 'p6.jpg',
+  'p5': 'p5.jpg',
+  'p4': 'p4.jpg',
+  'p3': 'p3.jpg',
+  'p2': 'p2.jpg',
+  'p1': 'p1.jpg',
+  'noise256': 'noise256.png',
+  'pants': 'pants.jpg',
+  'shirt': 'shirt.jpg'
+}
+for (let k in assets) {
+  assets[k] = urlPre + assets[k]
+}
 
-window.getAsset = function (id) { return window.assets.find((a) => a.id === id).file }
 
-const container = document.getElementById('container')
+const canvasWrapper = document.querySelector('.canvas-wrapper')
 const canvas = document.querySelector('canvas')
-const file = document.querySelector('#change-target')
-
+const file = document.getElementById('change-target')
+const imgWrapper = document.querySelector('.img-wrapper')
 const effects = [
   // 'brightness', 'saturation', 'desaturate', 'contrast', 'negative', 'hue',
   //  'desaturateLuminance', 'sepia', 'brownie', 'vintagePinhole', 'kodachrome',
@@ -28,79 +35,95 @@ const effects = [
   //  'sharpen', 'emboss', 'triangleBlur','1977', 'Brannan', 'Gotham', 'Hefe',
   //  'Inkwell', 'Lord Kelvin', 'Nashville', 'X-PRO II',
   'normal'
-].concat(Object.keys(Filter)).map((effect) => {
-  let div = document.createElement('div')
-  div.className = 'effect'
-  div.innerHTML = effect
-  container.appendChild(div)
-})
-
+]
+//arguments
 const presets = [
-  { name: 'brightness', args: [1.5] },
-  { name: 'saturation', args: [1.5] },
-  { name: 'contrast', args: [1.5] },
-  { name: 'hue', args: [180] },
-  { name: 'triangleBlur', args: [30] }
+  { 'brightness': [1.5] },
+  { 'saturation': [1.5] },
+  { 'contrast': [1.5] },
+  { 'hue': [180] },
+  { 'triangleBlur': [30] }
 ]
 
-if (document.body) {
-  _init()
-} else {
-  window.addEventListener('DOMContentLoaded', _init)
-}
+class App {
+  imgs = []
+  filterApp = null
 
-function _init () {
-  if (assets.length > 0) {
-    new AssetsLoader({
-      assets: assets
-    }).on('error', function (error) {
-      console.error(error)
-    }).on('progress', function (p) {
+  constructor() {
 
-    }).on('complete', _onImageLoaded)
-      .start()
-  } else {
-    _onImageLoaded()
+  }
+
+  async init() {
+    effects.concat(Object.keys(Filter)).map((effect) => {
+      let div = document.createElement('div')
+      canvasWrapper.appendChild(div)
+      div.outerHTML = `<button class="effect">${effect}</button>`
+    })
+
+    if (Object.keys(assets).length > 0) {
+      window.getAssets = await load.any(assets, (e) => {
+        // console.log(e.progress)
+        if (e.error) console.error(e.error);
+      })
+      this._onImageLoaded()
+    }
+  }
+
+  _onImageLoaded(o) {
+
+    this.imgs.push(getAssets.shirt)
+
+    /* append will trigger reflow, img width value will be reneded value,in this its flexd,
+    not original */
+    this.imgs[0].style['width'] = `${this.imgs[0].width}px`
+    imgWrapper.appendChild(this.imgs[0])
+
+    this.filterApp = new FilterApp(this.imgs[0])
+
+    canvasWrapper.addEventListener('click', (e) => {
+      if (e.target.className === 'effect') {
+        canvasWrapper.querySelector('.active') && canvasWrapper.querySelector('.active').classList.remove('active')
+        e.target.classList.add('active')
+        const effect = e.target.innerHTML
+        this.filterApp.reset()
+
+        if (presets.includes(effect)) {
+          this.filterApp.addFilter(effect, presets[effect][0])
+        } else if (['1977', 'Brannan', 'Hefe', 'Lord Kelvin', 'Nashville', 'X-PRO II', 'Gotham'].indexOf(effect) !== -1) {
+          this.filterApp.addFilter('instagramFilter', effect)
+          if (effect === 'Gotham') this.filterApp.addFilter('Inkwell')
+        } else if (effect !== 'normal') {
+          this.filterApp.addFilter(effect)
+        }
+
+        const filteredImage = this.filterApp.render(this.imgs[0])
+        if (this.filterApp.texture2Name) {
+          let t = window.getAssets[this.filterApp.texture2Name]
+          t.style['width'] = `${t.width}px`
+          imgWrapper.appendChild(t)
+        }
+      }
+    })
+
+    // for dubug
+    document.querySelector('.effect:last-child').click()
+    this._animation()
+  }
+  _animation(now) {
+    now *= 0.001
+    const id = requestAnimationFrame(this._animation.bind(this))
+
+    try {
+      this.filterApp.render(this.imgs[0])
+    } catch (e) {
+      console.error(e)
+      cancelAnimationFrame(id)
+    }
   }
 }
 
-let img, filter
+new App().init()
 
-function _onImageLoaded (o) {
-  window.assets = o
-  img = getAsset('shirt')
-
-  canvas.width = img.width
-  canvas.height = img.height
-
-  filter = new WebGLImageFilter()
-  filter.setImageData(img)
-
-  container.addEventListener('click', (e) => {
-    if (e.target.className === 'effect') {
-      container.querySelector('.active') && (container.querySelector('.active').className = 'effect')
-      e.target.className = 'effect active'
-      let effect = e.target.innerHTML
-      filter.reset()
-
-      if (has(presets, 'name', effect) !== -1) {
-        filter.addFilter(effect, presets[has(presets, 'name', effect)].args[0])
-      } else if (['1977', 'Brannan', 'Hefe', 'Lord Kelvin', 'Nashville', 'X-PRO II', 'Gotham'].indexOf(effect) !== -1) {
-        filter.addFilter('instagramFilter', effect)
-        if (effect === 'Gotham') filter.addFilter('Inkwell')
-      } else if (effect !== 'normal') {
-        filter.addFilter(effect)
-      }
-
-      const filteredImage = filter.render(img)
-
-    }
-  })
-
-  // for dubug
-  document.querySelector('.effect:last-child').click()
-  animation()
-}
 
 file.addEventListener('change', (e) => {
   let t = e.target.files[0]
@@ -110,43 +133,28 @@ file.addEventListener('change', (e) => {
     reader.addEventListener('load', (event) => {
       img = new Image()
       img.src = event.target.result
+
     }, false)
     reader.readAsDataURL(t)
   } else if (isVideo(t.name)) {
-    document.querySelector('#target-video') && document.body.removeChild(document.querySelector('#target-video'))
-    let video = document.createElement('video')
-    video.setAttribute('id', 'target-video')
-    video.setAttribute('controls', true)
-    video.setAttribute('autoplay', true)
-    video.setAttribute('loop', true)
-    video.style.display = 'none'
-
-    let reader = new FileReader()
-    reader.addEventListener('load', (event) => {
-      video.src = event.target.result
+    if(!document.querySelector('#target-video')){
+      let video = document.createElement('video')
       document.body.appendChild(video)
-    }, false)
-    reader.readAsDataURL(t)
-    video.addEventListener('loadeddata', () => {
-      img = video
-    })
+      video.outerHTML = '<video id="target-Video" controls autoplay loop style="display:none"></video>'
+      let reader = new FileReader()
+      reader.addEventListener('load', (event) => {
+        video.src = event.target.result
+      }, false)
+      reader.readAsDataURL(t)
+      video.addEventListener('loadeddata', () => {
+        img = video
+      })
+    }
   }
 })
 
-let id
 
-function animation (now) {
-  now *= 0.001
-  id = requestAnimationFrame(animation)
-
-  try {
-    filter.render(img)
-  } catch (e) {
-    cancelAnimationFrame(id)
-  }
-}
-
-function isImg (name) {
+function isImg(name) {
   let allowedExtension = ['jpeg', 'jpg', 'png', 'gif', 'bmp']
   let isValidFile
   let t = name.split('.').pop().toLowerCase()
@@ -159,7 +167,7 @@ function isImg (name) {
   return isValidFile
 }
 
-function isVideo (name) {
+function isVideo(name) {
   let allowedExtension = ['mp4', 'webm', 'ogg']
   let isValidFile
   let t = name.split('.').pop().toLowerCase()
@@ -172,10 +180,22 @@ function isVideo (name) {
   return isValidFile
 }
 
-function has (arr, key, value) { // array child object has key-value
+function has(arr, key, value) { // array child object has key-value
   if (!arr || !arr.length) return -1
   for (let i = 0; i < arr.length; i++) {
     if (arr[i][key] === value) return i
   }
   return -1
+}
+
+function Toast(message) {
+  if (typeof message === 'string') {
+    const div = document.createElement('div')
+    document.body.appendChild(div)
+    div.outerHTML = `<div class="simple-toast">${message}</div>`
+    setTimeout(() => {
+      document.body.removeChild(div)
+    }, 1000)
+  }
+
 }
