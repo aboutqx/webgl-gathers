@@ -1,10 +1,7 @@
 precision highp float;
-uniform sampler2D targetBg;
 uniform sampler2D texture;
 uniform float c1X;
 uniform float c1Y;
-uniform float c2X;
-uniform float c2Y;
 varying vec2 uv;
 // X directional search matrix.
 mat3 GX = mat3( -1.0, 0.0, 1.0,
@@ -32,19 +29,12 @@ vec3 rgb2hsb( in vec3 c ){
 void main(void) {
   float c1y = c1Y/430.;
   float c1x = c1X/430.;
-  float c2y = c2Y/430.;
-  float c2x = c2X/430.;
 
-  vec3 col1 = texture2D(texture,vec2(uv.x*1.+c1x,uv.y*1.-c1y)).xyz;
-  vec3 col2 = texture2D(targetBg,vec2(uv.x*1.-c2x,uv.y*1.-c2y)).xyz;
-  if(col1 == texture2D(texture,vec2(0.,0.)).xyz){
-    col1=vec3(1.);
+  vec4 col1 = texture2D(texture,vec2(uv.x*1.+c1x,uv.y*1.-c1y));
+  if(col1 == texture2D(texture,vec2(0.,0.))){
+    col1=vec4(1.);
   }
-  if(col2 == texture2D(targetBg,vec2(0.,0.)).xyz){
-    col2=vec3(1.);
-  }
-  vec3 col = col1*col2;
-  gl_FragColor =vec4(col,1.);
+  gl_FragColor =vec4(col1);
   // float fXIndex = uv.x * fWidth;
   // float fYIndex = uv.y * fHeight;
   // gl_FragColor =

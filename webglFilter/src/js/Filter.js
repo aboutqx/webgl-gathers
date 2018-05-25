@@ -1,6 +1,8 @@
 import colorString from 'color-string'
-import Texture from '../libs/glTexture'
+import Texture from 'libs/glTexture'
 import * as dat from 'dat.gui'
+import { ArrayBuffer } from 'libs/glBuffer'
+
 const gui = new dat.GUI({ width: 300 })
 
 dat.GUI.prototype.removeFolders = function () {
@@ -17,7 +19,7 @@ dat.GUI.prototype.removeFolders = function () {
   this.onResize()
 }
 // deal with color
-function glsl (strings, ...variables) {
+function glsl(strings, ...variables) {
   variables = variables.map(v => {
     var rgb = colorString.get(v).value
       .map(x => x / 255)
@@ -34,67 +36,102 @@ function glsl (strings, ...variables) {
 }
 
 class Filter {
-  params = {
-    canvasWidth: 400,
-    canvasHeight: 400
-  }
+  _params = {}
+  _layers = [{
+    fshader: require('../shaders/cloth.frag'),
+    // big triangle vetex
+    attributes: {
+      name: 'position',
+      data: [-1, -1, -1,
+      -1, 4, -1,
+        4, -1, -1],
+      size: 3
+    },
+    textures: [{
+      name: 'shirt'
+    }],
+    uniforms: {
+      texture: 0,
+      flipY: 1
+    }
+  }]
+  gl = null
+  vBuffers = []
 
-  constructor (filterWrapper) {
+  constructor(filterWrapper) {
     this._wrapper = filterWrapper
-    this._prepare()
-  }
-  render () {
-    this._useProgram()
-    this._draw(this._wrapper)
-    // canvas.width = this.params.canvasWidth
-    // canvas.height = this.params.canvasHeight
-  }
-  _prepare () {
-    this.prg = this._wrapper._compilePrg(this._wrapper.fShader)
-    this.texture = this._wrapper.texture
-    this._initTextures(this._wrapper.gl)
+    this.gl = this._wrapper.gl
     gui.removeFolders()
-    this._setDefaultGUI()
     this._setGUI()
 
   }
-  _useProgram () {
-    this._wrapper.prg.use()
-    this._wrapper.vBuffer.attribPointer(this._wrapper.prg)
-  }
-  _initTextures (gl) {
-    if (!this._wrapper.texture2Name) return
-    let i = window.getAssets[this._wrapper.texture2Name]
-    this.texture2 = new Texture(gl, gl.RGBA)
-    let t = this.texture2
-    t.fromImage(i)
-    t.setFilter(false)
-    t.clamp()
+
+  render() {
+
+    this._layers.map((layer, i) => {
+      this._prepare(layer)
+      this._draw(i)
+    })
   }
 
+  _prepare(layer) {
+    this.prg = this._wrapper._compilePrg(layer.fshader)
+    this.prg.use()
+    this._bufferAndAttrib(layer.attributes)
 
-  _setDefaultGUI () {
-    let folder = gui.addFolder('canvas')
-    folder.add(this.params, 'canvasWidth', 0, 500).step(1)
-    folder.add(this.params, 'canvasHeight', 0, 500).step(1)
   }
+  // child class will do set uniforms and call gl.draw
+  _draw() {
+
+  }
+
+  _bufferAndAttrib({ data, name, size }) {
+    data = new Float32Array(data)
+
+    let vBuffer = new ArrayBuffer(this.gl, data)
+    vBuffer.attrib(name, size, this.gl.FLOAT)
+
+    this.vBuffers.push(vBuffer)
+
+    this.vBuffers.map((vBuffer) => {
+      vBuffer.attribPointer(this._wrapper.prg)
+    })
+  }
+
+  _initTextures(textures) {
+    this.textures = this._wrapper.textures
+    if (textures.length > 0) {
+      textures.map((texture) => {
+        let i = window.getAssets[texture.name]
+        let t = new Texture(this.gl, this.gl.RGBA)
+        this.textures.push(t)
+        t.fromImage(i)
+        t.setFilter(false)
+        t.clamp()
+      })
+    }
+
+  }
+
   _setGUI() {
 
   }
-  addGUIParams (o) {
-    let params = {}
-    for (let key in this.params) {
-      params[key] = this.params[key]
-    }
-    return Object.assign(o, params)
+  addGUIParams(o) {
+    return Object.assign(this._params, o)
+  }
+  get params() {
+    return this._params
+  }
+  set params(param) {
+    throw Error("Params has no setter,please use addGUIParams")
   }
 }
 class grayFocus extends Filter {
-  constructor (filterWrapper) {
-    filterWrapper.fShader = require('./shaders/grayFocus.frag')
+  constructor(filterWrapper) {
+    filterWrapper.fShader = require('../shaders/grayFocus.frag')
     super(filterWrapper)
   }
-  _draw (wrapper) {
+  _draw(wrapper) {
     let gl = wrapper.gl
 
     this.prg.style({
@@ -105,7 +142,7 @@ class grayFocus extends Filter {
 
     wrapper._draw()
   }
-  _setGUI () {
+  _setGUI() {
     this.params = {
       lt: 0.2,
       gt: 0.98,
@@ -119,11 +156,11 @@ class grayFocus extends Filter {
   }
 }
 class cartoon extends Filter {
-  constructor (filterWrapper) {
-    filterWrapper.fShader = require('./shaders/cartoon.frag')
+  constructor(filterWrapper) {
+    filterWrapper.fShader = require('../shaders/cartoon.frag')
     super(filterWrapper)
   }
-  _draw (wrapper) {
+  _draw(wrapper) {
     let gl = wrapper.gl
 
     this.prg.style({
@@ -138,14 +175,14 @@ class cartoon extends Filter {
 }
 
 class notebookDrawing extends Filter {
-  constructor (filterWrapper) {
-    filterWrapper.fShader = require('./shaders/notebookDrawing.frag')
+  constructor(filterWrapper) {
+    filterWrapper.fShader = require('../shaders/notebookDrawing.frag')
     filterWrapper.texture2Name = 'noise256'
     super(filterWrapper)
     this._time = 0
   }
 
-  _draw (wrapper) {
+  _draw(wrapper) {
     let gl = wrapper.gl
     let program = this.prg
     // this._time += 1 / 16;
@@ -168,13 +205,13 @@ class notebookDrawing extends Filter {
 }
 
 class Bond extends Filter {
-  constructor (filterWrapper) {
-    filterWrapper.fShader = require('./shaders/bondFilter.frag')
+  constructor(filterWrapper) {
+    filterWrapper.fShader = require('../shaders/bondFilter.frag')
     filterWrapper.texture2Name = 'p4'
     super(filterWrapper)
   }
 
-  _draw (wrapper) {
+  _draw(wrapper) {
     let gl = wrapper.gl
     let t = glsl`${this.params.filterColor}`.split(',')
 
@@ -194,7 +231,7 @@ class Bond extends Filter {
     gl.drawArrays(gl.TRIANGLES, 0, 3)
   }
 
-  _setGUI () {
+  _setGUI() {
     this.params = {
       filterColor: '#0DA226',
       filterRange: 0.05
@@ -206,12 +243,12 @@ class Bond extends Filter {
   }
 }
 class bloom extends Filter {
-  constructor (filterWrapper) {
-    filterWrapper.fShader = require('./shaders/bloom.frag')
+  constructor(filterWrapper) {
+    filterWrapper.fShader = require('../shaders/bloom.frag')
     super(filterWrapper)
     this._time = 0
   }
-  _draw (wrapper) {
+  _draw(wrapper) {
     let gl = wrapper.gl
     this._time += 1 / 16 / 2
 
@@ -222,35 +259,58 @@ class bloom extends Filter {
   }
 }
 class Cloth extends Filter {
-  constructor (filterWrapper) {
-    filterWrapper.fShader = require('./shaders/cloth.frag')
-    filterWrapper.texture2Name = 'pants'
+  constructor(filterWrapper) {
     super(filterWrapper)
-  }
-  _draw (wrapper) {
-    let gl = wrapper.gl
-    // this._time += 1 / 16;
-
-    this.prg.style(
-      this.addGUIParams({
+    this._layers.push({
+      fshader: require('../shaders/cloth2.frag'),
+      attributes: {
+        name: 'position',
+        data: [-1, -1,-1,
+        -1, 4, -1,
+          4, -1,-1],
+        size: 3
+      },
+      textures: [{
+        name: 'pants'
+      }],
+      uniforms: {
         texture: 0,
-        targetBg: 1,
-        flipY: 1
-      })
-    )
-
-    this.texture.bind(0)
-    this.texture2.bind(1)
-
-    gl.drawArrays(gl.TRIANGLES, 0, 3)
+        flipY: 1,
+      }
+    })
+    this._layers.map((layer, i) => {
+      this._initTextures(layer.textures)
+    })
   }
-  _setGUI () {
-    this.params = {
+  _draw(i) {
+    let gl = this.gl
+    // this._time += 1 / 16;
+    if(i===0)
+      this.prg.style(Object.assign(this._layers[0].uniforms, {
+        c1X: this.params.c1X,
+        c1Y: this.params.c1Y
+      }))
+    else
+      this.prg.style(Object.assign(this._layers[1].uniforms, {
+        c2X: this.params.c2X,
+        c2Y: this.params.c2Y
+      }))
+
+    this.textures[i].bind(0)
+
+    //  gl.enable(gl.BLEND);
+    //  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA	);
+    gl.disable(gl.DEPTH_TEST)
+    gl.drawArrays(gl.TRIANGLES, 0, 3)
+
+  }
+  _setGUI() {
+    this.addGUIParams({
       c1X: 100,
       c1Y: 100,
-      c2X: 100,
+      c2X: -150,
       c2Y: 100
-    }
+    })
     let folder1 = gui.addFolder('cloth1')
     folder1.add(this.params, 'c1X', -this._wrapper._width, this._wrapper._width).step(1)
     folder1.add(this.params, 'c1Y', -this._wrapper._height, this._wrapper._height).step(1)

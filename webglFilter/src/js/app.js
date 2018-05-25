@@ -1,12 +1,13 @@
 import FilterApp from './FilterApp'
 import load from 'load-asset'
 import Filter from './Filter'
-import './assets/scss/simple-ui.scss'
-import './assets/scss/main.scss'
+import '../scss/main.scss'
+import Emitter from './Emitter'
+import CanvasDrag from './CanvasDrag'
 // import React from 'react'
 // import styled from 'styled-components'
 
-const urlPre = './textures/'
+const urlPre = 'src/textures/'
 const assets = {
   'p7': 'p7.jpg',
   'p6': 'p6.jpg',
@@ -47,6 +48,11 @@ const presets = [
 
 class App {
   imgs = []
+  layers = [{
+    shaders: [],
+    buffers: []
+  }]
+
   filterApp = null
 
   constructor() {
@@ -96,8 +102,8 @@ class App {
         }
 
         const filteredImage = this.filterApp.render(this.imgs[0])
-        if (this.filterApp.texture2Name) {
-          let t = window.getAssets[this.filterApp.texture2Name]
+        if (this.filterApp.textures[1]) {
+          let t = this.filterApp.textures[1].img
           t.style['width'] = `${t.width}px`
           imgWrapper.appendChild(t)
         }
@@ -107,6 +113,7 @@ class App {
     // for dubug
     document.querySelector('.effect:last-child').click()
     this._animation()
+    new CanvasDrag(canvas)
   }
   _animation(now) {
     now *= 0.001

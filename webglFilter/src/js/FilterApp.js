@@ -1,23 +1,25 @@
-import Program from '../libs/glProgram'
-import Texture from '../libs/glTexture'
-import Fbo from '../libs/glFbo'
-import { ArrayBuffer } from '../libs/glBuffer'
+/*
+custom gl setting,has filter[s]
+*/
+import Program from 'libs/glProgram'
+import Texture from 'libs/glTexture'
+import Fbo from 'libs/glFbo'
+import { ArrayBuffer } from 'libs/glBuffer'
 import filter from './Filter'
+import Emitter from './Emitter'
 
 const SHADER = {}
 SHADER.VERTEX_IDENTITY = `
   precision highp float;
-  attribute vec2 position;
+  attribute vec3 position;
   uniform float flipY;
   varying vec2 uv;
   void main(void) {
-  gl_Position = vec4(-position.x, position.y*flipY, 0.0, 1.);
-  uv = -position*.5+.5;
+  gl_Position = vec4(-position.x, position.y*flipY, position.z, 1.);
+  uv = -position.xy*.5+.5;
   }`
 
-SHADER.FRAGMENT_IDENTITY = require('./shaders/frg_identity.frag')
-
-const _canvas = document.querySelector('canvas')
+SHADER.FRAGMENT_IDENTITY = require('../shaders/frg_identity.frag')
 
 class FilterApp {
   _drawCount = 0
@@ -29,39 +31,24 @@ class FilterApp {
   _width = -1
   _height = -1
   prg = null
-  
-  constructor (img) {
+  _canvas = document.querySelector('canvas')
+  textures = []
+
+  constructor (data) {
 
     this._createGL()
-    this._initTexture(img)
+    this._resize(data.width, data.height)
   }
 
   _createGL () {
-    this.gl = _canvas.getContext('webgl') || _canvas.getContext('experimental-webgl')
+    this.gl = this._canvas.getContext('webgl') || this._canvas.getContext('experimental-webgl')
     if (!this.gl) {
       throw new Error("Couldn't get WebGL context")
     }
     this._filter = filter
-    // big triangle vetex
-    let data = new Float32Array([-1, -1, -1, 4, 4, -1])
 
-    let vBuffer = new ArrayBuffer(this.gl, data)
-    vBuffer.attrib('position', 2, this.gl.FLOAT)
-    vBuffer._stride = 0
-
-    this.vBuffer = vBuffer
   }
 
-  _initTexture (data) {
-    let gl = this.gl
-    this.texture = new Texture(gl, gl.RGBA)
-    this.texture.fromImage(data)
-    this.texture.setFilter(false)
-    this.texture.clamp()
-    this._sourceTexture = this.texture.id
-
-    this._resize(data.width, data.height)
-  }
 
   addFilter (name) {
     var args = Array.prototype.slice.call(arguments, 1)
@@ -87,8 +74,6 @@ class FilterApp {
 
   render (data) {
     this._setupGL(data)
-    this.texture.fromImage(data)
-    this.texture.bind(0)
 
     // gl.getParameter(gl.ACTIVE_TEXTURE);
     this._drawCount = 0
@@ -98,6 +83,8 @@ class FilterApp {
       this._compilePrg(SHADER.FRAGMENT_IDENTITY)
       this._lastInChain = true
       this.prg.use()
+      let t= new Texture().fromImage(data)
+      t.bind(0)
       this._draw()
     } else {
       for (var i = 0; i < this._filterChain.length; i++) {
@@ -105,7 +92,7 @@ class FilterApp {
         this._filterChain[i].instance.render(this._filterChain[i].args || [])
       }
     }
-    return _canvas
+    return this._canvas
   }
 
   _resize (width, height) {
@@ -115,9 +102,13 @@ class FilterApp {
       return
     }
 
-    _canvas.width = this._width = width
-    _canvas.height = this._height = height
+    this._canvas.width = this._width = width
+    this._canvas.height = this._height = height
 
+    Emitter.on('resizeCanvas' , (e,data) => {
+      this._canvas.width = e.detail.width
+      this._canvas.height = e.detail.height
+    })
     // Note sure if this is a good idea; at least it makes texture loading
     // in Ejecta instant.
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)

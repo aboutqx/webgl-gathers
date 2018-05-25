@@ -29,6 +29,7 @@ function Texture (gl, format) {
   this.height = 0
   this.format = format || gl.RGB
   this.type = gl.UNSIGNED_BYTE
+  this.img = null
 
   gl.bindTexture(T2D, this.id)
   this.setFilter(true)
@@ -44,6 +45,7 @@ Texture.prototype = {
   fromImage: function (img) {
     var gl = this.gl
 
+    this.img = img
     this.width = img.width
     this.height = img.height
 

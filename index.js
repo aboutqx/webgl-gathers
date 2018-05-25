@@ -1,1 +1,1 @@
-import './webglFilter/app'
+import './webglFilter/src/js/app'
