@@ -18,12 +18,11 @@ SHADER.VERTEX_IDENTITY = `
   gl_Position = vec4(-position.x, position.y*flipY, position.z, 1.);
   uv = -position.xy*.5+.5;
   }`
+let normalFilter = null
 
-SHADER.FRAGMENT_IDENTITY = require('../shaders/frg_identity.frag')
 
 class FilterApp {
   _drawCount = 0
-  _sourceTexture = null
   _lastInChain = false
   _curFBOIndex = -1
   _tmpFBO = [null, null]
@@ -33,6 +32,7 @@ class FilterApp {
   prg = null
   _canvas = document.querySelector('canvas')
   textures = []
+  vBuffers = []
 
   constructor (data) {
 
@@ -59,6 +59,8 @@ class FilterApp {
 
   reset () {
     this._filterChain = []
+    this.vBuffers.map((v) => { v.dispose() })
+    this.textures.map((v) => { v.dispose() })
   }
 
   _setupGL (data) {
@@ -68,6 +70,7 @@ class FilterApp {
       data.height = data.videoHeight
     }
     this._resize(data.width, data.height)
+    
     gl.clearColor(161 / 255, 161 / 255, 161 / 255, 1)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
   }
@@ -80,13 +83,11 @@ class FilterApp {
 
     // no filters? just draw
     if (this._filterChain.length === 0) {
-      this._compilePrg(SHADER.FRAGMENT_IDENTITY)
-      this._lastInChain = true
-      this.prg.use()
-      let t= new Texture().fromImage(data)
-      t.bind(0)
-      this._draw()
+      if (!normalFilter) normalFilter=new filter['Filter'](this)
+      this.textures = normalFilter.textures
+      normalFilter.render()
     } else {
+
       for (var i = 0; i < this._filterChain.length; i++) {
         this._lastInChain = (i === this._filterChain.length - 1)
         this._filterChain[i].instance.render(this._filterChain[i].args || [])
@@ -139,8 +140,8 @@ class FilterApp {
     this.flipY = false
     let gl = this.gl
     if (this._drawCount === 0) {
-      // First draw call - use the source texture
-      source = this._sourceTexture
+      //first time use texture 0
+      source = this.textures[0].id
     } else {
       // All following draw calls use the temp buffer last drawn to
       source = this._getFbo(this._curFBOIndex).texture
@@ -156,7 +157,7 @@ class FilterApp {
       this._curFBOIndex = (this._curFBOIndex + 1) % 2
       target = this._getFbo(this._curFBOIndex).fbo
     }
-    // Bind the source and target and draw the two triangles
+
     gl.bindTexture(gl.TEXTURE_2D, source)
     gl.bindFramebuffer(gl.FRAMEBUFFER, target)
     gl.uniform1f(this.prg.flipY(), this.flipY ? -1 : 1)

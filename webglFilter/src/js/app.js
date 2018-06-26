@@ -60,7 +60,7 @@ class App {
   }
 
   async init() {
-    effects.concat(Object.keys(Filter)).map((effect) => {
+    effects.concat(Object.keys(Filter)).filter((v)=>{return v!=='Filter'}).map((effect) => {
       let div = document.createElement('div')
       canvasWrapper.appendChild(div)
       div.outerHTML = `<button class="effect">${effect}</button>`
@@ -102,16 +102,18 @@ class App {
         }
 
         const filteredImage = this.filterApp.render(this.imgs[0])
-        if (this.filterApp.textures[1]) {
-          let t = this.filterApp.textures[1].img
+
+        imgWrapper.innerHTML = ''
+        this.filterApp.textures.map((v) => {
+          let t = v.img
           t.style['width'] = `${t.width}px`
           imgWrapper.appendChild(t)
-        }
+        })
       }
     })
 
     // for dubug
-    document.querySelector('.effect:last-child').click()
+    document.querySelector('.effect:nth-child(9)').click()
     this._animation()
     new CanvasDrag(canvas)
   }
@@ -128,7 +130,7 @@ class App {
   }
 }
 
-const app = new App()
+let app = new App()
 app.init()
 
 

@@ -152,7 +152,7 @@ ArrayBuffer.prototype = {
    * Delete underlying webgl objects
    */
   dispose: function () {
-    this.gl.deleteBuffer(this.buffer)
+    this.gl && this.gl.deleteBuffer(this.buffer)
     this.buffer = null
     this.gl = null
   },

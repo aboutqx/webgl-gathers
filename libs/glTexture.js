@@ -90,7 +90,7 @@ Texture.prototype = {
    *
    */
   dispose: function () {
-    this.gl.deleteTexture(this.id)
+    this.gl && this.gl.deleteTexture(this.id)
     this.id = null
     this.gl = null
   },
