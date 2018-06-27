@@ -2,23 +2,25 @@
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
 // trying to resemle some hand drawing style
+precision highp float;
+uniform sampler2D iChannel1;
+uniform sampler2D iChannel0;
+// #define SHADERTOY
+// #ifdef SHADERTOY
+//  #define Res0 iChannelResolution[0].xy
+//  #define Res1 iChannelResolution[1].xy
+// #else
+//   #define Res0 textureSize(iChannel0,0)
+//   #define Res1 textureSize(iChannel1,0)
+//   #define iResolution Res0
+// #endif
 
+// #define Res  iResolution.xy
 
-#define SHADERTOY
-#ifdef SHADERTOY
-#define Res0 iChannelResolution[0].xy
-#define Res1 iChannelResolution[1].xy
-#else
-#define Res0 textureSize(iChannel0,0)
-#define Res1 textureSize(iChannel1,0)
-#define iResolution Res0
-#endif
+// #define randSamp iChannel1
+// #define colorSamp iChannel0
 
-#define Res  iResolution.xy
-
-#define randSamp iChannel1
-#define colorSamp iChannel0
-
+vec2 Res0 = textureSize(iChannel0,0)
 
 vec4 getRand(vec2 pos)
 {

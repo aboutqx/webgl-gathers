@@ -28,13 +28,16 @@ void main(void) {
     uv.y = 1.-uv.y;
     vec4 c = texture2D(texture, uv);
     vec3 t = rgb2hsb(c.rgb);
-
+    vec2 pos = gl_FragCoord.xy+4.0*sin(1./2000.*1.*vec2(1,1.7))*iResolution.y/400.;
+    float r=length(pos-iResolution.xy*.5)/iResolution.x;
+    float vign=1.-r*r*r;
     if(abs(t.r-rgb2hsb(filterBg).r)<filterRange) {
-        gl_FragColor = texture2D(targetBg,uv);
+        gl_FragColor = texture2D(targetBg,uv)*vign;
 
 
     } else {
-        gl_FragColor = vec4(0,0,0,1.);
+        gl_FragColor = vec4(1,0,0,1.)*vign;
+        discard;
 
     }
 

@@ -17,7 +17,8 @@ const assets = {
   'p1': 'p1.jpg',
   'noise256': 'noise256.png',
   'pants': 'pants.jpg',
-  'shirt': 'shirt.jpg'
+  'shirt': 'shirt.jpg',
+  'TajMahal': 'TajMahal.jpg'
 }
 for (let k in assets) {
   assets[k] = urlPre + assets[k]
@@ -62,7 +63,7 @@ class App {
     effects.concat(Object.keys(Filter)).filter((v)=>{return v!=='Filter'}).map((effect) => {
       let div = document.createElement('div')
       canvasWrapper.appendChild(div)
-      div.outerHTML = `<button class="effect">${effect}</button>`
+      div.outerHTML = `<button class="effect ${effect}">${effect}</button>`
     })
 
     if (Object.keys(assets).length > 0) {
@@ -76,7 +77,7 @@ class App {
 
   _onImageLoaded(o) {
 
-    this.imgs.push(getAssets.shirt)
+    this.imgs.push(getAssets.pants)
 
     /* append will trigger reflow, img width value will be reneded value,in this its flexd,
     not original */
@@ -86,7 +87,7 @@ class App {
     this.filterApp = new FilterApp(this.imgs[0])
 
     canvasWrapper.addEventListener('click', (e) => {
-      if (e.target.className === 'effect') {
+      if (e.target.classList.contains('effect')) {
         toggle(canvasWrapper, e.target, 'active')
         const effect = e.target.innerHTML
         this.filterApp.reset()
@@ -112,7 +113,7 @@ class App {
     })
 
     // for dubug
-    document.querySelector('.effect:nth-child(9)').click()
+    document.querySelector('.bond').click()
     this._animation()
   }
   _animation(now) {

@@ -30,7 +30,7 @@ class FilterApp {
   }
 
   _createGL () {
-    this.gl = this._canvas.getContext('webgl') || this._canvas.getContext('experimental-webgl')
+    this.gl = this._canvas.getContext('webgl2') || this._canvas.getContext('experimental-webgl')
     if (!this.gl) {
       throw new Error("Couldn't get WebGL context")
     }
@@ -58,8 +58,6 @@ class FilterApp {
       data.width = data.videoWidth
       data.height = data.videoHeight
     }
-    this._resize(data.width, data.height)
-
     gl.clearColor(161 / 255, 161 / 255, 161 / 255, 1)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
   }

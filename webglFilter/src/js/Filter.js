@@ -1,9 +1,13 @@
 import colorString from 'color-string'
 import Texture from 'libs/glTexture'
 import * as dat from 'dat.gui'
-import { ArrayBuffer } from 'libs/glBuffer'
+import {
+  ArrayBuffer
+} from 'libs/glBuffer'
 
-const gui = new dat.GUI({ width: 300 })
+const gui = new dat.GUI({
+  width: 300
+})
 
 dat.GUI.prototype.removeFolders = function () {
   var t = Object.keys(this.__folders)
@@ -42,9 +46,9 @@ class Filter {
     // big triangle vetex
     attributes: {
       name: 'position',
-      data: [-1, -1, -1,
-      -1, 4, -1,
-        4, -1, -1],
+      data: [-1, -1, -1, -1, 4, -1,
+        4, -1, -1
+      ],
       size: 3
     },
     textures: [{
@@ -71,9 +75,10 @@ class Filter {
     })
     this._wrapper.textures = this.textures
 
+    filterWrapper._resize(this.textures[0].width, this.textures[0].height)
   }
 
-  _setLayers(){}
+  _setLayers() {}
 
   render() {
     this.vBuffers = this._wrapper.vBuffers = []
@@ -94,7 +99,11 @@ class Filter {
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3)
   }
 
-  _bufferAndAttrib({ data, name, size }) {
+  _bufferAndAttrib({
+    data,
+    name,
+    size
+  }) {
 
     data = new Float32Array(data)
 
@@ -134,14 +143,16 @@ class grayFocus extends Filter {
   constructor(filterWrapper) {
     super(filterWrapper)
   }
-  _setLayers(){
+  _setLayers() {
     this._layers[0].fshader = require('../shaders/grayFocus.frag')
-    this._layers[0].textures = [{name:'p7'}]
+    this._layers[0].textures = [{
+      name: 'p7'
+    }]
   }
   _draw(i) {
     let gl = this.gl
 
-    this.prg.style({...this._layers[0].uniforms,
+    this.prg.style({ ...this._layers[0].uniforms,
       lt: this.params.lt,
       gt: this.params.gt,
       clamp: this.params.clamp ? 1 : 0
@@ -150,7 +161,7 @@ class grayFocus extends Filter {
     gl.drawArrays(gl.TRIANGLES, 0, 3)
   }
   _setGUI() {
-    this.addGUIParams ({
+    this.addGUIParams({
       lt: 0.2,
       gt: 0.98,
       clamp: false
@@ -166,7 +177,7 @@ class cartoon extends Filter {
   constructor(filterWrapper) {
     super(filterWrapper)
   }
-  _setLayers () {
+  _setLayers() {
     this._layers[0].fshader = require('../shaders/cartoon.frag')
   }
 
@@ -178,8 +189,7 @@ class cartoon extends Filter {
       SatLevels: [0.0, 0.15, 0.3, 0.45, 0.6, 0.8, 1.0],
       ValLevels: [0.0, 0.3, 0.6, 1.0],
       textureSize: [this._wrapper._width, this._wrapper._height],
-      flipY: 1,
-      texture: 0
+      ...this._layers[0].uniforms,
     })
 
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3)
@@ -192,44 +202,46 @@ class notebookDrawing extends Filter {
   }
   _setLayers() {
     this._time = 0
-    filterWrapper.fShader = require('../shaders/notebookDrawing.frag')
-    filterWrapper.texture2Name = 'noise256'
+    this._layers[0].fshader = require('../shaders/notebookDrawing.frag')
+    this._layers[0].texture = [{name: 'p1' },{ name: 'noise256' }]
   }
   _draw(wrapper) {
     let program = this.prg
+    let gl = this.gl
     // this._time += 1 / 16;
 
     gl.uniform1i(program.iChannel0(), 0)
     gl.uniform1i(program.iChannel1(), 1)
 
-    wrapper.texture.bind(0)
-    wrapper.texture2.bind(1)
+    this.textures[0].bind(0)
+    this.textures[1].bind(1)
 
     this.prg.style({
       iResolution: [this._wrapper._width, this._wrapper._height],
       Res1: [this._wrapper._width, this._wrapper._height],
       iGlobalTime: this._time,
-      flipY: 1,
-      texture: 0
+      ...this._layers[0].uniforms,
     })
 
     gl.drawArrays(gl.TRIANGLES, 0, 3)
   }
 }
 
-class Bond extends Filter {
+class bond extends Filter {
   constructor(filterWrapper) {
     super(filterWrapper)
   }
 
   _setLayers() {
     this._layers[0].fshader = require('../shaders/bondFilter.frag')
-    this._layers[0].textures.push({name: 'p4'})
+    this._layers[0].textures.push({
+      name: 'p4'
+    })
   }
 
   _draw(i) {
     let gl = this.gl
-    let t = glsl`${this.params.filterColor}`.split(',')
+    let t = glsl `${this.params.filterColor}`.split(',')
 
     gl.uniform1i(this.prg.texture(), 1)
     gl.uniform1i(this.prg.targetBg(), 0)
@@ -238,6 +250,7 @@ class Bond extends Filter {
     this.textures[1].bind(1)
 
     this.prg.style({
+      ...this._layers[0].uniforms,
       filterRange: this.params.filterRange,
       filterBg: t,
       iResolution: [gl.drawingBufferWidth, gl.drawingBufferHeight],
@@ -248,7 +261,7 @@ class Bond extends Filter {
   }
 
   _setGUI() {
-    this.addGUIParams ( {
+    this.addGUIParams({
       filterColor: '#0DA226',
       filterRange: 0.05
     })
@@ -262,14 +275,14 @@ class bloom extends Filter {
   constructor(filterWrapper) {
     super(filterWrapper)
   }
-  _setLayers(){
+  _setLayers() {
     this._time = 0
     this._layers[0].fshader = require('../shaders/bloom.frag')
   }
   _draw(i) {
     let gl = this.gl
     this._time += 1 / 16 / 2
-    this.prg.style({...this._layers[0].uniforms,
+    this.prg.style({ ...this._layers[0].uniforms,
       iGlobalTime: this._time,
     })
     this.textures[i].bind(0)
@@ -281,14 +294,14 @@ class Cloth extends Filter {
   constructor(filterWrapper) {
     super(filterWrapper)
   }
-  _setLayers(){
+  _setLayers() {
     this._layers.push({
       fshader: require('../shaders/cloth2.frag'),
       attributes: {
         name: 'position',
-        data: [-1, -1, 1,
-        -1, 4, 1,
-          4, -1, 1],
+        data: [-1, -1, 1, -1, 4, 1,
+          4, -1, 1
+        ],
         size: 3
       },
       textures: [{
@@ -305,13 +318,13 @@ class Cloth extends Filter {
   _draw(i) {
     let gl = this.gl
     // this._time += 1 / 16;
-    if(i===0)
-      this.prg.style({...this._layers[0].uniforms,
+    if (i === 0)
+      this.prg.style({ ...this._layers[0].uniforms,
         c1X: this.params.c1X,
         c1Y: this.params.c1Y
       })
-    if(i===1)
-      this.prg.style({...this._layers[1].uniforms,
+    if (i === 1)
+      this.prg.style({ ...this._layers[1].uniforms,
         c2X: this.params.c2X,
         c2Y: this.params.c2Y
       })
@@ -342,15 +355,41 @@ class Cloth extends Filter {
     folder2.open()
   }
 }
-class EdgeDetection extends Filter {
+class edge extends Filter {
   constructor(filterWrapper) {
     super(filterWrapper)
   }
-  _setLayers () {
+  _setLayers() {
     this._layers[0].textures = [{
       name: 'TajMahal'
     }]
     this._layers[0].fshader = require('../shaders/edge.frag')
   }
+  _draw() {
+    this.textures[0].bind(0)
+    this.prg.style({ ...this._layers[0].uniforms,
+      px: [1 / this._wrapper._width, 1 / this._wrapper._height],
+      mx: [
+        -1, 0, 1,
+         -2, 0, 2,
+         -1, 0, 1
+        ],
+      my: [
+        -1, -2, -1,
+        0, 0, 0,
+        1, 2, 1
+      ]
+    })
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3)
+  }
 }
-export default {Filter, grayFocus, notebookDrawing, cartoon, Bond, bloom, Cloth, EdgeDetection }
+export default {
+  Filter,
+  grayFocus,
+  notebookDrawing,
+  cartoon,
+  bond,
+  bloom,
+  Cloth,
+  edge
+}
