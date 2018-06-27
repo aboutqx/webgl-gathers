@@ -3,7 +3,6 @@ import load from 'load-asset'
 import Filter from './Filter'
 import '../scss/main.scss'
 import Emitter from './Emitter'
-import CanvasDrag from './CanvasDrag'
 // import React from 'react'
 // import styled from 'styled-components'
 
@@ -115,7 +114,6 @@ class App {
     // for dubug
     document.querySelector('.effect:nth-child(9)').click()
     this._animation()
-    new CanvasDrag(canvas)
   }
   _animation(now) {
     now *= 0.001
@@ -184,13 +182,6 @@ function isType(name, type) {
   return isValidFile
 }
 
-function has(arr, key, value) { // array child object has key-value
-  if (!arr || !arr.length) return -1
-  for (let i = 0; i < arr.length; i++) {
-    if (arr[i][key] === value) return i
-  }
-  return -1
-}
 function append(parent, child, option) {
   let elm
   // use id or class as identity

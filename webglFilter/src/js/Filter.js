@@ -48,7 +48,7 @@ class Filter {
       size: 3
     },
     textures: [{
-      name: 'shirt'
+      name: 'pants'
     }],
     uniforms: {
       texture: 0,
@@ -136,7 +136,7 @@ class grayFocus extends Filter {
   }
   _setLayers(){
     this._layers[0].fshader = require('../shaders/grayFocus.frag')
-    this._layers[0].textures = [{name:'p4'}]
+    this._layers[0].textures = [{name:'p7'}]
   }
   _draw(i) {
     let gl = this.gl
@@ -164,20 +164,25 @@ class grayFocus extends Filter {
 }
 class cartoon extends Filter {
   constructor(filterWrapper) {
-    filterWrapper.fShader = require('../shaders/cartoon.frag')
     super(filterWrapper)
   }
+  _setLayers () {
+    this._layers[0].fshader = require('../shaders/cartoon.frag')
+  }
+
   _draw(wrapper) {
-    let gl = wrapper.gl
+    this.textures[0].bind(0)
 
     this.prg.style({
       HueLevels: [0.0, 80.0, 160.0, 240.0, 320.0, 360.0],
       SatLevels: [0.0, 0.15, 0.3, 0.45, 0.6, 0.8, 1.0],
       ValLevels: [0.0, 0.3, 0.6, 1.0],
-      textureSize: [gl.drawingBufferWidth, gl.drawingBufferHeight]
+      textureSize: [this._wrapper._width, this._wrapper._height],
+      flipY: 1,
+      texture: 0
     })
 
-    wrapper._draw()
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3)
   }
 }
 
@@ -191,7 +196,6 @@ class notebookDrawing extends Filter {
     filterWrapper.texture2Name = 'noise256'
   }
   _draw(wrapper) {
-    let gl = wrapper.gl
     let program = this.prg
     // this._time += 1 / 16;
 
@@ -202,10 +206,11 @@ class notebookDrawing extends Filter {
     wrapper.texture2.bind(1)
 
     this.prg.style({
-      iResolution: [gl.drawingBufferWidth, gl.drawingBufferHeight],
-      Res1: [gl.drawingBufferWidth, gl.drawingBufferHeight],
+      iResolution: [this._wrapper._width, this._wrapper._height],
+      Res1: [this._wrapper._width, this._wrapper._height],
       iGlobalTime: this._time,
-      flipY: 1
+      flipY: 1,
+      texture: 0
     })
 
     gl.drawArrays(gl.TRIANGLES, 0, 3)
@@ -287,7 +292,7 @@ class Cloth extends Filter {
         size: 3
       },
       textures: [{
-        name: 'pants'
+        name: 'shirt'
       }],
       uniforms: {
         texture: 0,
@@ -337,4 +342,15 @@ class Cloth extends Filter {
     folder2.open()
   }
 }
-export default {Filter, grayFocus, notebookDrawing, cartoon, Bond, bloom, Cloth }
+class EdgeDetection extends Filter {
+  constructor(filterWrapper) {
+    super(filterWrapper)
+  }
+  _setLayers () {
+    this._layers[0].textures = [{
+      name: 'TajMahal'
+    }]
+    this._layers[0].fshader = require('../shaders/edge.frag')
+  }
+}
+export default {Filter, grayFocus, notebookDrawing, cartoon, Bond, bloom, Cloth, EdgeDetection }

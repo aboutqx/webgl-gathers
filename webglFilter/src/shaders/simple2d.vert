@@ -1,11 +1,9 @@
 //simple2d.vert
-precision highp float;
-attribute vec2 pos;
-attribute vec2 uv;
-varying vec2 vUv;
-uniform float flipY;
-
-void main(void) {
-	vUv = uv;
-	gl_Position = vec4(pos.x, pos.y*flipY, 0.0, 1.);
-}
+  precision highp float;
+  attribute vec3 position;
+  uniform float flipY;
+  varying vec2 uv;
+  void main(void) {
+    gl_Position = vec4(-position.x, position.y*flipY, position.z, 1.);
+    uv = -position.xy*.5+.5;
+  }

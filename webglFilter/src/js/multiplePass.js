@@ -6,7 +6,8 @@ import Fbo from 'libs/glFbo'
 import filter from './Filter'
 import Emitter from './Emitter'
 
-const SHADER = { VERTEX_IDENTITY : require('../shaders/simple2d.vert') }
+const SHADER = {}
+SHADER.VERTEX_IDENTITY = require('../shaders/simple2d.vert')
 let normalFilter = null
 
 
@@ -95,6 +96,10 @@ class FilterApp {
     this._canvas.width = this._width = width
     this._canvas.height = this._height = height
 
+    Emitter.on('resizeCanvas' , (e,data) => {
+      this._canvas.width = e.detail.width
+      this._canvas.height = e.detail.height
+    })
     // Note sure if this is a good idea; at least it makes texture loading
     // in Ejecta instant.
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
