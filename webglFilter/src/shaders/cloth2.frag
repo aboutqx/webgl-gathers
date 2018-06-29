@@ -9,7 +9,7 @@ void main(void) {
   float c2x = c2X/430.;
 
   vec4 col1 = texture2D(texture,vec2(uv.x*1.+c2x,uv.y*1.-c2y));
-  if(col1 == texture2D(texture,vec2(0.,0.))){
+  if(length(col1.rgb - texture2D(texture,vec2(0.,0.)).rgb)<=.33){
     discard;
 
   }
