@@ -113,7 +113,7 @@ class App {
     })
 
     // for dubug
-    document.querySelector('.Cloth').click()
+    document.querySelector('.edge').click()
     this._animation()
   }
   _animation(now) {

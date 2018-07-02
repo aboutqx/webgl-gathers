@@ -13,13 +13,22 @@ const isProd = env === 'production'
 
 console.log('Environment isProd :', isProd)
 
-let plugins
-
-if (!isProd) {
-  plugins = [ new webpack.HotModuleReplacementPlugin() ]
-} else {
-  plugins=[
-    new webpack.HotModuleReplacementPlugin(),
+let plugins = [
+  new webpack.HotModuleReplacementPlugin(), new HtmlWebpackPlugin({
+    cache: true,
+    hash: true,
+    inject: true,
+    chunks: ['app'],
+    minify: {
+      removeComments: false,
+      collapseWhitespace: false,
+      removeAttributeQuotes: true
+    },
+    filename: 'index.html',
+    template: 'webglFilter/index.html'
+  }) ]
+if(isProd) {
+  plugins.concat[
     new webpack.optimize.UglifyJsPlugin({
         sourceMap: false,
         compress: {
@@ -31,30 +40,14 @@ if (!isProd) {
         mangle: false
     }),
     new ExtractTextPlugin('main.css'),
-    new HtmlWebpackPlugin({
-      cache: true,
-      hash: true,
-      inject: true,
-      minify: {
-        removeComments: false,
-        collapseWhitespace: false,
-        removeAttributeQuotes: true
-      },
-      filename: 'index.html',
-      template: 'webglFilter/index.html'
-    }),
     new CopyWebpackPlugin([{
         from: 'webglFilter/src/img',
-        to: 'webglFilter/dist/src/img'
+        to: 'src/img'
       },
       {
         from: 'webglFilter/src/textures',
-        to: 'webglFilter/dist/src/textures'
-      },
-      {
-        from: 'webglFilter/src/shaders',
-        to: 'webglFilter/dist/src/shaders'
-      },
+        to: 'src/textures'
+      }
     ])
   ]
 }
@@ -64,7 +57,7 @@ const entry = { app: './webglFilter/src/js/app.js' }
 const output =  {
     filename: 'bundle.js',
     path: pathOutput
-} 
+}
 const devtool = isProd ? 'source-map' : 'inline-source-map';
 
 const config = {
