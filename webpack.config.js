@@ -2,22 +2,25 @@
 const path = require('path')
 const webpack = require('webpack')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 const ip = require('ip');
 const serverIp = ip.address();
-
-const pathOutput = path.resolve(__dirname, 'dist');
+const HtmlWebpackPlugin = require("html-webpack-plugin")
+const pathOutput = path.resolve(__dirname, 'webglFilter/dist')
 const pathNodeModules = path.resolve(__dirname, 'node_modules')
-const env = process.env.NODE_ENV;
-const isProd = env === 'production';
+const env = process.env.NODE_ENV
+const isProd = env === 'production'
 
-console.log('Environment isProd :', isProd);
+console.log('Environment isProd :', isProd)
 
-const plugins = [
-    new webpack.HotModuleReplacementPlugin()
-];
+let plugins
 
-if (isProd) {
-    plugins.push(new webpack.optimize.UglifyJsPlugin({
+if (!isProd) {
+  plugins = [ new webpack.HotModuleReplacementPlugin() ]
+} else {
+  plugins=[
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.optimize.UglifyJsPlugin({
         sourceMap: false,
         compress: {
             drop_debugger: true,
@@ -26,23 +29,43 @@ if (isProd) {
         },
         comments: false,
         mangle: false
-    }));
-    plugins.push(new ExtractTextPlugin('assets/css/main.css'));
+    }),
+    new ExtractTextPlugin('main.css'),
+    new HtmlWebpackPlugin({
+      cache: true,
+      hash: true,
+      inject: true,
+      minify: {
+        removeComments: false,
+        collapseWhitespace: false,
+        removeAttributeQuotes: true
+      },
+      filename: 'index.html',
+      template: 'webglFilter/index.html'
+    }),
+    new CopyWebpackPlugin([{
+        from: 'webglFilter/src/img',
+        to: 'webglFilter/dist/src/img'
+      },
+      {
+        from: 'webglFilter/src/textures',
+        to: 'webglFilter/dist/src/textures'
+      },
+      {
+        from: 'webglFilter/src/shaders',
+        to: 'webglFilter/dist/src/shaders'
+      },
+    ])
+  ]
 }
 
-const entry = isProd ? { app: './index.js' }
-    : { app: './index.js'};
-const output = isProd ? {
-    filename: 'assets/js/app.js',
+const entry = { app: './webglFilter/src/js/app.js' }
+
+const output =  {
+    filename: 'bundle.js',
     path: pathOutput
-} : {
-        filename: 'bundle.js',
-        path: pathOutput
-    };
-
+} 
 const devtool = isProd ? 'source-map' : 'inline-source-map';
-
-
 
 const config = {
     entry,
