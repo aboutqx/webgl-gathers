@@ -24,11 +24,12 @@ let plugins = [
       collapseWhitespace: false,
       removeAttributeQuotes: true
     },
-    filename: 'index.html',
+    filename: isProd ? 'index.html' : 'webglFilter/index.html',
     template: 'webglFilter/index.html'
   }) ]
+
 if(isProd) {
-  plugins.concat[
+  plugins = plugins.concat([
     new webpack.optimize.UglifyJsPlugin({
         sourceMap: false,
         compress: {
@@ -39,22 +40,22 @@ if(isProd) {
         comments: false,
         mangle: false
     }),
-    new ExtractTextPlugin('main.css'),
-    new CopyWebpackPlugin([{
-        from: 'webglFilter/src/img',
-        to: 'src/img'
-      },
-      {
-        from: 'webglFilter/src/textures',
-        to: 'src/textures'
-      }
-    ])
-  ]
+    new ExtractTextPlugin('[name].css' ),
+    // new CopyWebpackPlugin([{
+    //     from: 'webglFilter/src/img',
+    //     to: 'src/img'
+    //   },
+    //   {
+    //     from: 'webglFilter/src/textures',
+    //     to: 'src/textures'
+    //   }
+    // ])
+  ])
 }
 
 const entry = { app: './webglFilter/src/js/app.js' }
 
-const output =  {
+const output =   {
     filename: 'bundle.js',
     path: pathOutput
 }
@@ -94,6 +95,14 @@ const config = {
                     ["style-loader", "css-loader", "sass-loader"]
                 ,
                 exclude: pathNodeModules
+            },
+            {
+              test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+              loader: 'url-loader',
+              options: {
+                limit: 10000,
+                name: '[name].[ext]'
+              }
             },
             {
                 test: /\.(glsl|vert|frag)$/,
