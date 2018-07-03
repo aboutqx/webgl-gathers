@@ -386,7 +386,7 @@ class edge extends Filter {
 export default {
   Filter,
   grayFocus,
-  notebookDrawing,
+  // notebookDrawing,
   cartoon,
   bond,
   bloom,

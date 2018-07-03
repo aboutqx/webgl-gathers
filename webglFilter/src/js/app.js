@@ -6,7 +6,7 @@ import Emitter from './Emitter'
 // import React from 'react'
 // import styled from 'styled-components'
 
-const urlPre = 'src/textures/'
+const urlPre = '/webglFilter/src/textures/'
 const assets = {
   'p7': 'p7.jpg',
   'p6': 'p6.jpg',
@@ -32,7 +32,7 @@ const imgWrapper = document.querySelector('.img-wrapper')
 const effects = [
   // 'brightness', 'saturation', 'desaturate', 'contrast', 'negative', 'hue',
   //  'desaturateLuminance', 'sepia', 'brownie', 'vintagePinhole', 'kodachrome',
-  //  'technicolor', 'polaroid', 'shiftToBGR','detectEdges', 'sobelX', 'sobelY',
+  //  'technicolor', 'polaroid', 'shiftToBGR','detectEdges',
   //  'sharpen', 'emboss', 'triangleBlur','1977', 'Brannan', 'Gotham', 'Hefe',
   //  'Inkwell', 'Lord Kelvin', 'Nashville', 'X-PRO II',
   'normal'
