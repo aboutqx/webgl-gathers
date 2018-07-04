@@ -6,7 +6,7 @@ import Emitter from './Emitter'
 // import React from 'react'
 // import styled from 'styled-components'
 
-const urlPre = '/webglFilter/src/textures/'
+const urlPre = './textures/'
 const assets = {
   'p7': 'p7.jpg',
   'p6': 'p6.jpg',
