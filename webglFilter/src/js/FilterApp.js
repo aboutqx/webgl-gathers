@@ -27,6 +27,7 @@ class FilterApp {
 
     this._createGL()
     this._resize(data.width, data.height)
+    Emitter.on('canvasResize',(e) => this._resize(e.detail.width, e.detail.height))
   }
 
   _createGL () {

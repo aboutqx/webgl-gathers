@@ -3,6 +3,7 @@ import load from 'load-asset'
 import Filter from './Filter'
 import '../scss/main.scss'
 import Emitter from './Emitter'
+import * as Util from 'libs/forDom.js'
 // import React from 'react'
 // import styled from 'styled-components'
 
@@ -25,7 +26,7 @@ for (let k in assets) {
 }
 
 
-const canvasWrapper = document.querySelector('.canvas-wrapper')
+const buttonWrapper = document.querySelector('.button-wrapper')
 const canvas = document.querySelector('canvas')
 const file = document.getElementById('change-target')
 const imgWrapper = document.querySelector('.img-wrapper')
@@ -62,7 +63,7 @@ class App {
   async init() {
     effects.concat(Object.keys(Filter)).filter((v)=>{return v!=='Filter'}).map((effect) => {
       let div = document.createElement('div')
-      canvasWrapper.appendChild(div)
+      buttonWrapper.appendChild(div)
       div.outerHTML = `<button class="effect ${effect}">${effect}</button>`
     })
 
@@ -79,16 +80,16 @@ class App {
 
     this.imgs.push(getAssets.pants)
 
-    /* append will trigger reflow, img width value will be reneded value,in this its flexd,
+    /* append will trigger reflow, img width value get from .width will be reneded value,in this its flexd,
     not original */
-    this.imgs[0].style['width'] = `${this.imgs[0].width}px`
-    append(imgWrapper,this.imgs[0])
+
+    Util.append(imgWrapper,this.imgs[0])
 
     this.filterApp = new FilterApp(this.imgs[0])
 
-    canvasWrapper.addEventListener('click', (e) => {
+    buttonWrapper.addEventListener('click', (e) => {
       if (e.target.classList.contains('effect')) {
-        toggle(canvasWrapper, e.target, 'active')
+        Util.toggle(buttonWrapper, e.target, 'active')
         const effect = e.target.innerHTML
         this.filterApp.reset()
 
@@ -106,7 +107,17 @@ class App {
         imgWrapper.innerHTML = ''
         this.filterApp.textures.map((v) => {
           let t = v.img
-          t.style['width'] = `${t.width}px`
+          let scale
+          if (Util.isMobile()) {
+            scale = .7
+          } else {
+            scale = .4
+          }
+          t.style['width'] = `${screen.width * scale}px`
+          Emitter.emit('canvasResize', {
+            width: screen.width * scale,
+            height: t.height * screen.width * scale / t.width
+          })
           imgWrapper.appendChild(t)
         })
       }
@@ -183,57 +194,3 @@ function isType(name, type) {
   return isValidFile
 }
 
-function append(parent, child, option) {
-  let elm
-  // use id or class as identity
-  if(typeof child ==='string'){
-    if(/<(.+?)\b/i.test(child)){
-      elm = document.createElement(RegExp.$1)
-    }
-
-    if (option === 'once') {
-
-      let exist
-      if (/id="?(.+?)"?/i.test(child)) {
-        exist = document.getElementById(RegExp.$1)
-      } else if (/class="?(.+?)"?/i.test(child)) {
-        exist = document.getElementsByClassName(RegExp.$1)[0]
-      }
-      if (exist)
-        return exist
-    }
-  } else {
-    elm = child
-    if (option === 'once') {
-
-      let exist
-      if (elm.id) {
-        exist = document.getElementById(elm.id)
-      } else if (elm.className) {
-        exist = document.getElementsByClassName(elm.className)[0]
-      }
-      if (exist)
-        return exist
-    }
-  }
-
-
-  parent.appendChild(elm)
-  if (typeof child === 'string') requestAnimationFrame(() => {elm.outerHTML = child})
-  return elm
-}
-function toggle(parent, child ,className) {
-  parent.querySelector(`.${className}`) && parent.querySelector(`.${className}`).classList.remove(className)
-  child.classList.add(className)
-}
-function Toast(message) {
-  if (typeof message === 'string') {
-    const div = document.createElement('div')
-    document.body.appendChild(div)
-    div.outerHTML = `<div class="simple-toast">${message}</div>`
-    setTimeout(() => {
-      document.body.removeChild(div)
-    }, 1000)
-  }
-
-}
