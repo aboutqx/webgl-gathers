@@ -1,6 +1,8 @@
 import colorString from 'color-string'
 import Texture from 'libs/glTexture'
 import * as dat from 'dat.gui'
+import Emitter from './Emitter'
+
 import {
   ArrayBuffer
 } from 'libs/glBuffer'
@@ -76,6 +78,14 @@ class Filter {
     this._wrapper.textures = this.textures
 
     filterWrapper._resize(this.textures[0].width, this.textures[0].height)
+
+    Emitter.on('updateSource',(e) => {
+      this.textures[0] = new Texture(this.gl, this.gl.RGBA)
+      let t = this.textures[0]
+      t.fromImage(e.detail.img)
+      t.setFilter(false)
+      t.clamp()
+    })
   }
 
   _setLayers() {}
