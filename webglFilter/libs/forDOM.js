@@ -36,7 +36,7 @@ function parent(elem, num) {
     if (elem != null) elem = elem.parentChild
   return elem
 }
-const findParent = (elem, query) => {
+export const findParent = (elem, query) => {
   let collects = document.querySelectorAll(query)
   do {
     elem = elem.parentNode

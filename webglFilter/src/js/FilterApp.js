@@ -26,6 +26,10 @@ class FilterApp {
   constructor (data) {
 
     this._createGL()
+    if (data.nodeName.toLowerCase() === 'video') {
+      data.width = data.videoWidth
+      data.height = data.videoHeight
+    }
     this._resize(data.width, data.height)
     Emitter.on('canvasResize',(e) => this._resize(e.detail.width, e.detail.height))
   }
@@ -38,7 +42,6 @@ class FilterApp {
     this._filter = filter
 
   }
-
 
   addFilter (name) {
     var args = Array.prototype.slice.call(arguments, 1)
@@ -53,18 +56,15 @@ class FilterApp {
     this.textures.map((v) => { v.dispose() })
   }
 
-  _setupGL (data) {
+  _setupGL () {
     let gl = this.gl
-    if (data.nodeName.toLowerCase() === 'video') {
-      data.width = data.videoWidth
-      data.height = data.videoHeight
-    }
+
     gl.clearColor(161 / 255, 161 / 255, 161 / 255, 1)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
   }
 
-  render (data) {
-    this._setupGL(data)
+  render () {
+    this._setupGL()
 
     // gl.getParameter(gl.ACTIVE_TEXTURE);
     this._drawCount = 0

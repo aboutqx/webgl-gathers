@@ -24,7 +24,12 @@ const assets = {
 for (let k in assets) {
   assets[k] = urlPre + assets[k]
 }
-
+let scale
+if (Util.isMobile()) {
+  scale = .7
+} else {
+  scale = .4
+}
 
 const buttonWrapper = document.querySelector('.button-wrapper')
 const canvas = document.querySelector('canvas')
@@ -39,12 +44,21 @@ const effects = [
   'normal'
 ]
 //arguments
-const presets = [
-  { 'brightness': [1.5] },
-  { 'saturation': [1.5] },
-  { 'contrast': [1.5] },
-  { 'hue': [180] },
-  { 'triangleBlur': [30] }
+const presets = [{
+    'brightness': [1.5]
+  },
+  {
+    'saturation': [1.5]
+  },
+  {
+    'contrast': [1.5]
+  },
+  {
+    'hue': [180]
+  },
+  {
+    'triangleBlur': [30]
+  }
 ]
 
 class App {
@@ -61,11 +75,15 @@ class App {
   }
 
   async init() {
-    effects.concat(Object.keys(Filter)).filter((v)=>{return v!=='Filter'}).map((effect) => {
-      let div = document.createElement('div')
-      buttonWrapper.appendChild(div)
-      div.outerHTML = `<button class="effect ${effect}">${effect}</button>`
-    })
+    effects.concat(Object.keys(Filter))
+      .filter((v) => {
+        return v !== 'Filter'
+      })
+      .map((effect) => {
+        let div = document.createElement('div')
+        buttonWrapper.appendChild(div)
+        div.outerHTML = `<button class="effect ${effect}">${effect}</button>`
+      })
 
     if (Object.keys(assets).length > 0) {
       window.getAssets = await load.any(assets, (e) => {
@@ -83,8 +101,6 @@ class App {
     /* append will trigger reflow, img width value get from .width will be reneded value,in this its flexd,
     not original */
 
-    Util.append(imgWrapper,this.imgs[0])
-
     this.filterApp = new FilterApp(this.imgs[0])
 
     buttonWrapper.addEventListener('click', (e) => {
@@ -92,47 +108,46 @@ class App {
         Util.toggle(buttonWrapper, e.target, 'active')
         const effect = e.target.innerHTML
         this.filterApp.reset()
+        file.value = null
 
         if (presets.includes(effect)) {
           this.filterApp.addFilter(effect, presets[effect][0])
-        } else if (['1977', 'Brannan', 'Hefe', 'Lord Kelvin', 'Nashville', 'X-PRO II', 'Gotham'].includes(effect)){
+        } else if (['1977', 'Brannan', 'Hefe', 'Lord Kelvin', 'Nashville', 'X-PRO II', 'Gotham'].includes(effect)) {
           this.filterApp.addFilter('instagramFilter', effect)
           if (effect === 'Gotham') this.filterApp.addFilter('Inkwell')
-        } else if (effect !== 'normal') {
+        } else if(effect !== 'normal') {
           this.filterApp.addFilter(effect)
         }
 
-        const filteredImage = this.filterApp.render(this.imgs[0])
+        this.filterApp.render()
 
-        imgWrapper.innerHTML = ''
-        this.filterApp.textures.map((v) => {
-          let t = v.img
-          let scale
-          if (Util.isMobile()) {
-            scale = .7
-          } else {
-            scale = .4
-          }
-          t.style['width'] = `${screen.width * scale}px`
-          Emitter.emit('canvasResize', {
-            width: screen.width * scale,
-            height: t.height * screen.width * scale / t.width
-          })
-          imgWrapper.appendChild(t)
-        })
+        this.updateImg()
       }
     })
 
-    // for dubug
-    document.querySelector('.edge').click()
     this._animation()
   }
+
+  updateImg() {
+    imgWrapper.innerHTML = ''
+    this.filterApp.textures.map((v) => {
+      let t = v.img
+
+      t.style['width'] = `${screen.width * scale}px`
+      Emitter.emit('canvasResize', {
+        width: screen.width * scale,
+        height: t.height * screen.width * scale / t.width
+      })
+      imgWrapper.appendChild(t)
+    })
+  }
+
   _animation(now) {
     now *= 0.001
     const id = requestAnimationFrame(this._animation.bind(this))
 
     try {
-      this.filterApp.render(this.imgs[0])
+      this.filterApp.render()
     } catch (e) {
       console.error(e)
       cancelAnimationFrame(id)
@@ -142,7 +157,8 @@ class App {
 
 let app = new App()
 app.init()
-
+// for dubug
+document.querySelector('.edge').click()
 
 file.addEventListener('change', (e) => {
 
@@ -151,37 +167,44 @@ file.addEventListener('change', (e) => {
   if (isType(t.name, 'img')) {
 
     readFile(t, (event) => {
-      app.imgs[0] = new Image()
-      app.imgs[0].src = event.target.result
+      let img = new Image()
+      img.src = event.target.result
+      img.onload = () => {
+        Emitter.emit('updateSource', {
+          img
+        })
+        app.updateImg()
+      }
 
     })
   } else if (isType(t.name, 'video')) {
 
-      const video = append(document.body,
-        `<video id="target-Video" controls autoplay loop style="display:none"></video>`,
-        'once'
-      )
+    const video = append(document.body,
+      `<video id="target-Video" controls autoplay loop style="display:none"></video>`,
+      'once'
+    )
 
-      readFile(t, (event) => {
-        video.src = event.target.result
-      })
-      video.addEventListener('loadeddata', () => {
-        app.imgs[0] = video
-      })
+    readFile(t, (event) => {
+      video.src = event.target.result
+    })
+    video.addEventListener('loadeddata', () => {
+      app.imgs[0] = video
+    })
   }
 })
 
-function readFile(file, loadCall){
+function readFile(file, loadCall) {
   let reader = new FileReader()
   reader.addEventListener('load', (event) => {
     loadCall(event)
   })
   reader.readAsDataURL(file)
 }
+
 function isType(name, type) {
   let allowedExtension
-  if (type === 'img') allowedExtension= ['jpeg', 'jpg', 'png', 'gif', 'bmp']
-  else if(type === 'video') allowedExtension = ['mp4', 'webm', 'ogg']
+  if (type === 'img') allowedExtension = ['jpeg', 'jpg', 'png', 'gif', 'bmp']
+  else if (type === 'video') allowedExtension = ['mp4', 'webm', 'ogg']
   else return false
   let isValidFile
   let t = name.split('.').pop().toLowerCase()
@@ -193,4 +216,3 @@ function isType(name, type) {
   }
   return isValidFile
 }
-
