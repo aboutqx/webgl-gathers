@@ -156,9 +156,13 @@ class App {
 }
 
 let app = new App()
-app.init()
-// for dubug
-document.querySelector('.edge').click()
+app.init().then(
+  () => {
+    //for dubug
+    document.querySelector('.edge').click()
+  }
+)
+
 
 file.addEventListener('change', (e) => {
 
