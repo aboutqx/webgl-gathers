@@ -94,9 +94,8 @@ class FilterApp {
     this._canvas.width = this._width = width
     this._canvas.height = this._height = height
 
-    // Note sure if this is a good idea; at least it makes texture loading
-    // in Ejecta instant.
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
+    //multiply alpha channel to other channels
+    // gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
     gl.viewport(0, 0, this._width, this._height)
 
     // Delete old temp framebuffers

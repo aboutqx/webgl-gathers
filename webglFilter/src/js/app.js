@@ -28,7 +28,7 @@ let scale
 if (Util.isMobile()) {
   scale = .7
 } else {
-  scale = .4
+  scale = .25
 }
 
 const buttonWrapper = document.querySelector('.button-wrapper')
@@ -159,7 +159,7 @@ let app = new App()
 app.init().then(
   () => {
     //for dubug
-    document.querySelector('.edge').click()
+    document.querySelector('.crossZoom').click()
   }
 )
 

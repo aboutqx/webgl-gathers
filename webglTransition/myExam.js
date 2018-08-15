@@ -25,7 +25,7 @@ Promise.all(images.map(loadImage)).spread(function start(fromImage,toImage){
 	from = createTexture(gl, toImage);
 	
 	function loop(transitionIndex, from, to){
-		//console.log(GlslTransitions[transitionIndex].name);
+		console.log(GlslTransitions[transitionIndex].name)
 		if(GlslTransitions[transitionIndex].name=='Blur'||GlslTransitions[transitionIndex].name=='Circle Crop') transitionIndex++;
 		
 		return new Promise(function(resolve,reject){

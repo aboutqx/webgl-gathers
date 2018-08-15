@@ -5,20 +5,31 @@ module.exports = {
     output: {
         path: path.join(__dirname, '/dist/'),
         filename: 'build.js',
-        publicPath:'/dist/'
+        publicPath: '/dist/'
     },
     resolve: {
-        extensions: ['', '.js', '.jsx']
+        extensions: ['.js', '.jsx']
+    },
+    devServer: {
+        contentBase: './',
+        hot: true,
+        disableHostCheck: true,
     },
     module: {
         loaders: [{
-            test: /\.js$/,
-            exclude: /node_modules/,
-            loader: "babel",
+                test: /\.js$/,
+                exclude: /node_modules/,
+                loader: "babel-loader",
 
-        },
-        { test: /\.jpg$/, loader: "file-loader?name=[name].[ext]" },
-        {test:/\.json$/,loader:'json-loader'}
+            },
+            {
+                test: /\.jpg$/,
+                loader: "file-loader?name=[name].[ext]"
+            },
+            {
+                test: /\.json$/,
+                loader: 'json-loader'
+            }
         ]
     }
 }

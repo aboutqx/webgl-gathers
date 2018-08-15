@@ -7,16 +7,16 @@ var createTransition = require("glsl-transition");
 var GlslTransitions = require("glsl-transitions").sort(function (a, b) {
   return a.stars - b.stars;
 });
-omitArray(GlslTransitions,['name','name'],['Blur','Circle Crop']);
+// omitArray(GlslTransitions,['name','name'],['Blur','Circle Crop']);
 
 var transition;
 var time=1000;
-var transitionIndex=0;
+var transitionIndex= 1
 
 Promise.all(images.map(loadImage)).then(function start(values){
 	var canvas = document.getElementById("target");
-  	canvas.width = 960;
-  	canvas.height = 420;
+  	canvas.width = values[0].width
+  	canvas.height = values[0].height
 
 
 	var gl = canvas.getContext("webgl");
@@ -44,8 +44,8 @@ Promise.all(images.map(loadImage)).then(function start(values){
 		if(!nPromise||nPromise.isFulfilled()){
 			nPromise= new Promise(function(resolve,reject){
 				makeTransi(resolve,reject,'add');
-			}).catch(function(){
-				throw new Error("webgl error")
+			}).catch(function(e){
+				console.error(e)
 			})
 			return nPromise;
 		}
@@ -54,8 +54,8 @@ Promise.all(images.map(loadImage)).then(function start(values){
 		if(!pPromise||pPromise.isFulfilled()){
 			pPromise=new Promise(function(resolve,reject){
 				makeTransi(resolve,reject,'decrease');
-			}).catch(function(){
-				throw new Error("webgl error")
+			}).catch(function(e){
+				console.error(e)
 			})
 			return pPromise;
 		}
@@ -68,29 +68,28 @@ Promise.all(images.map(loadImage)).then(function start(values){
 			reject(e);
 		}
 
-		for(var i=0;i<101;i++){
-			(function(){
-				var pos=i;
-				setTimeout(function(){
+		for(let pos=0;pos<101;pos++){
+			
+			setTimeout(function(){
+				if(flag=='add'){
+					var tmp=imageIndex==images.length-1?0:imageIndex+1
+				}else if(flag=='decrease'){
+					var tmp=imageIndex==0?images.length-1:imageIndex-1
+				}
+
+				transition.render(pos/100, textures[imageIndex], textures[tmp], GlslTransitions[transitionIndex].uniforms);				
+				if(pos==100) {
+					resolve('suc')
 					if(flag=='add'){
-						var tmp=imageIndex==images.length-1?0:imageIndex+1
+						if(imageIndex==images.length-1) imageIndex=0;
+						else imageIndex++;
 					}else if(flag=='decrease'){
-						var tmp=imageIndex==0?images.length-1:imageIndex-1
-					}		
-					transition.render(pos/100, textures[imageIndex], textures[tmp], GlslTransitions[transitionIndex].uniforms);				
-					if(pos==100) {
-						resolve('suc')
-						if(flag=='add'){
-							if(imageIndex==images.length-1) imageIndex=0;
-							else imageIndex++;
-						}else if(flag=='decrease'){
-							if(imageIndex==0) imageIndex=images.length-1;
-							else imageIndex--;
-						}
-						document.getElementById('image-index').innerHTML=imageIndex+1;
+						if(imageIndex==0) imageIndex=images.length-1;
+						else imageIndex--;
 					}
-				},pos*time/100)
-			})();
+					document.getElementById('image-index').innerHTML=imageIndex+1;
+				}
+			},pos*time/100)
 		}
 	}
 })
@@ -141,7 +140,6 @@ function omitArray(array,keys,values){//omit key-value object in array
 function loadImage(src){
 	return new Promise(function(resolve,reject){
 		var img = new Image();
-        img.crossOrigin = "Anonymous";
         img.onload = function (e) { resolve(img); };
         img.onabort = img.onerror = reject;
         img.src = src;
