@@ -79,7 +79,7 @@ class Filter {
 
     filterWrapper._resize(this.textures[0].width, this.textures[0].height)
 
-    Emitter.on('updateSource',(e) => {
+    Emitter.on('updateSource', (e) => {
       this.textures[0] = new Texture(this.gl, this.gl.RGBA)
       let t = this.textures[0]
       t.fromImage(e.detail.img)
@@ -213,7 +213,11 @@ class notebookDrawing extends Filter {
   _setLayers() {
     this._time = 0
     this._layers[0].fshader = require('../shaders/notebookDrawing.frag')
-    this._layers[0].texture = [{name: 'p1' },{ name: 'noise256' }]
+    this._layers[0].texture = [{
+      name: 'p1'
+    }, {
+      name: 'noise256'
+    }]
   }
   _draw(wrapper) {
     let program = this.prg
@@ -379,18 +383,49 @@ class edge extends Filter {
     this.textures[0].bind(0)
     this.prg.style({ ...this._layers[0].uniforms,
       px: [1 / this._wrapper._width, 1 / this._wrapper._height],
-      mx: [
-        -1, 0, 1,
-         -2, 0, 2,
-         -1, 0, 1
-        ],
-      my: [
-        -1, -2, -1,
+      mx: [-1, 0, 1, -2, 0, 2, -1, 0, 1],
+      my: [-1, -2, -1,
         0, 0, 0,
         1, 2, 1
       ]
     })
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3)
+  }
+}
+class DepthOfField extends Filter {
+  progress = 0
+  constructor(filterWrapper) {
+    super(filterWrapper)
+  }
+  _setLayers() {
+    this._layers[0].textures.push({
+      name: 'shirt'
+    })
+    this._layers[0].fshader = require('../shaders/CrossZoom.frag')
+  }
+  _draw() {
+    let gl = this.gl
+
+    gl.uniform1i(this.prg.to(), 1)
+    gl.uniform1i(this.prg.from(), 0)
+    this.textures[0].bind(0)
+    this.textures[1].bind(1)
+
+    if(1-this.progress<0.03) {
+      this.progress = 1.
+    } else {
+      this.progress+= (1.-this.progress)/100
+    }
+    console.log(this.progress)
+    this.prg.style({
+      flipY:1,
+      progress: this.progress,
+      strength: .3,
+      from: 0,
+      to:1
+    })
+
+    gl.drawArrays(gl.TRIANGLES, 0, 3)
   }
 }
 export default {
@@ -401,5 +436,6 @@ export default {
   bond,
   bloom,
   Cloth,
-  edge
+  edge,
+  DepthOfField
 }
