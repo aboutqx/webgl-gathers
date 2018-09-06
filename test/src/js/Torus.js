@@ -1,8 +1,9 @@
-export default function Torus (circlePoints, circleNum, rdius, Origin2CicleCenter) {
+export function Torus (circlePoints, circleNum, rdius, Origin2CicleCenter, colors) {
   let pos = []
   let index = []
   let normal = []
   let color = []
+  let tc
   for (let i = 0; i <= circlePoints; i++) {
     let theta = Math.PI * 2 / circlePoints * i
     // 圆平面弧度计算 x,y平面，得到y
@@ -16,7 +17,8 @@ export default function Torus (circlePoints, circleNum, rdius, Origin2CicleCente
       let pz = (rr * rdius + Origin2CicleCenter) * Math.sin(alpha)
       pos.push(px, py, pz)
 
-      let tc = hsva(360 / circleNum * j, 1, 1, 1) // hue色调，360度，红色为0°，绿色为120°,蓝色为240°
+      if (colors) tc = colors
+      else tc = hsva(360 / circleNum * j, 1, 1, 1) // hue色调，360度，红色为0°，绿色为120°,蓝色为240°
       color.push(tc[0], tc[1], tc[2], tc[3])
 
       let rx = rr * Math.cos(alpha)
@@ -40,7 +42,7 @@ export default function Torus (circlePoints, circleNum, rdius, Origin2CicleCente
   }
 }
 
-function hsva(h, s, v, a) {
+export function hsva (h, s, v, a) {
   if (s > 1 || v > 1 || a > 1) {
     return
   }

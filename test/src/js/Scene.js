@@ -1,15 +1,26 @@
 import reflection from './Reflection'
 import mask from './Mask'
+import shadow from './Shadow'
+import mrt from './Mrt'
+import mirror from './Mirror'
 
 let objs = {
   reflection,
-  mask
+  mask,
+  shadow,
+  mrt,
+  mirror
 }
 let canvas = document.querySelector('canvas')
+let name = location.hash.replace('#', '')
+
 let gl = canvas.getContext('webgl', {
-  antialias: true
+  antialias: true,
+  stencil: true
 })
 
-let name = location.hash.replace('#', '')
 let obj = new objs[name](gl)
-obj.play()
+
+export default function play () {
+  obj.play()
+}

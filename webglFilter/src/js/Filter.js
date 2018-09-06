@@ -392,7 +392,7 @@ class edge extends Filter {
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3)
   }
 }
-class DepthOfField extends Filter {
+class CrossZoom extends Filter {
   progress = 0
   constructor(filterWrapper) {
     super(filterWrapper)
@@ -428,6 +428,64 @@ class DepthOfField extends Filter {
     gl.drawArrays(gl.TRIANGLES, 0, 3)
   }
 }
+
+class GaussianBlur extends Filter {
+
+  constructor(filterWrapper) {
+    super(filterWrapper)
+
+    let s = []
+    let t = []
+    // this.gaussBlur_1(s,t, 300, 200 ,1)
+  }
+
+  //weights can be any n*n,but neighbor is almost fixed in shader
+  gaussBlur_1(scl, tcl, w, h, r) {
+    var rs = Math.ceil(r * 2.57); // significant radius,r start with 1
+    for (var i = 0; i < h; i++)
+      for (var j = 0; j < w; j++) {
+        var val = 0,
+          wsum = 0;
+        for (var iy = i - rs; iy < i + rs + 1; iy++)
+          for (var ix = j - rs; ix < j + rs + 1; ix++) {
+            var x = Math.min(w - 1, Math.max(0, ix));
+            var y = Math.min(h - 1, Math.max(0, iy));
+            var dsq = (ix - j) * (ix - j) + (iy - i) * (iy - i);
+            var wght = Math.exp(-dsq / (2 * r * r)) / (Math.PI * 2 * r * r);
+            console.log(y*w+x)
+            val += scl[y * w + x] * wght; //每个色道像素按排列
+            wsum += wght;
+          }
+        tcl[i * w + j] = Math.round(val / wsum);
+      }
+  }
+
+  _setLayers() {
+    this._layers[0].textures.push({
+      name: 'shirt'
+    })
+    this._layers[0].fshader = require('../shaders/convolution.frag')
+  }
+  _draw() {
+    let gl = this.gl
+
+    this.textures[0].bind(0)
+
+    this.prg.style({
+      flipY: 1,
+      texture: 0,
+
+    })
+
+    gl.drawArrays(gl.TRIANGLES, 0, 3)
+  }
+  _setGUI() {
+    this.addGUIParams({
+      radius: 2
+    })
+  }
+}
+
 export default {
   Filter,
   grayFocus,
@@ -437,5 +495,6 @@ export default {
   bloom,
   Cloth,
   edge,
-  DepthOfField
+  CrossZoom,
+  GaussianBlur
 }

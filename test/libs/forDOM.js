@@ -344,8 +344,8 @@ function Toast(message) {
       document.body.removeChild(div)
     }, 1000)
   }
-
 }
+
 export function isMobile() {
   return /iPhone|Andorid|ipad|ipod/i.test(navigator.userAgent)
 }
