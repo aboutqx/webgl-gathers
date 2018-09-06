@@ -70,7 +70,7 @@ const entry = { app: './src/js/app.js' }
 const output =   {
     filename: 'bundle.js',
     path: getOutput(),
-    publicPath: !isProd ? `http://${serverIp}:8081/` : '' // global ajax get file path
+    publicPath: !isProd ? `http://${serverIp}:8082/` : '' // global ajax get file path
 }
 console.log(getOutput())
 const devtool = isProd ? 'source-map' : 'inline-source-map';
@@ -83,7 +83,7 @@ const config = {
         contentBase: './src',
         hot: true,
         disableHostCheck: true,
-        port:8081
+        port:8082
     },
     plugins,
     output,

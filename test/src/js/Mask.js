@@ -3,39 +3,104 @@ import {
   ArrayBuffer,
   IndexBuffer
 } from 'libs/glBuffer'
+import Texture from 'libs/glTexture'
 import vs from 'shaders/mask.vert'
 import fs from 'shaders/mask.frag'
+import outlineFs from 'shaders/maskOutline.frag'
+import { mat4 } from 'gl-matrix'
+import Vao from 'libs/vao'
+
 
 export default class Mask extends Pipeline {
   count = 0
   constructor(gl) {
-    super(gl, vs, fs)
-
+    super(gl)
+  }
+  init(){
+    this.outlinePrg = this.compile(vs, outlineFs)
+    this.prg = this.compile(vs, fs)
   }
   attrib() {
     let gl = this.gl
-    let {
-      pos,
-      index,
-      normal,
-      color
-    } = Torus(32, 32, 1.0, 2.0)
+
+    let cubeVertices = [
+        // positions          // texture Coords
+        -0.5, -0.5, -0.5,  0.0, 0.0,
+         0.5, -0.5, -0.5,  1.0, 0.0,
+         0.5,  0.5, -0.5,  1.0, 1.0,
+         0.5,  0.5, -0.5,  1.0, 1.0,
+        -0.5,  0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, 0.0,
+
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+         0.5, -0.5,  0.5,  1.0, 0.0,
+         0.5,  0.5,  0.5,  1.0, 1.0,
+         0.5,  0.5,  0.5,  1.0, 1.0,
+        -0.5,  0.5,  0.5,  0.0, 1.0,
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+
+        -0.5,  0.5,  0.5,  1.0, 0.0,
+        -0.5,  0.5, -0.5,  1.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+        -0.5,  0.5,  0.5,  1.0, 0.0,
+
+         0.5,  0.5,  0.5,  1.0, 0.0,
+         0.5,  0.5, -0.5,  1.0, 1.0,
+         0.5, -0.5, -0.5,  0.0, 1.0,
+         0.5, -0.5, -0.5,  0.0, 1.0,
+         0.5, -0.5,  0.5,  0.0, 0.0,
+         0.5,  0.5,  0.5,  1.0, 0.0,
+
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+         0.5, -0.5, -0.5,  1.0, 1.0,
+         0.5, -0.5,  0.5,  1.0, 0.0,
+         0.5, -0.5,  0.5,  1.0, 0.0,
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+
+        -0.5,  0.5, -0.5,  0.0, 1.0,
+         0.5,  0.5, -0.5,  1.0, 1.0,
+         0.5,  0.5,  0.5,  1.0, 0.0,
+         0.5,  0.5,  0.5,  1.0, 0.0,
+        -0.5,  0.5,  0.5,  0.0, 0.0,
+        -0.5,  0.5, -0.5,  0.0, 1.0
+    ]
+    let planeVertices = [
+        // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+         5.0, -0.5,  5.0,  2.0, 0.0,
+        -5.0, -0.5,  5.0,  0.0, 0.0,
+        -5.0, -0.5, -5.0,  0.0, 2.0,
+
+         5.0, -0.5,  5.0,  2.0, 0.0,
+        -5.0, -0.5, -5.0,  0.0, 2.0,
+         5.0, -0.5, -5.0,  2.0, 2.0
+    ]
+
+    this.cubeBuffer = new ArrayBuffer(gl, new Float32Array(cubeVertices))
+    this.planeBuffer = new ArrayBuffer(gl, new Float32Array(planeVertices))
+
+    this.cubeBuffer.attrib('position', 3, gl.FLOAT)
+    this.cubeBuffer.attrib('texcoord', 2, gl.FLOAT)
 
 
-    this.posBuffer = new ArrayBuffer(gl, new Float32Array(pos))
-    this.normalBuffer = new ArrayBuffer(gl, new Float32Array(normal))
-    this.colorBuffer = new ArrayBuffer(gl, new Float32Array(color))
+    this.planeBuffer.attrib('position', 3, gl.FLOAT)
+    this.planeBuffer.attrib('texcoord', 2, gl.FLOAT)
 
+    this.planeVao = new Vao(gl)
+    this.planeVao.setup(this.prg, [this.planeBuffer])
 
-    this.posBuffer.attrib('position', 3, gl.FLOAT)
-    this.posBuffer.attribPointer(this.prg)
-    this.normalBuffer.attrib('normal', 3, gl.FLOAT)
-    this.normalBuffer.attribPointer(this.prg)
-    this.colorBuffer.attrib('color', 4, gl.FLOAT)
-    this.colorBuffer.attribPointer(this.prg)
+    this.cubeVao = new Vao(gl)
+    this.cubeVao.setup(this.prg, [this.cubeBuffer])
 
-    this.indexBuffer = new IndexBuffer(gl, gl.UNSIGNED_SHORT, new Uint16Array(index), gl.STATIC_DRAW)
-    this.indexBuffer.bind()
+    this.texture = new Texture(gl, gl.RGBA)
+    let img = getAssets.koala
+    this.texture.fromImage(img)
+    this.texture.setFilter()
+    this.texture.repeat()
+
+    this.texture.bind(0)
   }
   prepare() {
 
@@ -45,12 +110,20 @@ export default class Mask extends Pipeline {
     this.mvpMatrix = mat4.identity(mat4.create())
     this.tmpMatrix = mat4.identity(mat4.create())
 
-    mat4.lookAt(vMatrix, [0.0, 0.0, 20.0], [0, 0, 0], [0, 1, 0])
+    mat4.lookAt(vMatrix, [0.0, 0.0, 4.0], [0, 0, 0.0], [0, 1, 0])
     let canvas = this.gl.canvas
 
-    mat4.perspective(pMatrix, 45, canvas.clientWidth / canvas.clientHeight, .1, 100)
+    mat4.perspective(pMatrix, 45, canvas.clientWidth / canvas.clientHeight, .1, 1000)
 
     mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
+
+    let gl = this.gl
+
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LESS);
+    gl.enable(gl.STENCIL_TEST);
+    gl.stencilFunc(gl.NOTEQUAL, 1, 0xff);
+    gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
   }
   uniform() {
@@ -58,29 +131,55 @@ export default class Mask extends Pipeline {
 
     this.count++
 
-      let rad = (this.count % 360) * Math.PI / 180
+    let rad = (this.count % 360) * Math.PI / 180
 
     mat4.rotate(mMatrix, mMatrix, rad, [0, 1, 1])
     mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
 
-    let invMatrix = mat4.identity(mat4.create())
-    mat4.invert(invMatrix, mMatrix)
 
+    this.prg.use()
     this.prg.style({
       mvpMatrix: this.mvpMatrix,
-      invMatrix,
-      lightDirection: [-0.5, 0.5, 0.5],
-      eyeDirection: [0.0, 0.0, 20.0],
-      ambientColor: [0.1, 0.1, 0.1, 1.0]
+      texture: 0
     })
   }
   render() {
     let gl = this.gl
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LEQUAL)
-    gl.enable(gl.CULL_FACE)
+    gl.clearColor(0.3, 0.3, .3, 1.0)
+    gl.clearDepth(1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
 
-    this.indexBuffer.drawTriangles()
+    gl.stencilMask(0x00) //写入0
 
+    this.prg.use()
+    this.planeVao.bind()
+    this.planeBuffer.drawTriangles()
+    this.planeVao.unbind()
+
+    gl.stencilFunc(gl.ALWAYS, 1, 0xff)
+    gl.stencilMask(0xff) //写入1
+    this.cubeVao.bind()
+    this.cubeBuffer.drawTriangles()
+    this.cubeVao.unbind()
+
+    gl.stencilFunc(gl.NOTEQUAL, 1, 0xff);//不等于1的才能通过测试
+    gl.stencilMask(0x00); //写入0
+    this.outlinePrg.use()
+    const scale = 1.1;
+
+    let mMatrix = mat4.identity(mat4.create())
+
+    let rad = (this.count % 360) * Math.PI / 180 //不旋转看到的会是一个mask方面
+
+    mat4.rotate(mMatrix, mMatrix, rad, [0, 1, 1])
+    mat4.scale(mMatrix, mMatrix, [scale, scale, scale])
+    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
+    this.outlinePrg.style({
+      mvpMatrix: this.mvpMatrix
+    })
+    this.cubeVao.bind()
+    this.cubeBuffer.drawTriangles()
+    this.cubeVao.unbind()
+    gl.stencilMask(0xff)
   }
 }

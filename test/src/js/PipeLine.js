@@ -8,19 +8,21 @@ export default class Pipeline {
   vs
   fs
 
-  constructor(gl, vs, fs) {
+  constructor(gl) {
     this.gl = gl
-    this.init(vs, fs)
+    this.init()
     this.attrib()
     this.prepare()
 
     this._animate = this.animate.bind(this)
   }
-  init(vs, fs) {
+  init() {
 
-    this.prg = new Program(this.gl)
-    this.prg.compile(vs, fs)
-    this.prg.use()
+  }
+  compile(vs, fs) {
+    let prg = new Program(this.gl)
+    prg.compile(vs, fs)
+    return prg
   }
   attrib() {
 
@@ -33,11 +35,6 @@ export default class Pipeline {
   }
   animate() {
     requestAnimationFrame(this._animate)
-
-    let gl = this.gl
-    gl.clearColor(0., 0.3, .3, 1.0)
-    gl.clearDepth(1.0)
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
     this.uniform()
     this.render()

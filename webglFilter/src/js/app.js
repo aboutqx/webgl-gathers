@@ -159,7 +159,7 @@ let app = new App()
 app.init().then(
   () => {
     //for dubug
-    document.querySelector('.crossZoom').click()
+    document.querySelector('.GaussianBlur').click()
   }
 )
 
