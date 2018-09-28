@@ -1,4 +1,5 @@
 import Program from 'libs/glProgram'
+import { quat } from 'gl-matrix';
 
 
 export default class Pipeline {
@@ -7,7 +8,7 @@ export default class Pipeline {
   posBuffer
   vs
   fs
-
+  rotateQ = quat.create()
   constructor(gl) {
     this.gl = gl
     this.init()

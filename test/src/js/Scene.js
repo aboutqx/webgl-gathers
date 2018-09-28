@@ -4,6 +4,8 @@ import shadow from './Shadow'
 import mrt from './Mrt'
 import mirror from './Mirror'
 
+import MouseMove from './MouseMove'
+
 let objs = {
   reflection,
   mask,
@@ -12,7 +14,7 @@ let objs = {
   mirror
 }
 let canvas = document.querySelector('canvas')
-let name = location.hash.replace('#', '')
+let name = location.hash.replace('#', '').toLocaleLowerCase()
 
 let gl = canvas.getContext('webgl', {
   antialias: true,
@@ -21,6 +23,9 @@ let gl = canvas.getContext('webgl', {
 
 let obj = new objs[name](gl)
 
+canvas.addEventListener('mousemove', (e) => {
+  obj.rotateQ = MouseMove(e, canvas)
+})
 export default function play () {
   obj.play()
 }

@@ -3,57 +3,28 @@ import {
   ArrayBuffer,
   IndexBuffer
 } from 'libs/glBuffer'
-import Texture from 'libs/glTexture'
-
-import vs from 'shaders/mrt/simple.vert'
-import fs from 'shaders/mrt/simple.frag'
-
+import vs from 'shaders/mirror/simple.vert'
+import fs from 'shaders/mirror/simple.frag'
+import mVs from 'shaders/mirror/mirror.vert'
+import mFs from 'shaders/mirror/mirror.frag'
 import {
-  mat4
-} from 'gl-matrix'
-import Vao from 'libs/vao'
-import {
-  Torus,
-  hsva
+  Torus
 } from './Torus'
+import {
+  mat4, vec3
+} from 'gl-matrix'
 
-let mrtStatus = {
-  color_attachments: 0,
-  draw_buffers: 0
-}
-let ext
-let frameBuffer
 
 export default class Mirror extends Pipeline {
   count = 0
-  offset = [
-    [-0.5, -0.5, 0.0],
-    [-0.5, 0.5, 0.0],
-    [0.5, -0.5, 0.0],
-    [0.5, 0.5, 0.0]
-  ]
-
   constructor(gl) {
     super(gl)
 
   }
   init() {
-    let gl = this.gl
-    ext = gl.getExtension('WEBGL_draw_buffers')
-    if (!ext) {
-      alert('WEBGL_draw_buffers not supported')
-      return
-    } else {
-      mrtStatus.color_attachments = gl.getParameter(ext.MAX_COLOR_ATTACHMENTS_WEBGL)
-      mrtStatus.draw_buffers = gl.getParameter(ext.MAX_DRAW_BUFFERS_WEBGL)
-      console.log('MAX_COLOR_ATTACHMENTS_WEBGL: ' + mrtStatus.color_attachments)
-      console.log('MAX_DRAW_BUFFERS_WEBGL: ' + mrtStatus.draw_buffers)
-    }
-
-    this.mrtPrg = this.compile(mrtVs, mrtFs)
     this.prg = this.compile(vs, fs)
+    this.mPrg = this.compile(mVs, mFs)
   }
-
   attrib() {
     let gl = this.gl
     let {
@@ -61,148 +32,89 @@ export default class Mirror extends Pipeline {
       index,
       normal,
       color
-    } = Torus(64, 64, 1.0, 2.0, [1.0, 1.0, 1.0, 1.0])
+    } = Torus(32, 32, 1.0, 2.0)
 
-    const tPosBuffer = new ArrayBuffer(gl, new Float32Array(pos))
-    const tNormalBuffer = new ArrayBuffer(gl, new Float32Array(normal))
-    const tColorBuffer = new ArrayBuffer(gl, new Float32Array(color))
+    this.posBuffer = new ArrayBuffer(gl, new Float32Array(pos))
+    this.normalBuffer = new ArrayBuffer(gl, new Float32Array(normal))
+    this.colorBuffer = new ArrayBuffer(gl, new Float32Array(color))
+
+    this.prg.use()
+
+    this.posBuffer.attrib('position', 3, gl.FLOAT)
+    this.posBuffer.attribPointer(this.prg)
+
+    this.normalBuffer.attrib('normal', 3, gl.FLOAT)
+    this.normalBuffer.attribPointer(this.prg)
+
+
+    this.colorBuffer.attrib('color', 4, gl.FLOAT)
+    this.colorBuffer.attribPointer(this.prg)
 
     this.indexBuffer = new IndexBuffer(gl, gl.UNSIGNED_SHORT, new Uint16Array(index), gl.STATIC_DRAW)
 
-    tPosBuffer.attrib('position', 3, gl.FLOAT)
-    tNormalBuffer.attrib('normal', 3, gl.FLOAT)
-    tColorBuffer.attrib('color', 4, gl.FLOAT)
-
-    this.torusVao = new Vao(gl)
-    this.torusVao.setup(this.mrtPrg, [tPosBuffer, tNormalBuffer, tColorBuffer])
-
-    let vPos = [-0.5, 0.5, 0.0,
-      0.5, 0.5, 0.0, -0.5, -0.5, 0.0,
-      0.5, -0.5, 0.0
-    ]
-    let vTexCoord = [
-      0.0, 1.0,
-      1.0, 1.0,
-      0.0, 0.0,
-      1.0, 0.0
-    ]
-    let vIndex = [
-      0, 2, 1,
-      2, 3, 1
-    ]
-
-    const vPosBuffer = new ArrayBuffer(gl, new Float32Array(vPos))
-    const vTexBuffer = new ArrayBuffer(gl, new Float32Array(vTexCoord))
-
-    this.vIndexBuffer = new IndexBuffer(gl, gl.UNSIGNED_SHORT, new Uint16Array(vIndex), gl.STATIC_DRAW)
-
-    vPosBuffer.attrib('position', 3, gl.FLOAT)
-    vTexBuffer.attrib('texCoord', 2, gl.FLOAT)
-    this.mainVao = new Vao(gl)
-    this.mainVao.setup(this.prg, [vPosBuffer, vTexBuffer])
-  }
-
-  prepare() {
-
-    let vMatrix = mat4.create()
-    let pMatrix = mat4.create()
-
-    this.mvpMatrix = mat4.create()
-    this.tmpMatrix = mat4.create()
-
-    const eyePosition = [0.0, 80.0, 0.0]
-    const camUpDirection = [0., 0., -1.]
-
-    mat4.lookAt(vMatrix, eyePosition, [0, 0, 0], camUpDirection)
-    let canvas = this.gl.canvas
-    mat4.perspective(pMatrix, 75, canvas.clientWidth / canvas.clientHeight, .1, 135)
-    mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
-
-
-    let gl = this.gl
-
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LEQUAL)
-    gl.enable(gl.CULL_FACE) //double side
-
-    gl.clearColor(.3, .3, .7, 1.0)
-    gl.clearDepth(1.0)
-
-
-    frameBuffer = createFramebufferMRT(gl, gl.canvas.width, gl.canvas.height) //full canvas size
-
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, frameBuffer.t[0])
-    gl.activeTexture(gl.TEXTURE1)
-    gl.bindTexture(gl.TEXTURE_2D, frameBuffer.t[1])
-    gl.activeTexture(gl.TEXTURE2)
-    gl.bindTexture(gl.TEXTURE_2D, frameBuffer.t[2])
-    gl.activeTexture(gl.TEXTURE3)
-    gl.bindTexture(gl.TEXTURE_2D, frameBuffer.t[3])
-    //z值为pespecte之后的z，camera从上往下看，z相同，所以depth里圆圈颜色相同，转动后，透视z值改变，颜色改变
   }
   uniform() {
 
+    let vMatrix = mat4.identity(mat4.create())
+    let pMatrix = mat4.identity(mat4.create())
+
+    this.mvpMatrix = mat4.identity(mat4.create())
+    this.tmpMatrix = mat4.identity(mat4.create())
+
+    let eyeDirection = []
+    let camUpDirection = []
+
+    vec3.transformQuat(eyeDirection, [0.0, 5.0, 15.0], this.rotateQ)
+    vec3.transformQuat(camUpDirection, [0.0, 1.0, -1.0], this.rotateQ)
+    this.eyeDirection = eyeDirection
+
+    mat4.lookAt(vMatrix, eyeDirection, [0, 0, 0], camUpDirection)
+    let canvas = this.gl.canvas
+
+    mat4.perspective(pMatrix, 45, canvas.clientWidth / canvas.clientHeight, .1, 100)
+
+    mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
+
+
+
+    let mMatrix = mat4.identity(mat4.create())
+
+    // this.count++
+
+    let rad = (this.count % 360) * Math.PI / 180
+    mat4.rotate(mMatrix, mMatrix, 1 * 2 * Math.PI / 9, [0, 1, 0])
+    mat4.translate(mMatrix, mMatrix, [0.0, 0.0, -1.0])
+    // mat4.rotate(mMatrix, mMatrix, rad, [0, 1, 1])
+    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
+
+    let invMatrix = mat4.identity(mat4.create())
+    mat4.invert(invMatrix, mMatrix)
+
+    
+    this.prg.use()
+    this.prg.style({
+      vpMatrix: this.tmpMatrix,
+      mMatrix: mMatrix,
+      invMatrix,
+      lightDirection: [0, 0, 4],
+      eyeDirection: this.eyeDirection,
+      ambientColor: [0.1, 0.1, 0.1, 1.0],
+      mirror: true
+    })
   }
   render() {
-
     let gl = this.gl
-    gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer.f)
-
-    const bufferList = [
-      ext.COLOR_ATTACHMENT0_WEBGL,
-      ext.COLOR_ATTACHMENT1_WEBGL,
-      ext.COLOR_ATTACHMENT2_WEBGL,
-      ext.COLOR_ATTACHMENT3_WEBGL
-    ]
-    ext.drawBuffersWEBGL(bufferList) // 指定渲染目标
+    gl.clearColor(0.3, 0.3, .3, 1.0)
+    gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    const lightDirection = [-0.577, 0.577, 0.577]
+    gl.enable(gl.DEPTH_TEST)
+    gl.depthFunc(gl.LEQUAL)
+    // gl.enable(gl.CULL_FACE)
 
-    let mMatrix = mat4.create()
-    let invMatrix = mat4.create()
-    this.count++
-      let rad = (this.count % 360) * Math.PI / 180
-
-    this.mrtPrg.use()
-    this.torusVao.bind()
-    this.indexBuffer.bind()
-    for (let i = 0; i < 9; i++) {
-      mat4.identity(mMatrix);
-      //绕y轴旋转，改变model坐标系方向，便于后续移动错开
-      mat4.rotate(mMatrix, mMatrix, i * 2 * Math.PI / 9, [0, 1, 0])
-      mat4.translate(mMatrix, mMatrix, [0.0, 0.0, 10.0])
-      mat4.rotate(mMatrix, mMatrix, rad, [1, 1, 0])
-      mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
-
-      mat4.invert(invMatrix, mMatrix)
-
-      let ambient = hsva(i * 40, 1.0, 1.0, 1.0) //hue 0-360为各常见色彩
-
-      this.mrtPrg.style({
-        lightDirection,
-        mvpMatrix: this.mvpMatrix,
-        ambient,
-        invMatrix
-      })
-      this.indexBuffer.drawTriangles()
-    }
-    this.torusVao.unbind()
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
     this.prg.use()
-    this.mainVao.bind()
-    this.vIndexBuffer.bind()
-    for (let i = 0; i < 4; ++i) {
-      this.prg.style({
-        offset: this.offset[i],
-        texture: i
-      })
-      this.vIndexBuffer.drawTriangles()
-    }
-    this.mainVao.unbind()
+    this.indexBuffer.bind()
+    this.indexBuffer.drawTriangles()
+
   }
 }
-
