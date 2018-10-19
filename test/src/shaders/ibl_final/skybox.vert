@@ -1,15 +1,16 @@
 #version 300 es
 in vec3 position;
-in vec2 texCoord;
 uniform   mat4 mMatrix;
 uniform   mat4 vpMatrix;
 
 out vec3 WorldPos;
-out vec2 vUv;
-void main(void){
+
+void main()
+{
+
   vec4 pos       = mMatrix * vec4(position, 1.0);
-	gl_Position    = vpMatrix * pos;
+	vec4 clipPos    = vpMatrix * pos;
+	gl_Position = clipPos.xyww; // 设置深度测试的z为1，这样只会在没有遮挡时渲染skybox，节省性能
 
   WorldPos = pos.xyz;
-  vUv = texCoord;
 }

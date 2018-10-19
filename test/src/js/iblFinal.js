@@ -4,14 +4,14 @@ import {
   canvas,
   toRadian
 } from 'libs/GlTools'
-import vs from 'shaders/ibl_diffuse/pbr_ibl.vert'
-import fs from 'shaders/ibl_diffuse/pbr_ibl.frag'
-import mapVs from 'shaders/pbr/pbr_map.vert'
-import mapFs from 'shaders/pbr/pbr_map.frag'
-import cubeVs from 'shaders/ibl_diffuse/cubemap.vert'
-import cubeFs from 'shaders/ibl_diffuse/equirectangular_to_cubemap.frag'
-import skyboxVs from 'shaders/ibl_diffuse/skybox.vert'
-import skyboxFs from 'shaders/ibl_diffuse/skybox.frag'
+// import vs from 'shaders/ibl_diffuse/pbr_ibl.vert'
+// import fs from 'shaders/ibl_diffuse/pbr_ibl.frag'
+import mapVs from 'shaders/ibl_final/pbr_map.vert'
+import mapFs from 'shaders/ibl_final/pbr_map.frag'
+import cubeVs from 'shaders/ibl_final/cubemap.vert'
+import cubeFs from 'shaders/ibl_final/equirectangular_to_cubemap.frag'
+import skyboxVs from 'shaders/ibl_final/skybox.vert'
+import skyboxFs from 'shaders/ibl_final/skybox.frag'
 import prefilterFs from 'shaders/ibl_final/prefilter.frag'
 import {
   ArrayBuffer,
@@ -28,7 +28,6 @@ import {
 import Mesh from 'libs/Mesh'
 import Texture from 'libs/glTexture'
 import HDRParser from 'utils/HDRParser'
-import CubeFrameBuffer from 'libs/CubeFrameBuffer'
 
 export default class IblFinal extends Pipeline {
   count = 0
@@ -37,13 +36,15 @@ export default class IblFinal extends Pipeline {
 
   }
   init() {
-    gl.getExtension('OES_standard_derivatives')
-    gl.getExtension('OES_texture_float')
-    gl.getExtension('OES_texture_float_linear')
-    // gl.getExtension('OES_texture_half_float')
-    // gl.getExtension('OES_texture_half_float_linear')
-    gl.getExtension('EXT_shader_texture_lod')
-    this.prg = this.compile(vs, fs)
+    // use webgl2
+    // gl.getExtension('OES_standard_derivatives')
+    // gl.getExtension('OES_texture_float')
+    gl.getExtension('OES_texture_float_linear') // Even WebGL2 requires OES_texture_float_linear
+    gl.getExtension("EXT_color_buffer_float")
+    // // gl.getExtension('OES_texture_half_float')
+    // // gl.getExtension('OES_texture_half_float_linear')
+    // gl.getExtension('EXT_shader_texture_lod')
+    // this.prg = this.compile(vs, fs)
     this.mapPrg = this.compile(mapVs, mapFs)
     this.cubePrg = this.compile(cubeVs, cubeFs)
     this.skyboxPrg = this.compile(skyboxVs, skyboxFs)
@@ -95,7 +96,9 @@ export default class IblFinal extends Pipeline {
 
     let hdrInfo = HDRParser(getAssets.equirectangular)
     console.log('hdrInfo',hdrInfo)
-    this.hdrTexture = new Texture(gl, gl.RGBA).fromData(hdrInfo.shape[0], hdrInfo.shape[1], hdrInfo.data, gl.FLOAT)
+    this.hdrTexture = new Texture(gl)
+    gl.bindTexture(gl.TEXTURE_2D, this.hdrTexture.id)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, hdrInfo.shape[0], hdrInfo.shape[1], 0, gl.RGBA, gl.FLOAT, hdrInfo.data)
     this.hdrTexture.clamp()
 
     let cubemapTexture = gl.createTexture();
@@ -103,7 +106,7 @@ export default class IblFinal extends Pipeline {
 
     for (var i = 0; i < 6; i++) {
       //r,l,u,d,b,f 为6个面指定空数据
-      gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
+      gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA32F, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
     }
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
@@ -147,6 +150,10 @@ export default class IblFinal extends Pipeline {
           this.cube.bind(this.cubePrg, ['position', 'texCoord'])
           this.cube.draw()
     }
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+    if (status != gl.FRAMEBUFFER_COMPLETE) {
+      console.log(`gl.checkFramebufferStatus() returned ${status.toString(16)}`);
+    }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
     let prefilterMap = gl.createTexture();
@@ -154,7 +161,7 @@ export default class IblFinal extends Pipeline {
 
     for (var i = 0; i < 6; i++) {
       //r,l,u,d,b,f 为6个面指定空数据
-      gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
+      gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA32F, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
     }
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
@@ -286,16 +293,16 @@ export default class IblFinal extends Pipeline {
     }
 
     if (this.params.map === 'none') {
-      this.prg.use()
-      // this.irradianceFbo.getTexture().bind(0)
-      this.prg.style({
-        ...baseUniforms,
-        albedo: [.5, .0, .0],
-        roughness: this.params.roughness,
-        metallic: this.params.metallic,
-        ao: 1.
-      })
-      this.sphere.bind(this.prg, ['position', 'normal'])
+      // this.prg.use()
+      // // this.irradianceFbo.getTexture().bind(0)
+      // this.prg.style({
+      //   ...baseUniforms,
+      //   albedo: [.5, .0, .0],
+      //   roughness: this.params.roughness,
+      //   metallic: this.params.metallic,
+      //   ao: 1.
+      // })
+      // this.sphere.bind(this.prg, ['position', 'normal'])
     } else {
       this.mapPrg.use()
 

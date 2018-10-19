@@ -89,7 +89,7 @@ Program.prototype = {
   compile: function (vert, frag, prefix) {
     this.ready = false
 
-    prefix = (prefix || '') + '\n'
+    prefix = (prefix || '') // + '\n'
 
     var gl = this.gl
 
