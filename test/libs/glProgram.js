@@ -68,7 +68,7 @@ Program.prototype = {
       if (typeof this[k] === 'function') {
         this[k](opt[k])
       } else {
-        throw new Error('not find in shader:' + k)
+        // throw new Error('not find in shader:' + k)
       }
     }
     let unAssigned = []

@@ -16,6 +16,7 @@ void main(void){
 	vec4 pos       = mMatrix * vec4(position, 1.0);
 	if(mirror){pos = vec4(pos.x, -pos.y, pos.zw);}
 	gl_Position    = vpMatrix * pos;
+
   vNormal = normal;
   vColor      = color;
   dist = distance(position.xyz, eyeDirection);
