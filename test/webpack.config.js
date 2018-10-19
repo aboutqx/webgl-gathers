@@ -128,7 +128,8 @@ const config = {
   resolve: {
     alias: {
       'libs': path.resolve(__dirname, './libs'),
-      'shaders': path.resolve(__dirname, './src/shaders')
+      'shaders': path.resolve(__dirname, './src/shaders'),
+      'utils': path.resolve(__dirname, './utils')
     }
   }
 }

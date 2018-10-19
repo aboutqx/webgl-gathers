@@ -3,6 +3,11 @@ import {
   ArrayBuffer,
   IndexBuffer
 } from 'libs/glBuffer'
+import {
+  gl,
+  canvas,
+  toRadian
+} from 'libs/GlTools'
 import Texture from 'libs/glTexture'
 import vs from 'shaders/mask.vert'
 import fs from 'shaders/mask.frag'
@@ -13,16 +18,16 @@ import Vao from 'libs/vao'
 
 export default class Mask extends Pipeline {
   count = 0
-  constructor(gl) {
-    super(gl)
+  constructor() {
+    super()
   }
   init(){
     this.outlinePrg = this.compile(vs, outlineFs)
     this.prg = this.compile(vs, fs)
+    // flip texture
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
   }
   attrib() {
-    let gl = this.gl
-
     let cubeVertices = [
         // positions          // texture Coords
         -0.5, -0.5, -0.5,  0.0, 0.0,
@@ -69,13 +74,13 @@ export default class Mask extends Pipeline {
     ]
     let planeVertices = [
         // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-         5.0, -0.5,  5.0,  2.0, 0.0,
-        -5.0, -0.5,  5.0,  0.0, 0.0,
-        -5.0, -0.5, -5.0,  0.0, 2.0,
+         3.0, -0.5,  3.0,  1.0, 0.0,
+        -3.0, -0.5,  3.0,  0.0, 0.0,
+        -3.0, -0.5, -3.0,  0.0, 1.0,
 
-         5.0, -0.5,  5.0,  2.0, 0.0,
-        -5.0, -0.5, -5.0,  0.0, 2.0,
-         5.0, -0.5, -5.0,  2.0, 2.0
+         3.0, -0.5,  3.0,  1.0, 0.0,
+        -3.0, -0.5, -3.0,  0.0, 1.0,
+         3.0, -0.5, -3.0,  1.0, 1.0
     ]
 
     this.cubeBuffer = new ArrayBuffer(gl, new Float32Array(cubeVertices))
@@ -95,12 +100,8 @@ export default class Mask extends Pipeline {
     this.cubeVao.setup(this.prg, [this.cubeBuffer])
 
     this.texture = new Texture(gl, gl.RGBA)
-    let img = getAssets.koala
+    let img = getAssets.splash
     this.texture.fromImage(img)
-    this.texture.setFilter()
-    this.texture.repeat()
-
-    this.texture.bind(0)
   }
   prepare() {
 
@@ -111,13 +112,10 @@ export default class Mask extends Pipeline {
     this.tmpMatrix = mat4.identity(mat4.create())
 
     mat4.lookAt(vMatrix, [0.0, 0.0, 4.0], [0, 0, 0.0], [0, 1, 0])
-    let canvas = this.gl.canvas
 
-    mat4.perspective(pMatrix, 45, canvas.clientWidth / canvas.clientHeight, .1, 1000)
+    mat4.perspective(pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 1000)
 
     mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
-
-    let gl = this.gl
 
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LESS);
@@ -138,13 +136,15 @@ export default class Mask extends Pipeline {
 
 
     this.prg.use()
+    this.texture.bind(0)
+    this.texture.clamp()
     this.prg.style({
       mvpMatrix: this.mvpMatrix,
       texture: 0
     })
   }
   render() {
-    let gl = this.gl
+
     gl.clearColor(0.3, 0.3, .3, 1.0)
     gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)

@@ -3,7 +3,11 @@ import {
   ArrayBuffer,
   IndexBuffer
 } from 'libs/glBuffer'
-import Texture from 'libs/glTexture'
+import {
+  gl,
+  canvas,
+  toRadian
+} from 'libs/GlTools'
 import mrtVs from 'shaders/mrt/mrt.vert'
 import mrtFs from 'shaders/mrt/mrt.frag'
 import vs from 'shaders/mrt/simple.vert'
@@ -34,12 +38,11 @@ export default class Mrt extends Pipeline {
     [0.5, 0.5, 0.0]
   ]
 
-  constructor(gl) {
-    super(gl)
+  constructor() {
+    super()
 
   }
   init() {
-    let gl = this.gl
     ext = gl.getExtension('WEBGL_draw_buffers')
     if (!ext) {
       alert('WEBGL_draw_buffers not supported')
@@ -56,7 +59,6 @@ export default class Mrt extends Pipeline {
   }
 
   attrib() {
-    let gl = this.gl
     let {
       pos,
       index,
@@ -117,11 +119,9 @@ export default class Mrt extends Pipeline {
 
     mat4.lookAt(vMatrix, eyePosition, [0, 0, 0], camUpDirection)
     let canvas = this.gl.canvas
-    mat4.perspective(pMatrix, 75, canvas.clientWidth / canvas.clientHeight, .1, 135)
+    mat4.perspective(pMatrix, toRadian(75), canvas.clientWidth / canvas.clientHeight, .1, 135)
     mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
 
-
-    let gl = this.gl
 
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LEQUAL)
@@ -148,7 +148,6 @@ export default class Mrt extends Pipeline {
   }
   render() {
 
-    let gl = this.gl
     gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer.f)
 
     const bufferList = [

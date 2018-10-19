@@ -33,7 +33,7 @@ function Texture (gl, format) {
 
   gl.bindTexture(T2D, this.id)
   this.setFilter(true)
-
+  return this
 }
 
 Texture.prototype = {
@@ -51,6 +51,7 @@ Texture.prototype = {
 
     gl.bindTexture(T2D, this.id)
     gl.texImage2D(T2D, 0, this.format, this.format, this.type, img)
+    return this
   },
 
   /**
@@ -71,6 +72,8 @@ Texture.prototype = {
 
     gl.bindTexture(T2D, this.id)
     gl.texImage2D(T2D, 0, this.format, width, height, 0, this.format, this.type, data)
+
+    return this
   },
 
   /**

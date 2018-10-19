@@ -1,19 +1,21 @@
 import Program from 'libs/glProgram'
 import { quat } from 'gl-matrix';
+import { gl } from 'libs/GlTools'
+import * as dat from 'dat.gui'
 
 
 export default class Pipeline {
-  gl
-  prg
-  posBuffer
-  vs
-  fs
   rotateQ = quat.create()
-  constructor(gl) {
-    this.gl = gl
+  _params = {}
+  gui = new dat.GUI({
+    width: 300
+  })
+  constructor() {
+
     this.init()
     this.attrib()
     this.prepare()
+    this._setGUI()
 
     this._animate = this.animate.bind(this)
   }
@@ -21,7 +23,7 @@ export default class Pipeline {
 
   }
   compile(vs, fs) {
-    let prg = new Program(this.gl)
+    let prg = new Program(gl)
     prg.compile(vs, fs)
     return prg
   }
@@ -45,6 +47,29 @@ export default class Pipeline {
   }
   play() {
     this.animate()
+  }
+
+  _setGUI() {
+    // this.addGUIParams({
+    //   lt: 0.2,
+    //   gt: 0.98,
+    //   clamp: false
+    // })
+    // let folder = gui.addFolder('grayFocus')
+    // folder.add(this.params, 'lt', 0, 1).step(0.01)
+    // folder.add(this.params, 'gt', 0, 1).step(0.01)
+    // folder.add(this.params, 'clamp')
+    // folder.open()
+  }
+
+  addGUIParams(o) {
+    return Object.assign(this._params, o)
+  }
+  get params() {
+    return this._params
+  }
+  set params(param) {
+    throw Error("Params has no setter,please use addGUIParams")
   }
 }
 

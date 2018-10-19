@@ -1,4 +1,4 @@
-export function Torus (circlePoints, circleNum, rdius, Origin2CicleCenter, colors) {
+export function Torus(circlePoints, circleNum, rdius, Origin2CicleCenter, colors) {
   let pos = []
   let index = []
   let normal = []
@@ -42,7 +42,7 @@ export function Torus (circlePoints, circleNum, rdius, Origin2CicleCenter, color
   }
 }
 
-export function hsva (h, s, v, a) {
+export function hsva(h, s, v, a) {
   if (s > 1 || v > 1 || a > 1) {
     return
   }
@@ -63,3 +63,94 @@ export function hsva (h, s, v, a) {
   }
   return color
 }
+
+export function Sphere(row, column, rad, color) {
+  var pos = [],
+    nor = [],
+    col = [],
+    st = [],
+    idx = []
+  for (var i = 0; i <= row; i++) {
+    var r = Math.PI / row * i;
+    var ry = Math.cos(r);
+    var rr = Math.sin(r);
+    for (var ii = 0; ii <= column; ii++) {
+      var tr = Math.PI * 2 / column * ii;
+      var tx = rr * rad * Math.cos(tr);
+      var ty = ry * rad;
+      var tz = rr * rad * Math.sin(tr);
+      var rx = rr * Math.cos(tr);
+      var rz = rr * Math.sin(tr);
+      if (color) {
+        var tc = color;
+      } else {
+        tc = hsva(360 / row * i, 1, 1, 1);
+      }
+      pos.push(tx, ty, tz);
+      nor.push(rx, ry, rz);
+      col.push(tc[0], tc[1], tc[2], tc[3]);
+      st.push(1 - 1 / column * ii, 1 / row * i);
+    }
+  }
+  r = 0
+  for (i = 0; i < row; i++) {
+    for (ii = 0; ii < column; ii++) {
+      r = (column + 1) * i + ii;
+      idx.push(r, r + 1, r + column + 2);
+      idx.push(r, r + column + 2, r + column + 1);
+    }
+  }
+  return {
+    pos,
+    normal: nor,
+    color: col,
+    uv: st,
+    index: idx
+  }
+}
+
+export const CubeData = [
+  // pos normal textCoord
+  // back face
+  -1.0, -1.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, // bottom-left
+  1.0, 1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 1.0, // top-right
+  1.0, -1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 0.0, // bottom-right
+  1.0, 1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 1.0, // top-right
+  -1.0, -1.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, // bottom-left
+  -1.0, 1.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, // top-left
+  // front face
+  -1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom-left
+  1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, // bottom-right
+  1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, // top-right
+  1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, // top-right
+  -1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, // top-left
+  -1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom-left
+  // left face
+  -1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 1.0, 0.0, // top-right
+  -1.0, 1.0, -1.0, -1.0, 0.0, 0.0, 1.0, 1.0, // top-left
+  -1.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, // bottom-left
+  -1.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, // bottom-left
+  -1.0, -1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, // bottom-right
+  -1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 1.0, 0.0, // top-right
+  // right face
+  1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, // top-left
+  1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 1.0, // bottom-right
+  1.0, 1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 1.0, // top-right
+  1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 1.0, // bottom-right
+  1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, // top-left
+  1.0, -1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, // bottom-left
+  // bottom face
+  -1.0, -1.0, -1.0, 0.0, -1.0, 0.0, 0.0, 1.0, // top-right
+  1.0, -1.0, -1.0, 0.0, -1.0, 0.0, 1.0, 1.0, // top-left
+  1.0, -1.0, 1.0, 0.0, -1.0, 0.0, 1.0, 0.0, // bottom-left
+  1.0, -1.0, 1.0, 0.0, -1.0, 0.0, 1.0, 0.0, // bottom-left
+  -1.0, -1.0, 1.0, 0.0, -1.0, 0.0, 0.0, 0.0, // bottom-right
+  -1.0, -1.0, -1.0, 0.0, -1.0, 0.0, 0.0, 1.0, // top-right
+  // top face
+  -1.0, 1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 1.0, // top-left
+  1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom-right
+  1.0, 1.0, -1.0, 0.0, 1.0, 0.0, 1.0, 1.0, // top-right
+  1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom-right
+  -1.0, 1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 1.0, // top-left
+  -1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0 // bottom-left
+]

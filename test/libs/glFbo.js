@@ -71,6 +71,10 @@ Fbo.prototype = {
     gl.viewport( 0, 0, this.width, this.height );
   },
 
+  unbind: function () {
+    var gl = this.gl;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  },
   /**
    * Clear all buffer of the Fbo.
    * The Fbo must be explicitly bound before calling this method

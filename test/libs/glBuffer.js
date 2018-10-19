@@ -116,10 +116,32 @@ ArrayBuffer.prototype = {
    * before calling this method.
    *   @param {Program} program the nanogl Program
    */
-  attribPointer: function (program) {
+  attribPointer: function (program, list) {
     var gl = this.gl
     gl.bindBuffer(TGT, this.buffer)
-
+    if (list && list.length) {
+      for (let i = 0; i < list.length; i++) {
+        for (var j = 0; j < this.attribs.length; j++) {
+          let attrib = this.attribs[j]
+          if (list[i] === attrib.name) {
+            if (program[attrib.name] !== undefined) {
+              let aLocation = program[attrib.name]()
+              gl.enableVertexAttribArray(aLocation)
+              gl.vertexAttribPointer(aLocation,
+                attrib.size,
+                attrib.type,
+                attrib.normalize,
+                this.stride,
+                attrib.offset
+              )
+            } else {
+              console.warn(`glBuffer can't get Attribute "${attrib.name}" Location.`)
+            }
+          }
+        }
+      }
+      return
+    }
     for (var i = 0; i < this.attribs.length; i++) {
       var attrib = this.attribs[i]
 
@@ -133,6 +155,8 @@ ArrayBuffer.prototype = {
           this.stride,
           attrib.offset
         )
+      } else {
+        console.warn(`glBuffer can't get Attribute "${attrib.name}" Location.`)
       }
     }
   },

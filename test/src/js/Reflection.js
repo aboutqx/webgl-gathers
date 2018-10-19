@@ -9,19 +9,22 @@ import { Torus } from './Torus'
 import {
   mat4
 } from 'gl-matrix'
-
+import {
+  gl,
+  canvas,
+  toRadian
+} from 'libs/GlTools'
 
 export default class Reflection extends Pipeline {
   count = 0
-  constructor(gl) {
-    super(gl)
+  constructor() {
+    super()
 
   }
   init() {
     this.prg = this.compile(vs, fs)
   }
   attrib() {
-    let gl = this.gl
     let {
       pos,
       index,
@@ -59,7 +62,7 @@ export default class Reflection extends Pipeline {
     mat4.lookAt(vMatrix, [0.0, 0.0, 15.0], [0, 0, 0], [0, 1, 0])
     let canvas = this.gl.canvas
 
-    mat4.perspective(pMatrix, 45, canvas.clientWidth / canvas.clientHeight, .1, 100)
+    mat4.perspective(pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 100)
 
     mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
 
@@ -88,7 +91,7 @@ export default class Reflection extends Pipeline {
     })
   }
   render() {
-    let gl = this.gl
+
     gl.clearColor(0.3, 0.3, .3, 1.0)
     gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)

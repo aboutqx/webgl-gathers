@@ -1,8 +1,4 @@
 import Pipeline from './PipeLine'
-import {
-  ArrayBuffer,
-  IndexBuffer
-} from 'libs/glBuffer'
 import Texture from 'libs/glTexture'
 import vs from 'shaders/mask.vert'
 import fs from 'shaders/mask.frag'
@@ -11,20 +7,22 @@ import {
   mat4
 } from 'gl-matrix'
 import Vao from 'libs/vao'
-
+import {
+  gl,
+  canvas,
+  toRadian
+} from 'libs/GlTools'
 
 export default class Shadow extends Pipeline {
   count = 0
-  constructor(gl) {
-    super(gl)
+  constructor() {
+    super()
   }
   init() {
     this.outlinePrg = this.compile(vs, outlineFs)
     this.prg = this.compile(vs, fs)
   }
   attrib() {
-    let gl = this.gl
-
     this.cubeBuffer = new ArrayBuffer(gl, new Float32Array(cubeVertices))
     this.planeBuffer = new ArrayBuffer(gl, new Float32Array(planeVertices))
 
@@ -60,11 +58,9 @@ export default class Shadow extends Pipeline {
     mat4.lookAt(vMatrix, [0.0, 0.0, 4.0], [0, 0, 0.0], [0, 1, 0])
     let canvas = this.gl.canvas
 
-    mat4.perspective(pMatrix, 45, canvas.clientWidth / canvas.clientHeight, .1, 1000)
+    mat4.perspective(pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 1000)
 
     mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
-
-    let gl = this.gl
 
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LEQUAL)
@@ -89,7 +85,6 @@ export default class Shadow extends Pipeline {
     })
   }
   render() {
-    let gl = this.gl
     gl.clearColor(0.3, 0.3, .3, 1.0)
     gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)

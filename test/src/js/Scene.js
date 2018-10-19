@@ -1,8 +1,16 @@
+import {
+  canvas
+} from 'libs/GlTools'
+
 import reflection from './Reflection'
 import mask from './Mask'
 import shadow from './Shadow'
 import mrt from './Mrt'
 import mirror from './Mirror'
+import pbr from './Pbr'
+import ibl from './ibl'
+import iblfinal from './iblFinal'
+import ssao from './SSAO'
 
 import MouseMove from './MouseMove'
 
@@ -11,17 +19,16 @@ let objs = {
   mask,
   shadow,
   mrt,
-  mirror
+  mirror,
+  pbr,
+  ibl,
+  iblfinal,
+  ssao
 }
-let canvas = document.querySelector('canvas')
+
 let name = location.hash.replace('#', '').toLocaleLowerCase()
 
-let gl = canvas.getContext('webgl', {
-  antialias: true,
-  stencil: true
-})
-
-let obj = new objs[name](gl)
+let obj = new objs[name]()
 
 canvas.addEventListener('mousemove', (e) => {
   obj.rotateQ = MouseMove(e, canvas)
