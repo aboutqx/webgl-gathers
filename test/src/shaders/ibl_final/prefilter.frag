@@ -1,7 +1,8 @@
-#extension GL_EXT_shader_texture_lod : enable
+#version 300 es
 precision mediump float;
 
-varying vec3 WorldPos;
+in vec3 WorldPos;
+out vec4 outColor;
 
 uniform samplerCube environmentMap;
 uniform float roughness;
@@ -116,12 +117,12 @@ void main()
 
             float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
 
-            prefilteredColor += textureCubeLodEXT(environmentMap, L, mipLevel).rgb * NdotL;
+            prefilteredColor += texture(environmentMap, L, mipLevel).rgb * NdotL;
             totalWeight      += NdotL;
         }
     }
 
     prefilteredColor = prefilteredColor / totalWeight;
 
-    gl_FragColor = vec4(prefilteredColor, 1.0);
+    outColor = vec4(prefilteredColor, 1.0);
 }
