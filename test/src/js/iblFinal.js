@@ -4,8 +4,8 @@ import {
   canvas,
   toRadian
 } from 'libs/GlTools'
-// import vs from 'shaders/ibl_diffuse/pbr_ibl.vert'
-// import fs from 'shaders/ibl_diffuse/pbr_ibl.frag'
+import vs from 'shaders/ibl_final/pbr_ibl.vert'
+import fs from 'shaders/ibl_final/pbr_ibl.frag'
 import mapVs from 'shaders/ibl_final/pbr_map.vert'
 import mapFs from 'shaders/ibl_final/pbr_map.frag'
 import cubeVs from 'shaders/ibl_final/cubemap.vert'
@@ -13,13 +13,18 @@ import cubeFs from 'shaders/ibl_final/equirectangular_to_cubemap.frag'
 import skyboxVs from 'shaders/ibl_final/skybox.vert'
 import skyboxFs from 'shaders/ibl_final/skybox.frag'
 import prefilterFs from 'shaders/ibl_final/prefilter.frag'
+import simple2dVs from 'shaders/ibl_final/simple2d.vert'
+import brdfFs from 'shaders/ibl_final/brdf.frag'
+import irradianceFs from 'shaders/ibl_final/irradiance_convolution.frag'
+
 import {
   ArrayBuffer,
   IndexBuffer
 } from 'libs/glBuffer'
 import Vao from 'libs/vao'
 import {
-  Sphere, CubeData
+  Sphere,
+  CubeData
 } from './Torus'
 import {
   mat4,
@@ -42,13 +47,15 @@ export default class IblFinal extends Pipeline {
     gl.getExtension('OES_texture_float_linear') // Even WebGL2 requires OES_texture_float_linear
     gl.getExtension("EXT_color_buffer_float")
     // // gl.getExtension('OES_texture_half_float')
-    // // gl.getExtension('OES_texture_half_float_linear')
+    // gl.getExtension('OES_texture_half_float_linear')
     // gl.getExtension('EXT_shader_texture_lod')
-    // this.prg = this.compile(vs, fs)
-    this.mapPrg = this.compile(mapVs, mapFs)
+    this.prg = this.compile(vs, fs)
+    // this.mapPrg = this.compile(mapVs, mapFs)
     this.cubePrg = this.compile(cubeVs, cubeFs)
     this.skyboxPrg = this.compile(skyboxVs, skyboxFs)
     this.prefilterPrg = this.compile(cubeVs, prefilterFs)
+    this.brdfPrg = this.compile(simple2dVs, brdfFs)
+    this.irradiancePrg = this.compile(cubeVs, irradianceFs)
   }
   attrib() {
     let {
@@ -87,36 +94,22 @@ export default class IblFinal extends Pipeline {
 
     this.planeVao = new Vao(gl)
     this.planeVao.setup(this.cubePrg, [this.planeBuffer])
+
+    let quad = new Mesh()
+    let quadData = [
+      -1.0, 1.0, 0.0, 0.0, 1.0,
+      -1.0, -1.0, 0.0, 0.0, 0.0,
+      1.0, 1.0, 0.0, 1.0, 1.0,
+      1.0, -1.0, 0.0, 1.0, 0.0
+    ]
+    quad.bufferData(quadData, ['position', 'texCoord'], [3, 2])
+    this.quad = quad
   }
   prepare() {
 
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LEQUAL)
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
-
-    let hdrInfo = HDRParser(getAssets.equirectangular)
-    console.log('hdrInfo',hdrInfo)
-    this.hdrTexture = new Texture(gl)
-    gl.bindTexture(gl.TEXTURE_2D, this.hdrTexture.id)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, hdrInfo.shape[0], hdrInfo.shape[1], 0, gl.RGBA, gl.FLOAT, hdrInfo.data)
-    this.hdrTexture.clamp()
-
-    let cubemapTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubemapTexture);
-
-    for (var i = 0; i < 6; i++) {
-      //r,l,u,d,b,f 为6个面指定空数据
-      gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA32F, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
-    }
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    this.cubemapTexture = cubemapTexture
-
-    // render 6 faces to framebuffer
-    this.cubePrg.use()
-    this.hdrTexture.bind(0)
 
     let pMatrix = mat4.identity(mat4.create())
     let mMatrix = mat4.identity(mat4.create())
@@ -132,43 +125,105 @@ export default class IblFinal extends Pipeline {
       [vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, 1), vec3.fromValues(0, -1, 0)],
       [vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, -1), vec3.fromValues(0, -1, 0)]
     ]
+
+    let hdrInfo = HDRParser(getAssets.equirectangular)
+    console.log('hdrInfo', hdrInfo)
+    this.hdrTexture = new Texture(gl)
+    gl.bindTexture(gl.TEXTURE_2D, this.hdrTexture.id)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, hdrInfo.shape[0], hdrInfo.shape[1], 0, gl.RGBA, gl.FLOAT, hdrInfo.data)
+    this.hdrTexture.clamp()
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+
+    // cubemap
+    let cubemapTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubemapTexture)
+    for (var i = 0; i < 6; i++) {
+      //r,l,u,d,b,f 为6个面指定空数据
+      gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA16F, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
+    }
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    this.cubemapTexture = cubemapTexture
+
+
+    this.cubePrg.use()
+    this.hdrTexture.bind(0)
+
     gl.viewport(0, 0, 512, 512)
     let captureFrameBuffer = gl.createFramebuffer()
     gl.bindFramebuffer(gl.FRAMEBUFFER, captureFrameBuffer)
 
-    for(let i =0;i<6;i++) {
-          mat4.lookAt(vMatrix,CAMERA_SETTINGS[i][0], CAMERA_SETTINGS[i][1], CAMERA_SETTINGS[i][2])
-          mat4.multiply(vpMatrix, pMatrix, vMatrix)
-          this.cubePrg.style({
-            equirectangularMap: 0,
-            vpMatrix,
-            mMatrix: mMatrix
-          })
-          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, this.cubemapTexture, 0);
-          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    for (let i = 0; i < 6; i++) {
+      mat4.lookAt(vMatrix, CAMERA_SETTINGS[i][0], CAMERA_SETTINGS[i][1], CAMERA_SETTINGS[i][2])
+      mat4.multiply(vpMatrix, pMatrix, vMatrix)
+      this.cubePrg.style({
+        equirectangularMap: 0,
+        vpMatrix,
+        mMatrix: mMatrix
+      })
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, this.cubemapTexture, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-          this.cube.bind(this.cubePrg, ['position', 'texCoord'])
-          this.cube.draw()
+      this.cube.bind(this.cubePrg, ['position', 'texCoord'])
+      this.cube.draw()
     }
+    gl.generateMipmap(gl.TEXTURE_CUBE_MAP) // has to be placed here，to generate each face data
+
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
     if (status != gl.FRAMEBUFFER_COMPLETE) {
       console.log(`gl.checkFramebufferStatus() returned ${status.toString(16)}`);
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-    let prefilterMap = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, prefilterMap);
-
+    // irradiance map
+    let irradianceMap = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap)
     for (var i = 0; i < 6; i++) {
       //r,l,u,d,b,f 为6个面指定空数据
-      gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA32F, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
+      gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA16F, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
     }
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    this.irradianceMap = irradianceMap
+
+    this.irradiancePrg.use()
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubemapTexture); // 放在这，防止new cubeframebuffer时绑定了tetxure0到null
+
+    for (let i = 0; i < 6; i++) {
+      mat4.lookAt(vMatrix, CAMERA_SETTINGS[i][0], CAMERA_SETTINGS[i][1], CAMERA_SETTINGS[i][2])
+      mat4.multiply(vpMatrix, pMatrix, vMatrix)
+      this.irradiancePrg.style({
+        environmentMap: 0,
+        vpMatrix,
+        mMatrix: mMatrix
+      })
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, this.irradianceMap, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+      this.cube.bind(this.irradiancePrg, ['position', 'texCoord'])
+      this.cube.draw()
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+    // prefilter map
+    this.prefilterMap = gl.createTexture();
+    let prefilterSize = 128
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.prefilterMap);
+
+    for (var i = 0; i < 6; i++) {
+      //r,l,u,d,b,f 为6个面指定空数据
+      gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA32F, prefilterSize, prefilterSize, 0, gl.RGBA, gl.FLOAT, null)
+    }
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
     gl.generateMipmap(gl.TEXTURE_CUBE_MAP)
-    this.prefilterMap = prefilterMap
 
     this.prefilterPrg.use()
     let maxMipLevels = 5
@@ -180,7 +235,7 @@ export default class IblFinal extends Pipeline {
       let mipWidth = 128 * Math.pow(.5, mip)
       let mipHeight = mipWidth
       gl.viewport(0, 0, mipWidth, mipHeight)
-      let roughness = mip / (maxMipLevels -1)
+      let roughness = mip / (maxMipLevels - 1)
       for (let i = 0; i < 6; i++) {
 
         mat4.lookAt(vMatrix, CAMERA_SETTINGS[i][0], CAMERA_SETTINGS[i][1], CAMERA_SETTINGS[i][2])
@@ -192,16 +247,33 @@ export default class IblFinal extends Pipeline {
           roughness
         })
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-          gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
+          gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, this.prefilterMap, mip);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
         this.cube.bind(this.prefilterPrg, ['position', 'texCoord'])
         this.cube.draw()
       }
     }
-
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
+    //brdf lookup texture
+    this.brdfLUTTexture = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, this.brdfLUTTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG16F, 512, 512, 0, gl.RG, gl.FLOAT, null)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, captureFrameBuffer)
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.brdfLUTTexture, 0);
+    gl.viewport(0, 0, 512, 512)
+    this.brdfPrg.use()
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    this.quad.bind(this.brdfPrg)
+    this.quad.draw(gl.TRIANGLE_STRIP)
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   }
   uniform() {
 
@@ -218,7 +290,7 @@ export default class IblFinal extends Pipeline {
     this.eyeDirection = eyeDirection
 
     mat4.lookAt(vMatrix, eyeDirection, [0, 0, 0], camUpDirection)
-    mat4.perspective(pMatrix, toRadian(60), canvas.clientWidth / canvas.clientHeight, .1, 100)
+    mat4.perspective(pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 100)
     mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
 
 
@@ -226,7 +298,7 @@ export default class IblFinal extends Pipeline {
   _setGUI() {
     this.addGUIParams({
       roughness: 0.2,
-      metallic: 6/7,
+      metallic: 6 / 7,
       lambertDiffuse: true,
       orenNayarDiffuse: false,
       map: 'none',
@@ -234,7 +306,7 @@ export default class IblFinal extends Pipeline {
 
     let folder = this.gui.addFolder('material param')
     folder.add(this.params, 'roughness', 0.05, 1).step(0.01)
-    folder.add(this.params, 'metallic', 0, 6/7).step(0.01)
+    folder.add(this.params, 'metallic', 0, 6 / 7).step(0.01)
     folder.open()
 
     let folder1 = this.gui.addFolder('diffuse model')
@@ -293,16 +365,24 @@ export default class IblFinal extends Pipeline {
     }
 
     if (this.params.map === 'none') {
-      // this.prg.use()
-      // // this.irradianceFbo.getTexture().bind(0)
-      // this.prg.style({
-      //   ...baseUniforms,
-      //   albedo: [.5, .0, .0],
-      //   roughness: this.params.roughness,
-      //   metallic: this.params.metallic,
-      //   ao: 1.
-      // })
-      // this.sphere.bind(this.prg, ['position', 'normal'])
+      this.prg.use()
+      gl.activeTexture(gl.TEXTURE0)
+      gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.irradianceMap)
+      gl.activeTexture(gl.TEXTURE1)
+      gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.prefilterMap)
+      gl.activeTexture(gl.TEXTURE2)
+      gl.bindTexture(gl.TEXTURE_2D, this.brdfLUTTexture);
+      this.prg.style({
+        ...baseUniforms,
+        albedo: [.5, .0, .0],
+        roughness: this.params.roughness,
+        metallic: this.params.metallic,
+        ao: 1.,
+        irradianceMap: 0,
+        prefilterMap: 1,
+        brdfLUT: 2
+      })
+      this.sphere.bind(this.prg, ['position', 'normal'])
     } else {
       this.mapPrg.use()
 
@@ -338,16 +418,22 @@ export default class IblFinal extends Pipeline {
     // this.planeBuffer.drawTriangles()
     // this.planeVao.unbind()
 
-    this.skyboxPrg.use()
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.prefilterMap)
+    // this.skyboxPrg.use()
+    // gl.activeTexture(gl.TEXTURE0)
+    // gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.prefilterMap)
 
-    this.skyboxPrg.style({
-      environmentMap: 0,
-      vpMatrix: this.tmpMatrix,
-      mMatrix: mMatrix,
-    })
-    this.cube.bind(this.skyboxPrg, ['position'])
-    this.cube.draw()
+    // this.skyboxPrg.style({
+    //   environmentMap: 0,
+    //   vpMatrix: this.tmpMatrix,
+    //   mMatrix: mMatrix,
+    // })
+    // this.cube.bind(this.skyboxPrg, ['position'])
+    // this.cube.draw()
+
+    // brdf out为vec2，设置为vec4时显示正常
+    // this.brdfPrg.use()
+    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // this.quad.bind(this.brdfPrg)
+    // this.quad.draw(gl.TRIANGLE_STRIP)
   }
 }

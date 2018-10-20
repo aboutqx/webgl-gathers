@@ -1,7 +1,7 @@
 # pbr
 
 ## hdr
-hdr 设置texture filter为linear必须启用extension
+hdr 设置float texture filter为linear必须启用extension
 ```
     gl.getExtension('OES_texture_float')
     gl.getExtension('OES_texture_float_linear')
