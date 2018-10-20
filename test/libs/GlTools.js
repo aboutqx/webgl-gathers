@@ -5,7 +5,7 @@ const options = {
 }
 let name = location.hash.replace('#', '').toLocaleLowerCase()
 let gl
-if (name === 'iblfinal') {
+if (name === 'iblfinal' || name === 'mask') {
   gl = canvas.getContext('webgl2', options)
   if (!gl) console.warn('webgl2 not supported!')
   console.log('webgl2 used.')

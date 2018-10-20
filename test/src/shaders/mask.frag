@@ -1,8 +1,10 @@
-
+#version 300 es
 precision mediump float;
-varying   vec2 vTexCoord;
+in   vec2 vTexCoord;
+out vec4 outColor;
 uniform sampler2D texture;
+uniform float lod;
 void main(void){
 
-    gl_FragColor = texture2D(texture, vTexCoord);
+    outColor = textureLod(texture, vTexCoord, lod);
 }

@@ -100,8 +100,40 @@ export default class Mask extends Pipeline {
     this.cubeVao.setup(this.prg, [this.cubeBuffer])
 
     this.texture = new Texture(gl, gl.RGBA)
-    let img = getAssets.splash
+    let img = getAssets.koala
     this.texture.fromImage(img)
+    this.texture.bind()
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.bindTexture(gl.TEXTURE_2D, null)
+  }
+  _setGUI() {
+    this.addGUIParams({
+      lod: 5.,
+      LINEAR_MIPMAP_LINEAR: false,
+      NEAREST_MIPMAP_NEAREST: true
+    })
+
+    let folder = this.gui.addFolder('tetxureLod lod param')
+    folder.add(this.params, 'lod', 1., Math.log2(512)).step(1.)
+    folder.open()
+
+    let folder1 = this.gui.addFolder('TEXTURE_MIN_FILTER')
+    folder1.add(this.params, 'LINEAR_MIPMAP_LINEAR').listen().onChange(() => {
+      this.setChecked('LINEAR_MIPMAP_LINEAR')
+    })
+    folder1.add(this.params, 'NEAREST_MIPMAP_NEAREST').listen().onChange(() => {
+      this.setChecked('NEAREST_MIPMAP_NEAREST')
+    })
+    folder1.open()
+  }
+  setChecked(val){
+    this.texture.bind()
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl[val]);
+    this.params.LINEAR_MIPMAP_LINEAR = false
+    this.params.NEAREST_MIPMAP_NEAREST = false
+    this.params[val] = true
   }
   prepare() {
 
@@ -137,10 +169,11 @@ export default class Mask extends Pipeline {
 
     this.prg.use()
     this.texture.bind(0)
-    this.texture.clamp()
+
     this.prg.style({
       mvpMatrix: this.mvpMatrix,
-      texture: 0
+      texture: 0,
+      lod: this.params.lod
     })
   }
   render() {
