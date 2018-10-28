@@ -1,38 +1,42 @@
 import {
   canvas
 } from 'libs/GlTools'
-
-import reflection from './Reflection'
-import mask from './Mask'
-import shadow from './Shadow'
-import mrt from './Mrt'
-import mirror from './Mirror'
-import pbr from './Pbr'
-import ibl from './ibl'
-import iblfinal from './iblFinal'
-import ssao from './SSAO'
-
 import MouseMove from './MouseMove'
 
-let objs = {
-  reflection,
-  mask,
-  shadow,
-  mrt,
-  mirror,
-  pbr,
-  ibl,
-  iblfinal,
-  ssao
+const importLists = {
+  reflection: 'Light/Reflection',
+  mask: 'OpenGL/Mask',
+  shadow: 'advance_light/Shadow',
+  mrt: 'OpenGL/Mrt',
+  mirror: 'OpenGL/Mirror',
+  pbr: 'Pbr/Pbr',
+  ibldiffuse: 'Pbr/IblDiffuse',
+  iblfinal: 'Pbr/iblFinal',
+  ssao: 'advanced_light/SSAO',
+  normalmap: 'advanced_light/NormalMap',
+  pbrflow: 'Pbr/PbrFlow',
+  lightcaster: 'Light/LightCaster',
+  color: 'Light/Color',
+  material: 'Light/Material',
+  pbrmodel: 'Pbr/PbrModel'
 }
 
-let name = location.hash.replace('#', '').toLocaleLowerCase()
+let obj
+const dynamicImport = (name) => {
+  import(`./${importLists[name]}`).then((foo) => {
 
-let obj = new objs[name]()
+    obj = new foo.default()
 
-canvas.addEventListener('mousemove', (e) => {
-  obj.rotateQ = MouseMove(e, canvas)
-})
-export default function play () {
-  obj.play()
+    canvas.addEventListener('mousemove', (e) => {
+      obj.rotateQ = MouseMove(e, canvas)
+    })
+    obj.play()
+  })
 }
+
+let name = location.search.replace('?', '').toLocaleLowerCase()
+dynamicImport(name)
+
+
+
+

@@ -1,4 +1,4 @@
-import Pipeline from './PipeLine'
+import Pipeline from '../PipeLine'
 import {
   ArrayBuffer,
   IndexBuffer

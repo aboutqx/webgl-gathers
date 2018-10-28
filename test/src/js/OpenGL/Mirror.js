@@ -1,4 +1,4 @@
-import Pipeline from './PipeLine'
+import Pipeline from '../PipeLine'
 import {
   gl, canvas
 } from 'libs/GlTools'
@@ -8,7 +8,7 @@ import mVs from 'shaders/mirror/mirror.vert'
 import mFs from 'shaders/mirror/mirror.frag'
 import {
   Torus
-} from './Torus'
+} from '../Torus'
 import {
   mat4, vec3
 } from 'gl-matrix'

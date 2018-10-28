@@ -2,8 +2,10 @@
 
 'use strict';
 
-import { gl } from './GlTools';
-// import parse from 'parse-dds';
+import {
+  gl
+} from './GlTools';
+import parse from 'parse-dds';
 
 const DDSD_MIPMAPCOUNT = 0x20000;
 const OFF_MIPMAPCOUNT = 7;
@@ -52,7 +54,9 @@ class GLCubeTexture {
 
           index = j * numLevels + i;
           if (mSource[index].shape) {
-            gl.texImage2D(targets[j], i, gl.RGBA, mSource[index].shape[0], mSource[index].shape[1], 0, gl.RGBA, gl.FLOAT, mSource[index].data);
+            if (window.useWebgl2) {
+              gl.texImage2D(targets[j], i, gl.RGBA16F, mSource[index].shape[0], mSource[index].shape[1], 0, gl.RGBA, gl.FLOAT, mSource[index].data);
+            } else gl.texImage2D(targets[j], i, gl.RGBA, mSource[index].shape[0], mSource[index].shape[1], 0, gl.RGBA, gl.FLOAT, mSource[index].data);
           } else {
             gl.texImage2D(targets[j], i, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mSource[index]);
           }
@@ -69,7 +73,9 @@ class GLCubeTexture {
         index = j * numLevels;
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
         if (mSource[index].shape) {
-          gl.texImage2D(targets[j], 0, gl.RGBA, mSource[index].shape[0], mSource[index].shape[1], 0, gl.RGBA, gl.FLOAT, mSource[index].data);
+          if (window.useWebgl2) {
+            gl.texImage2D(targets[j], 0, gl.RGBA16F, mSource[index].shape[0], mSource[index].shape[1], 0, gl.RGBA, gl.FLOAT, mSource[index].data);
+          } else gl.texImage2D(targets[j], 0, gl.RGBA, mSource[index].shape[0], mSource[index].shape[1], 0, gl.RGBA, gl.FLOAT, mSource[index].data);
         } else {
           gl.texImage2D(targets[j], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mSource[index]);
         }
@@ -87,7 +93,7 @@ class GLCubeTexture {
 
 
 
-  //	PUBLIC METHOD
+  // PUBLIC METHOD
 
   bind(index = 0) {
     // if (!GL.shader) {
@@ -123,6 +129,7 @@ GLCubeTexture.parseDDS = function parseDDS(mArrayBuffer) {
   const {
     flags
   } = ddsInfos;
+  console.log(ddsInfos)
   const header = new Int32Array(mArrayBuffer, 0, headerLengthInt);
   let mipmapCount = 1;
   if (flags & DDSD_MIPMAPCOUNT) {

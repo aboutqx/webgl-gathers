@@ -1,4 +1,4 @@
-import Pipeline from './PipeLine'
+import Pipeline from '../PipeLine'
 import Texture from 'libs/glTexture'
 import vs from 'shaders/mask.vert'
 import fs from 'shaders/mask.frag'

@@ -1,4 +1,4 @@
-import Pipeline from './PipeLine'
+import Pipeline from '../PipeLine'
 import {
   ArrayBuffer,
   IndexBuffer
@@ -20,7 +20,7 @@ import Vao from 'libs/vao'
 import {
   Torus,
   hsva
-} from './Torus'
+} from '../Torus'
 
 let mrtStatus = {
   color_attachments: 0,

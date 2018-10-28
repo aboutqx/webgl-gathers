@@ -77,7 +77,7 @@ Program.prototype = {
         unAssigned.push(v)
       }
     })
-    if (unAssigned.length > 0) throw new Error('active uniform not assigned: ' + unAssigned)
+    // if (unAssigned.length > 0) throw new Error('active uniform not assigned: ' + unAssigned)
   },
   /**
    * Compile vertex and fragment shader then link gl program

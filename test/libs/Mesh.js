@@ -52,7 +52,6 @@ export default class Mesh {
       })
 
     }
-
   }
 
   bufferIndices(mIndex, isDynamic = false) {
@@ -80,7 +79,7 @@ export default class Mesh {
             this._buffers[i].buffer.attribPointer(mProgram)
         }
       }
-      
+
     }
     if(this.iBuffer) this.iBuffer.bind()
   }
@@ -99,4 +98,20 @@ export default class Mesh {
       t.draw(mDrawingType)
     }
   }
+
+  get vertexBuffer() {
+    let i = has(this._buffers, 'name', 'position')
+    if(i === -1) {
+      console.warn('no vertex buffer set')
+    } else {
+      return this._buffers[i].buffer
+    }
+  }
+}
+function has(arr, key, value) { // array child object has key-value
+  if (!arr || !arr.length) return -1
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i][key] === value) return i
+  }
+  return -1
 }

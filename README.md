@@ -35,3 +35,13 @@ Example renderable(can be attach to a framebuffer)
 ```
     gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA32F, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
 ```
+
+## pbr work flow
+使用cmft生成radiance.dds时，须将mipmap调到最大(`log2(size)`)，否则生成的数据会有空数据，造成报错
+`texImage2D: ArrayBufferView not big enough for request.`
+
+生成radiance格式为cubemap, dds rgba32
+
+iiradiance格式可为faces list, hdr rgbe，尺寸可以小一点,实时filter iiradiance别忘记设置为小尺寸，例如32x32，否则会有性能问题，出现webgl context lost。
+
+DistributionGGX里的最后除以的max(denom, 0.001)最好直接改成denom，这样才有锐利（sharp）的点光源效果
