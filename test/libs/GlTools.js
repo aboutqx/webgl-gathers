@@ -3,12 +3,13 @@ const options = {
   antialias: true,
   stencil: true
 }
-let name = location.hash.replace('#', '').toLocaleLowerCase()
+let name = location.search.replace('?', '').toLocaleLowerCase()
 let gl
-if (name === 'iblfinal' || name === 'mask') {
+if (name !== 'mrt' && name !== 'mirror' && name !== 'pbr' && name !== 'ibl' ) {
   gl = canvas.getContext('webgl2', options)
   if (!gl) console.warn('webgl2 not supported!')
   console.log('webgl2 used.')
+  window.useWebgl2 = true
 } else gl = canvas.getContext('webgl', options)
 
 const toRadian = (deg) => {

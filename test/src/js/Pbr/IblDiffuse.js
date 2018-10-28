@@ -1,4 +1,4 @@
-import Pipeline from './PipeLine'
+import Pipeline from '../PipeLine'
 import {
   gl,
   canvas,
@@ -20,7 +20,7 @@ import {
 import Vao from 'libs/vao'
 import {
   Sphere, CubeData
-} from './Torus'
+} from '../Torus'
 import {
   mat4,
   vec3
@@ -30,7 +30,9 @@ import Texture from 'libs/glTexture'
 import HDRParser from 'utils/HDRParser'
 import CubeFrameBuffer from 'libs/CubeFrameBuffer'
 
-export default class Ibl extends Pipeline {
+
+//ibl diffuse即irradiance，为normal正交的平面上半球内所有方向的平均颜色微分
+export default class IblDiffuse extends Pipeline {
   count = 0
   constructor() {
     super()

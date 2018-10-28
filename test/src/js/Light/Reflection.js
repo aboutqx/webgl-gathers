@@ -1,11 +1,11 @@
-import Pipeline from './PipeLine'
+import Pipeline from '../PipeLine'
 import {
   ArrayBuffer,
   IndexBuffer
 } from 'libs/glBuffer'
 import vs from 'shaders/reflection.vert'
 import fs from 'shaders/reflection.frag'
-import { Torus } from './Torus'
+import { Torus } from '../Torus'
 import {
   mat4
 } from 'gl-matrix'
@@ -60,7 +60,6 @@ export default class Reflection extends Pipeline {
     this.tmpMatrix = mat4.identity(mat4.create())
 
     mat4.lookAt(vMatrix, [0.0, 0.0, 15.0], [0, 0, 0], [0, 1, 0])
-    let canvas = this.gl.canvas
 
     mat4.perspective(pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 100)
 
