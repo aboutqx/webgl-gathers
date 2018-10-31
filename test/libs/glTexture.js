@@ -71,7 +71,9 @@ Texture.prototype = {
     this.type = dataType || gl.UNSIGNED_BYTE
 
     gl.bindTexture(T2D, this.id)
-    gl.texImage2D(T2D, 0, this.format, width, height, 0, this.format, this.type, data)
+    if (window.useWebgl2) {
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG32F, width, height, 0, this.format, gl.FLOAT, data)
+    } else gl.texImage2D(T2D, 0, this.format, width, height, 0, this.format, this.type, data)
 
     return this
   },

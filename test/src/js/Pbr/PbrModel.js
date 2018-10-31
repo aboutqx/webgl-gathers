@@ -4,10 +4,10 @@ import {
   canvas,
   toRadian
 } from 'libs/GlTools'
-import vs from 'shaders/pbr_flow/pbr_ibl.vert'
-import fs from 'shaders/pbr_flow/pbr_ibl.frag'
-import mapVs from 'shaders/pbr_flow/pbr_map.vert'
-import mapFs from 'shaders/pbr_flow/pbr_map.frag'
+import vs from 'shaders/pbr_model/pbr_ibl.vert'
+import fs from 'shaders/pbr_model/pbr_ibl.frag'
+import mapVs from 'shaders/pbr_model/pbr_map.vert'
+import mapFs from 'shaders/pbr_model/pbr_map.frag'
 import cubeVs from 'shaders/ibl_final/cubemap.vert'
 import cubeFs from 'shaders/ibl_final/equirectangular_to_cubemap.frag'
 import skyboxVs from 'shaders/ibl_final/skybox.vert'
@@ -17,7 +17,6 @@ import brdfFs from 'shaders/ibl_final/brdf.frag'
 
 
 import {
-  Sphere,
   CubeData
 } from '../Torus'
 import {
@@ -28,6 +27,7 @@ import Mesh from 'libs/Mesh'
 import Texture from 'libs/glTexture'
 import HDRParser from 'utils/HDRParser'
 import GLCubeTexture from 'libs/GLCubeTexture'
+import ObjLoader from 'libs/loaders/ObjLoader'
 
 const nrRows = 7
 const nrColumns = 7
@@ -57,26 +57,23 @@ export default class PbrModel extends Pipeline {
     this.brdfPrg = this.compile(simple2dVs, brdfFs)
   }
   attrib() {
-    let {
-      pos,
-      index,
-      normal,
-      uv
-    } = Sphere(256, 256, .15)
 
-    let sphere = new Mesh()
-    sphere.bufferVertex(pos)
-    sphere.bufferIndices(index)
-    sphere.bufferNormal(normal)
-    sphere.bufferTexCoord(uv)
-    this.sphere = sphere
 
     let cube = new Mesh()
     cube.bufferData(CubeData, ['position', 'normal', 'texCoord'], [3, 3, 2])
     this.cube = cube
 
+    let quad = new Mesh()
+    let quadData = [
+      -1.0, 1.0, 0.0, 0.0, 1.0,
+      -1.0, -1.0, 0.0, 0.0, 0.0,
+      1.0, 1.0, 0.0, 1.0, 1.0,
+      1.0, -1.0, 0.0, 1.0, 0.0
+    ]
+    quad.bufferData(quadData, ['position', 'texCoord'], [3, 2])
+    this.quad = quad
 
-
+    this.orb = new ObjLoader().parseObj(getAssets.orb)
   }
   prepare() {
 
@@ -152,16 +149,12 @@ export default class PbrModel extends Pipeline {
 
 
     //brdf lookup texture
-    this.brdfLUTTexture = gl.createTexture()
-    gl.bindTexture(gl.TEXTURE_2D, this.brdfLUTTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG32F, 512, 512, 0, gl.RG, gl.FLOAT, null)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    this.brdfLUTTexture = new Texture(gl, gl.RG).fromData(512, 512, null)
+    this.brdfLUTTexture.bind()
+    this.brdfLUTTexture.clamp()
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, captureFrameBuffer)
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.brdfLUTTexture, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.brdfLUTTexture.id, 0);
     gl.viewport(0, 0, 512, 512)
     this.brdfPrg.use()
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -189,8 +182,8 @@ export default class PbrModel extends Pipeline {
     let eyeDirection = []
     let camUpDirection = []
 
-    vec3.transformQuat(eyeDirection, [0.0, 0., 3.], this.rotateQ)
-    vec3.transformQuat(camUpDirection, [0.0, 1.0, 0.0], this.rotateQ)
+    vec3.transformQuat(eyeDirection, [-1., 1., -2.], this.rotateQ)
+    vec3.transformQuat(camUpDirection, [0., 1.0, 0.], this.rotateQ)
     this.eyeDirection = eyeDirection
 
     mat4.lookAt(this.vMatrix, eyeDirection, [0, 0, 0], camUpDirection)
@@ -199,10 +192,16 @@ export default class PbrModel extends Pipeline {
   }
   _setGUI() {
     this.addGUIParams({
+      roughness: 0.2,
+      metallic: 6 / 7,
       lambertDiffuse: true,
       orenNayarDiffuse: false,
       map: 'none',
     })
+    let folder = this.gui.addFolder('material param')
+    folder.add(this.params, 'roughness', 0.05, 1).step(0.01)
+    folder.add(this.params, 'metallic', 0, 6 / 7).step(0.01)
+    folder.open()
 
     let folder1 = this.gui.addFolder('diffuse model')
     folder1.add(this.params, 'lambertDiffuse').listen().onChange(() => {
@@ -264,30 +263,24 @@ export default class PbrModel extends Pipeline {
       gl.activeTexture(gl.TEXTURE1)
       gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.prefilterMap.texture)
       gl.activeTexture(gl.TEXTURE2)
-      gl.bindTexture(gl.TEXTURE_2D, this.brdfLUTTexture)
+      gl.bindTexture(gl.TEXTURE_2D, this.brdfLUTTexture.id)
       this.prg.style({
         ...baseUniforms,
+        mMatrix,
+        roughness: this.params.roughness,
+        metallic: this.params.metallic,
         albedo: [.5, .0, .0],
         ao: 1.,
         irradianceMap: 0,
         prefilterMap: 1,
         brdfLUT: 2
       })
-      this.sphere.bind(this.prg, ['position', 'normal'])
-      for (let row = 0; row < nrRows; row++) {
-        this.prg.style({
-          metallic: row / nrRows
-        })
-        for (let col = 0; col < nrColumns; col++) {
-          mat4.translate(mMatrix, mat4.create(), [(col - (nrColumns / 2)) * spacing, (row - (nrRows / 2)) * spacing, 0.0])
-          // mat4.translate(mMatrix, mMatrix, [1, 0, 0])
-          this.prg.style({
-            roughness: clamp(col / nrColumns, 0.05, 1.),
-            mMatrix
-          })
-          this.sphere.draw()
-        }
+      for(let i =0; i < this.orb.length; i++){
+        this.orb[i].bind(this.prg, ['position', 'normal'])
+        this.orb[i].draw()
       }
+
+
     } else {
       this.mapPrg.use()
 
@@ -305,7 +298,7 @@ export default class PbrModel extends Pipeline {
       mat4.scale(mMatrix, mMatrix, [2, 2, 2])
       this.mapPrg.style({
         ...baseUniforms,
-        mMatrix: mMatrix,
+        mMatrix,
         albedoMap: 0,
         roughnessMap: 1,
         metallicMap: 2,
@@ -319,29 +312,18 @@ export default class PbrModel extends Pipeline {
       this.sphere.draw()
     }
 
-    // this.cubePrg.use()
-    // this.hdrTexture.bind(0)
-    // this.cubePrg.style({
-    //   equirectangularMap: 0,
-    //   vpMatrix: this.tmpMatrix,
-    //   mMatrix: mMatrix
+    // this.skyboxPrg.use()
+    // gl.activeTexture(gl.TEXTURE0)
+    // gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubemapTexture)
+
+    // this.skyboxPrg.style({
+    //   environmentMap: 0,
+    //   vMatrix: this.vMatrix,
+    //   pMatrix: this.pMatrix,
+    //   mMatrix: mat4.identity(mat4.create()),
     // })
-    // this.cube.bind(this.cubePrg, ['position', 'texCoord'])
+    // this.cube.bind(this.skyboxPrg, ['position'])
     // this.cube.draw()
-
-
-    this.skyboxPrg.use()
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubemapTexture)
-
-    this.skyboxPrg.style({
-      environmentMap: 0,
-      vMatrix: this.vMatrix,
-      pMatrix: this.pMatrix,
-      mMatrix: mat4.identity(mat4.create()),
-    })
-    this.cube.bind(this.skyboxPrg, ['position'])
-    this.cube.draw()
 
   }
 }

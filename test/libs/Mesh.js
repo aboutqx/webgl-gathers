@@ -10,8 +10,10 @@ export default class Mesh {
   _buffers = []
   iBuffer = null
   _useVao = true
-  constructor() {
-
+  name = ''
+  constructor(mDrawingType, name) {
+    this.drawingType = mDrawingType
+    this.name = name
   }
 
   bufferVertex(mData) {
@@ -32,7 +34,17 @@ export default class Mesh {
 
   bufferData(mData, mName, mItemSize) {
     // support nName as Array, vertex mData like ( vec3 position + vec2 uvs)
-    let buffer = new ArrayBuffer(gl, new Float32Array(mData))
+    //flatten data
+    let bufferData = []
+    if(mData[0].length){
+      for (let i = 0; i < mData.length; i++) {
+        for (let j = 0; j < mData[i].length; j++) {
+          bufferData.push(mData[i][j]);
+        }
+      }
+    } else bufferData = mData
+
+    let buffer = new ArrayBuffer(gl, new Float32Array(bufferData))
     if(!(mName.constructor === Array)) {
 
       buffer.attrib(mName, mItemSize, gl.FLOAT)
@@ -91,7 +103,7 @@ export default class Mesh {
     } else {
       t = this.iBuffer
     }
-
+    if(this.drawingType) mDrawingType = this.drawingType
     if (!mDrawingType) {
       t.drawTriangles()
     } else {

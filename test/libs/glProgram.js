@@ -37,6 +37,9 @@ function Program (gl, vert, frag, defs) {
   if (vert !== undefined && frag !== undefined) {
     this.compile(vert, frag, defs)
   }
+  this.unAssigned = []
+  this.prevTime = 0
+
 }
 
 /**
@@ -71,13 +74,22 @@ Program.prototype = {
         // throw new Error('not find in shader:' + k)
       }
     }
-    let unAssigned = []
-    this.uniforms.map((v) => {
-      if (!(v in opt)) {
-        unAssigned.push(v)
+    this.unAssigned = this.unAssigned.filter((v) => {
+      let assign = false
+      for (let k in opt) {
+        if (k === v) assign = true
       }
+      if (assign) return false
+      return true
     })
-    // if (unAssigned.length > 0) throw new Error('active uniform not assigned: ' + unAssigned)
+
+    if ((Date.now() - this.prevTime) < 1000 / 16 * 1000 && this.unAssigned.length === 0) {
+      clearTimeout(this.timer)
+    }
+    this.timer = setTimeout(() => {
+      if (this.unAssigned.length > 0) throw new Error('active uniform not assigned: ' + this.unAssigned)
+    }, 1 / 16)
+    this.prevTime = Date.now()
   },
   /**
    * Compile vertex and fragment shader then link gl program
@@ -167,6 +179,7 @@ Program.prototype = {
       this[uName] = getUniformSetter(uniform.type, uLocation, gl, context)
       this.dyns.push(uName)
       this.uniforms.push(uName)
+      this.unAssigned.push(uName)
     }
 
     // Attributes

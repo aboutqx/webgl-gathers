@@ -4,7 +4,7 @@ const Assets = {
     cubeSpecular: './assets/cubeSpecular.png',
     cubeEmission: './assets/cubeEmission.jpg'
   },
-  pbrMaps: {
+  ballMaps: {
     goldAlbedo: './assets/pbr/gold/albedo.png',
     goldMetallic: './assets/pbr/gold/metallic.png',
     goldAo: './assets/pbr/gold/ao.png',
@@ -53,6 +53,9 @@ const Assets = {
     irradianceNegY: { url: './assets/pbrflow/output_iem_negy.hdr', type: 'binary' },
     irradianceNegZ: { url: './assets/pbrflow/output_iem_negz.hdr', type: 'binary' },
     radiance: { url: './assets/pbrflow/output_radiance.dds', type: 'binary' },
+  },
+  orb: {
+    orb: { url: './assets/models/lte_orb/testObj.obj', type: 'text' }
   }
 
 }
