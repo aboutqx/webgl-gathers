@@ -13,9 +13,9 @@ if ( name === 'ibldiffuse' || name === 'iblfinal') {
 }
 const mapAssets = {
   lightcaster: { ...Assets.materialMaps },
-  pbr: { ...Assets.pbrMaps },
-  pbrflow: { ...Assets.hdrSkybox, ...Assets.iblMaps, ...Assets.pbrMaps },
-  pbrmodel: { ...Assets.hdrSkybox }
+  pbr: { ...Assets.ballMaps },
+  pbrflow: { ...Assets.hdrSkybox, ...Assets.iblMaps, ...Assets.ballMaps },
+  pbrmodel: { ...Assets.hdrSkybox, ...Assets.iblMaps,...Assets.orb }
 }
 for (let key in mapAssets) {
   if(name === key) assets = mapAssets[key]
