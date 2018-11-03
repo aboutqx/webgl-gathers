@@ -56,6 +56,10 @@ const Assets = {
   },
   orb: {
     orb: { url: './assets/models/lte_orb/testObj.obj', type: 'text' }
+  },
+  nanosuit: {
+    nanosuit: { url: './assets/models/nanosuit/nanosuit.obj', type: 'text' },
+    nanosuitMTL: { url: './assets/models/nanosuit/nanosuit.mtl', type: 'text' }
   }
 
 }

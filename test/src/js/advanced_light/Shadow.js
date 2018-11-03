@@ -1,17 +1,22 @@
 import Pipeline from '../PipeLine'
-import Texture from 'libs/glTexture'
-import vs from 'shaders/mask.vert'
-import fs from 'shaders/mask.frag'
-import outlineFs from 'shaders/maskOutline.frag'
 import {
-  mat4
-} from 'gl-matrix'
-import Vao from 'libs/vao'
+  ArrayBuffer,
+  IndexBuffer
+} from 'libs/glBuffer'
 import {
   gl,
   canvas,
   toRadian
 } from 'libs/GlTools'
+import Texture from 'libs/glTexture'
+import vs from 'shaders/mask.vert'
+import fs from 'shaders/shadow/depth.frag'
+import outlineFs from 'shaders/maskOutline.frag'
+import {
+  mat4
+} from 'gl-matrix'
+import Vao from 'libs/vao'
+
 
 export default class Shadow extends Pipeline {
   count = 0
@@ -21,8 +26,65 @@ export default class Shadow extends Pipeline {
   init() {
     this.outlinePrg = this.compile(vs, outlineFs)
     this.prg = this.compile(vs, fs)
+    // flip texture
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
   }
   attrib() {
+    let cubeVertices = [
+      // positions          // texture Coords
+      -0.5, -0.5, -0.5, 0.0, 0.0,
+      0.5, -0.5, -0.5, 1.0, 0.0,
+      0.5, 0.5, -0.5, 1.0, 1.0,
+      0.5, 0.5, -0.5, 1.0, 1.0,
+      -0.5, 0.5, -0.5, 0.0, 1.0,
+      -0.5, -0.5, -0.5, 0.0, 0.0,
+
+      -0.5, -0.5, 0.5, 0.0, 0.0,
+      0.5, -0.5, 0.5, 1.0, 0.0,
+      0.5, 0.5, 0.5, 1.0, 1.0,
+      0.5, 0.5, 0.5, 1.0, 1.0,
+      -0.5, 0.5, 0.5, 0.0, 1.0,
+      -0.5, -0.5, 0.5, 0.0, 0.0,
+
+      -0.5, 0.5, 0.5, 1.0, 0.0,
+      -0.5, 0.5, -0.5, 1.0, 1.0,
+      -0.5, -0.5, -0.5, 0.0, 1.0,
+      -0.5, -0.5, -0.5, 0.0, 1.0,
+      -0.5, -0.5, 0.5, 0.0, 0.0,
+      -0.5, 0.5, 0.5, 1.0, 0.0,
+
+      0.5, 0.5, 0.5, 1.0, 0.0,
+      0.5, 0.5, -0.5, 1.0, 1.0,
+      0.5, -0.5, -0.5, 0.0, 1.0,
+      0.5, -0.5, -0.5, 0.0, 1.0,
+      0.5, -0.5, 0.5, 0.0, 0.0,
+      0.5, 0.5, 0.5, 1.0, 0.0,
+
+      -0.5, -0.5, -0.5, 0.0, 1.0,
+      0.5, -0.5, -0.5, 1.0, 1.0,
+      0.5, -0.5, 0.5, 1.0, 0.0,
+      0.5, -0.5, 0.5, 1.0, 0.0,
+      -0.5, -0.5, 0.5, 0.0, 0.0,
+      -0.5, -0.5, -0.5, 0.0, 1.0,
+
+      -0.5, 0.5, -0.5, 0.0, 1.0,
+      0.5, 0.5, -0.5, 1.0, 1.0,
+      0.5, 0.5, 0.5, 1.0, 0.0,
+      0.5, 0.5, 0.5, 1.0, 0.0,
+      -0.5, 0.5, 0.5, 0.0, 0.0,
+      -0.5, 0.5, -0.5, 0.0, 1.0
+    ]
+    let planeVertices = [
+      // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+      3.0, -0.5, 3.0, 1.0, 0.0,
+      -3.0, -0.5, 3.0, 0.0, 0.0,
+      -3.0, -0.5, -3.0, 0.0, 1.0,
+
+      3.0, -0.5, 3.0, 1.0, 0.0,
+      -3.0, -0.5, -3.0, 0.0, 1.0,
+      3.0, -0.5, -3.0, 1.0, 1.0
+    ]
+
     this.cubeBuffer = new ArrayBuffer(gl, new Float32Array(cubeVertices))
     this.planeBuffer = new ArrayBuffer(gl, new Float32Array(planeVertices))
 
@@ -42,11 +104,13 @@ export default class Shadow extends Pipeline {
     this.texture = new Texture(gl, gl.RGBA)
     let img = getAssets.koala
     this.texture.fromImage(img)
-    this.texture.setFilter()
-    this.texture.repeat()
-
-    this.texture.bind(0)
+    this.texture.bind()
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.bindTexture(gl.TEXTURE_2D, null)
   }
+ 
   prepare() {
 
     let vMatrix = mat4.identity(mat4.create())
@@ -56,15 +120,16 @@ export default class Shadow extends Pipeline {
     this.tmpMatrix = mat4.identity(mat4.create())
 
     mat4.lookAt(vMatrix, [0.0, 0.0, 4.0], [0, 0, 0.0], [0, 1, 0])
-    let canvas = this.gl.canvas
 
-    mat4.perspective(pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 1000)
+    mat4.perspective(pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 100)
 
     mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
 
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LEQUAL)
-    gl.enable(gl.CULL_FACE) //double side
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LESS);
+    gl.enable(gl.STENCIL_TEST);
+    gl.stencilFunc(gl.NOTEQUAL, 1, 0xff);
+    gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
   }
   uniform() {
@@ -72,19 +137,22 @@ export default class Shadow extends Pipeline {
 
     this.count++
 
-      let rad = (this.count % 360) * Math.PI / 180
+    let rad = (this.count % 360) * Math.PI / 180
 
     mat4.rotate(mMatrix, mMatrix, rad, [0, 1, 1])
     mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
 
 
     this.prg.use()
+    this.texture.bind(0)
+
     this.prg.style({
       mvpMatrix: this.mvpMatrix,
-      texture: 0
+      texture: 0,
     })
   }
   render() {
+
     gl.clearColor(0.3, 0.3, .3, 1.0)
     gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)

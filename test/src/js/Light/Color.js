@@ -14,7 +14,7 @@ import {
   toRadian
 }from 'libs/GlTools'
 
-let vMatrix = mat4.identity(mat4.create())
+let vMatrix
 let pMatrix = mat4.identity(mat4.create())
 const lightColor = [0.33, 0.42, 0.18]
 export default class Color extends Pipeline {
@@ -86,18 +86,21 @@ export default class Color extends Pipeline {
     gl.clearColor(0.3, 0.3, .3, 1.0)
     gl.clearDepth(1.0)
 
-
+    this.camera.radius = 3
   }
   uniform() {
 
-    let eyeDirection = []
-    let camUpDirection = []
+    // let eyeDirection = []
+    // let camUpDirection = []
 
-    vec3.transformQuat(eyeDirection, [0.0, 0.0, 3.0], this.rotateQ)
-    vec3.transformQuat(camUpDirection, [0.0, 1.0, 0.0], this.rotateQ)
-    this.eyeDirection = eyeDirection
+    // vec3.transformQuat(eyeDirection, [0.0, 0.0, 3.0], this.rotateQ)
+    // vec3.transformQuat(camUpDirection, [0.0, 1.0, 0.0], this.rotateQ)
+    // this.eyeDirection = eyeDirection
 
-    mat4.lookAt(vMatrix, eyeDirection, [0, 0, 0], camUpDirection)
+    // mat4.lookAt(vMatrix, [0.0, 0.0, 3.0], [0, 0, 0], [0.0, 1.0, 0.0])
+
+    vMatrix = this.camera.viewMatrix
+// console.log( vMatrix)
     mat4.perspective(pMatrix, toRadian(60), canvas.clientWidth / canvas.clientHeight, .1, 100)
 
 

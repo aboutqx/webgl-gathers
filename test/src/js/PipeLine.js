@@ -1,4 +1,5 @@
 import Program from 'libs/glProgram'
+import Camera from 'libs/Camera'
 import { quat } from 'gl-matrix';
 import { gl } from 'libs/GlTools'
 import * as dat from 'dat.gui'
@@ -6,6 +7,7 @@ import * as dat from 'dat.gui'
 
 export default class Pipeline {
   rotateQ = quat.create()
+  camera = new Camera()
   _params = {}
   gui = new dat.GUI({
     width: 300
@@ -39,6 +41,7 @@ export default class Pipeline {
   animate() {
     requestAnimationFrame(this._animate)
 
+    this.camera.updateMatrix()
     this.uniform()
     this.render()
   }
