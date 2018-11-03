@@ -1,13 +1,15 @@
+import MTLLoader from 'libs/loaders/MTLLoader'
+
 import Pipeline from '../PipeLine'
 import {
   gl,
   canvas,
   toRadian
 } from 'libs/GlTools'
-import vs from 'shaders/pbr_flow/pbr_ibl.vert'
-import fs from 'shaders/pbr_flow/pbr_ibl.frag'
-import mapVs from 'shaders/pbr_flow/pbr_map.vert'
-import mapFs from 'shaders/pbr_flow/pbr_map.frag'
+import vs from 'shaders/pbr_model/pbr_ibl.vert'
+import fs from 'shaders/pbr_model/pbr_ibl.frag'
+import mapVs from 'shaders/pbr_model/pbr_map.vert'
+import mapFs from 'shaders/pbr_model/pbr_map.frag'
 import cubeVs from 'shaders/ibl_final/cubemap.vert'
 import cubeFs from 'shaders/ibl_final/equirectangular_to_cubemap.frag'
 import skyboxVs from 'shaders/ibl_final/skybox.vert'
@@ -15,13 +17,8 @@ import skyboxFs from 'shaders/ibl_final/skybox.frag'
 import simple2dVs from 'shaders/ibl_final/simple2d.vert'
 import brdfFs from 'shaders/ibl_final/brdf.frag'
 
+
 import {
-  ArrayBuffer,
-  IndexBuffer
-} from 'libs/glBuffer'
-import Vao from 'libs/vao'
-import {
-  Sphere,
   CubeData
 } from '../Torus'
 import {
@@ -32,14 +29,12 @@ import Mesh from 'libs/Mesh'
 import Texture from 'libs/glTexture'
 import HDRParser from 'utils/HDRParser'
 import GLCubeTexture from 'libs/GLCubeTexture'
+import OBJLoader from 'libs/loaders/OBJLoader'
 
-const nrRows = 7
-const nrColumns = 7
-const spacing = .42
 /* irradianceMap, prefilterMap 用cmftStudio生成
 
 */
-export default class PbrFlow extends Pipeline {
+export default class DeferredShading extends Pipeline {
   count = 0
   constructor() {
     super()
@@ -60,43 +55,10 @@ export default class PbrFlow extends Pipeline {
     this.skyboxPrg = this.compile(skyboxVs, skyboxFs)
     this.brdfPrg = this.compile(simple2dVs, brdfFs)
   }
-  attrib() {
-    let {
-      pos,
-      index,
-      normal,
-      uv
-    } = Sphere(256, 256, .15)
-
-    let sphere = new Mesh()
-    sphere.bufferVertex(pos)
-    sphere.bufferIndices(index)
-    sphere.bufferNormal(normal)
-    sphere.bufferTexCoord(uv)
-    this.sphere = sphere
-
+  async attrib() {
     let cube = new Mesh()
     cube.bufferData(CubeData, ['position', 'normal', 'texCoord'], [3, 3, 2])
     this.cube = cube
-
-    let planeVertices = [
-      // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-      3.0, -0.5, 3.0, 1.0, 0.0,
-      -3.0, -0.5, 3.0, 0.0, 0.0,
-      -3.0, -0.5, -3.0, 0.0, 1.0,
-
-      3.0, -0.5, 3.0, 1.0, 0.0,
-      -3.0, -0.5, -3.0, 0.0, 1.0,
-      3.0, -0.5, -3.0, 1.0, 1.0
-    ]
-
-    this.planeBuffer = new ArrayBuffer(gl, new Float32Array(planeVertices))
-
-    this.planeBuffer.attrib('position', 3, gl.FLOAT)
-    this.planeBuffer.attrib('texCoord', 2, gl.FLOAT)
-
-    this.planeVao = new Vao(gl)
-    this.planeVao.setup(this.cubePrg, [this.planeBuffer])
 
     let quad = new Mesh()
     let quadData = [
@@ -107,6 +69,10 @@ export default class PbrFlow extends Pipeline {
     ]
     quad.bufferData(quadData, ['position', 'texCoord'], [3, 2])
     this.quad = quad
+
+    const materials = await new MTLLoader('nanosuit.mtl', './assets/models/nanosuit').parse(getAssets.nanosuitMTL)
+    this.orb = new OBJLoader().parseObj(getAssets.nanosuit, materials)
+    console.log(this.orb)
   }
   prepare() {
 
@@ -173,7 +139,6 @@ export default class PbrFlow extends Pipeline {
       this.cube.draw()
     }
 
-
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
     if (status != gl.FRAMEBUFFER_COMPLETE) {
       console.log(`gl.checkFramebufferStatus() returned ${status.toString(16)}`);
@@ -196,39 +161,37 @@ export default class PbrFlow extends Pipeline {
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-    let irr_posx = HDRParser(getAssets.irradiancePosX);
-    let irr_negx = HDRParser(getAssets.irradianceNegX);
-    let irr_posy = HDRParser(getAssets.irradiancePosY);
-    let irr_negy = HDRParser(getAssets.irradianceNegY);
-    let irr_posz = HDRParser(getAssets.irradiancePosZ);
-    let irr_negz = HDRParser(getAssets.irradianceNegZ);
+    let irr_posx = HDRParser(getAssets.irradiancePosX)
+    let irr_negx = HDRParser(getAssets.irradianceNegX)
+    let irr_posy = HDRParser(getAssets.irradiancePosY)
+    let irr_negy = HDRParser(getAssets.irradianceNegY)
+    let irr_posz = HDRParser(getAssets.irradiancePosZ)
+    let irr_negz = HDRParser(getAssets.irradianceNegZ)
 
     this.irradianceMap = new GLCubeTexture([irr_posx, irr_negx, irr_posy, irr_negy, irr_posz, irr_negz])
     this.prefilterMap = GLCubeTexture.parseDDS(getAssets.radiance)
   }
   uniform() {
-
-    this.vMatrix = mat4.identity(mat4.create())
+    this.camera.radius = 20
+    this.vMatrix = this.camera.viewMatrix
     this.pMatrix = mat4.identity(mat4.create())
     this.tmpMatrix = mat4.create()
 
-    let eyeDirection = []
-    let camUpDirection = []
-
-    vec3.transformQuat(eyeDirection, [0.0, 0., 3.], this.rotateQ)
-    vec3.transformQuat(camUpDirection, [0.0, 1.0, 0.0], this.rotateQ)
-    this.eyeDirection = eyeDirection
-
-    mat4.lookAt(this.vMatrix, eyeDirection, [0, 0, 0], camUpDirection)
-    mat4.perspective(this.pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 100)
+    mat4.perspective(this.pMatrix, toRadian(32), canvas.clientWidth / canvas.clientHeight, .1, 100)
     mat4.multiply(this.tmpMatrix, this.pMatrix, this.vMatrix)
   }
   _setGUI() {
     this.addGUIParams({
+      roughness: 0.2,
+      metallic: 6 / 7,
       lambertDiffuse: true,
       orenNayarDiffuse: false,
       map: 'none',
     })
+    let folder = this.gui.addFolder('material param')
+    folder.add(this.params, 'roughness', 0.05, 1).step(0.01)
+    folder.add(this.params, 'metallic', 0, 6 / 7).step(0.01)
+    folder.open()
 
     let folder1 = this.gui.addFolder('diffuse model')
     folder1.add(this.params, 'lambertDiffuse').listen().onChange(() => {
@@ -279,7 +242,7 @@ export default class PbrFlow extends Pipeline {
         10., -10., 10.,
       ],
       lightColors: new Array(12).fill(300.),
-      camPos: this.eyeDirection,
+      camPos: this.camera.cameraPos,
       lambertDiffuse: this.params.lambertDiffuse
     }
 
@@ -290,30 +253,27 @@ export default class PbrFlow extends Pipeline {
       gl.activeTexture(gl.TEXTURE1)
       gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.prefilterMap.texture)
       gl.activeTexture(gl.TEXTURE2)
-      gl.bindTexture(gl.TEXTURE_2D, this.brdfLUTTexture.id);
+      gl.bindTexture(gl.TEXTURE_2D, this.brdfLUTTexture.id)
       this.prg.style({
         ...baseUniforms,
+        mMatrix,
+        roughness: this.params.roughness,
+        metallic: this.params.metallic,
         albedo: [.5, .0, .0],
         ao: 1.,
         irradianceMap: 0,
         prefilterMap: 1,
         brdfLUT: 2
       })
-      this.sphere.bind(this.prg, ['position', 'normal'])
-      for (let row = 0; row < nrRows; row++) {
-        this.prg.style({
-          metallic: row / nrRows
-        })
-        for (let col = 0; col < nrColumns; col++) {
-          mat4.translate(mMatrix, mat4.create(), [(col - (nrColumns / 2)) * spacing, (row - (nrRows / 2)) * spacing, 0.0])
-          // mat4.translate(mMatrix, mMatrix, [1, 0, 0])
-          this.prg.style({
-            roughness: clamp(col / nrColumns, 0.05, 1.),
-            mMatrix
-          })
-          this.sphere.draw()
+      if (this.orb) { // loaded
+        for (let i = 0; i < this.orb.length; i++) {
+          this.orb[i].bind(this.prg, ['position', 'normal'])
+          this.orb[i].draw()
         }
       }
+
+
+
     } else {
       this.mapPrg.use()
 
@@ -331,7 +291,7 @@ export default class PbrFlow extends Pipeline {
       mat4.scale(mMatrix, mMatrix, [2, 2, 2])
       this.mapPrg.style({
         ...baseUniforms,
-        mMatrix: mMatrix,
+        mMatrix,
         albedoMap: 0,
         roughnessMap: 1,
         metallicMap: 2,
@@ -345,40 +305,22 @@ export default class PbrFlow extends Pipeline {
       this.sphere.draw()
     }
 
-    // this.cubePrg.use()
-    // this.hdrTexture.bind(0)
-    // this.cubePrg.style({
-    //   equirectangularMap: 0,
-    //   vpMatrix: this.tmpMatrix,
-    //   mMatrix: mMatrix
+    // this.skyboxPrg.use()
+    // gl.activeTexture(gl.TEXTURE0)
+    // gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubemapTexture)
+
+    // this.skyboxPrg.style({
+    //   environmentMap: 0,
+    //   vMatrix: this.vMatrix,
+    //   pMatrix: this.pMatrix,
+    //   mMatrix: mat4.identity(mat4.create()),
     // })
-    // this.cube.bind(this.cubePrg, ['position', 'texCoord'])
+    // this.cube.bind(this.skyboxPrg, ['position'])
     // this.cube.draw()
 
-    // this.planeVao.bind()
-    // this.planeBuffer.drawTriangles()
-    // this.planeVao.unbind()
-
-    this.skyboxPrg.use()
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubemapTexture)
-
-    this.skyboxPrg.style({
-      environmentMap: 0,
-      vMatrix: this.vMatrix,
-      pMatrix: this.pMatrix,
-      mMatrix: mat4.identity(mat4.create()),
-    })
-    this.cube.bind(this.skyboxPrg, ['position'])
-    this.cube.draw()
-
-    // brdf out为vec2，设置为vec4时显示正常
-    // this.brdfPrg.use()
-    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    // this.quad.bind(this.brdfPrg)
-    // this.quad.draw(gl.TRIANGLE_STRIP)
   }
 }
+
 function clamp(value, min, max) {
   if (min > max) {
     return clamp(value, max, min);

@@ -11,9 +11,11 @@ export default class Mesh {
   iBuffer = null
   _useVao = true
   name = ''
-  constructor(mDrawingType, name) {
+  material = ''
+  constructor(mDrawingType, name, material) {
     this.drawingType = mDrawingType
     this.name = name
+    this.material = material
   }
 
   bufferVertex(mData) {

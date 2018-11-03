@@ -27,11 +27,8 @@ import Mesh from 'libs/Mesh'
 import Texture from 'libs/glTexture'
 import HDRParser from 'utils/HDRParser'
 import GLCubeTexture from 'libs/GLCubeTexture'
-import ObjLoader from 'libs/loaders/ObjLoader'
+import OBJLoader from 'libs/loaders/OBJLoader'
 
-const nrRows = 7
-const nrColumns = 7
-const spacing = .42
 /* irradianceMap, prefilterMap 用cmftStudio生成
 
 */
@@ -57,8 +54,6 @@ export default class PbrModel extends Pipeline {
     this.brdfPrg = this.compile(simple2dVs, brdfFs)
   }
   attrib() {
-
-
     let cube = new Mesh()
     cube.bufferData(CubeData, ['position', 'normal', 'texCoord'], [3, 3, 2])
     this.cube = cube
@@ -73,7 +68,7 @@ export default class PbrModel extends Pipeline {
     quad.bufferData(quadData, ['position', 'texCoord'], [3, 2])
     this.quad = quad
 
-    this.orb = new ObjLoader().parseObj(getAssets.orb)
+    this.orb = new OBJLoader().parseObj(getAssets.orb)
   }
   prepare() {
 
@@ -139,7 +134,6 @@ export default class PbrModel extends Pipeline {
       this.cube.bind(this.cubePrg, ['position', 'texCoord'])
       this.cube.draw()
     }
-    gl.generateMipmap(gl.TEXTURE_CUBE_MAP) // has to be placed here，to generate each face data
 
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
     if (status != gl.FRAMEBUFFER_COMPLETE) {
@@ -175,18 +169,11 @@ export default class PbrModel extends Pipeline {
   }
   uniform() {
 
-    this.vMatrix = mat4.identity(mat4.create())
+    this.vMatrix = this.camera.viewMatrix
     this.pMatrix = mat4.identity(mat4.create())
     this.tmpMatrix = mat4.create()
 
-    let eyeDirection = []
-    let camUpDirection = []
 
-    vec3.transformQuat(eyeDirection, [-1., 1., -2.], this.rotateQ)
-    vec3.transformQuat(camUpDirection, [0., 1.0, 0.], this.rotateQ)
-    this.eyeDirection = eyeDirection
-
-    mat4.lookAt(this.vMatrix, eyeDirection, [0, 0, 0], camUpDirection)
     mat4.perspective(this.pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 100)
     mat4.multiply(this.tmpMatrix, this.pMatrix, this.vMatrix)
   }
@@ -252,7 +239,7 @@ export default class PbrModel extends Pipeline {
         10., -10., 10.,
       ],
       lightColors: new Array(12).fill(300.),
-      camPos: this.eyeDirection,
+      camPos: this.camera.cameraPos,
       lambertDiffuse: this.params.lambertDiffuse
     }
 

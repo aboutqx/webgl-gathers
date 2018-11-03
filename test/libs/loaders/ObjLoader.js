@@ -8,6 +8,7 @@ class ObjLoader {
   object = null
   objectList = []
   meshes = []
+  materialLibraries = []
   load(url, callback, drawType = 4) {
     this._drawType = drawType;
     super.load(url, callback);
@@ -17,7 +18,8 @@ class ObjLoader {
     this.parseObj(this._req.response);
   }
 
-  parseObj(objStr) {
+  parseObj(objStr, materials) {
+    this.materials = materials
     const lines = objStr.split('\n');
     // 实际buffer的数据
     const positions = [];
@@ -35,6 +37,10 @@ class ObjLoader {
     // o object_name | g group_name
     //ignore mtl
     const objectPattern = /^[og]\s*(.+)?/;
+    	// mtllib file_reference
+    const material_library_pattern = /^mtllib /;
+    // usemtl material_name
+    const material_use_pattern = /^usemtl /;
     // v float float float
     const vertexPattern = /v( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
 
@@ -178,7 +184,17 @@ class ObjLoader {
 
       }
       let lineFirstChar = line.charAt(0)
-      if ((result = objectPattern.exec(line)) !== null) {
+      if (material_library_pattern.test(line)) {
+
+        // mtl file
+
+        this.materialLibraries.push(line.substring(7).trim());
+
+      } else if (material_use_pattern.test(line)) {
+
+        this._startMaterial(line.substring(7).trim(), this.materialLibraries)
+
+      } else if ((result = objectPattern.exec(line)) !== null) {
         // o object_name
         // or
         // g group_name
@@ -188,8 +204,7 @@ class ObjLoader {
         let name = (" " + result[0].substr(1).trim()).substr(1)
 
         this._startObject(name);
-      }
-      else if ((result = vertexPattern.exec(line)) !== null) {
+      } else if ((result = vertexPattern.exec(line)) !== null) {
 
         vertices.push(
           parseFloat(result[1]),
@@ -245,6 +260,7 @@ class ObjLoader {
     return this._generateMeshes();
 
   }
+
   _startObject (name) {
     if(has(this.objectList, 'name', name) !== -1) return
     // console.log('start object', name)
@@ -259,6 +275,16 @@ class ObjLoader {
 
     this.objectList.push(this.object)
   }
+
+  _startMaterial (name, lib) {
+    let material = {
+      name,
+      mtlLib: lib[lib.length - 1]
+    }
+
+    this.object.material = material
+  }
+
   _generateMeshes() {
     let o
     for(let i = 0; i < this.objectList.length; i++){
@@ -267,12 +293,15 @@ class ObjLoader {
         coords: this.objectList[i].coords,
         indices: this.objectList[i].indices,
         normals: this.objectList[i].finalNormals,
-        name: this.objectList[i].name
+        name: this.objectList[i].name,
+        material: this.materials ? { ...this.materials[this.objectList[i].material.name],
+          mtlLib: this.objectList[i].material.mtlLib } : this.objectList[i].material
+          
       }
-      console.log(o)
+
       const hasNormals = o.normals.length > 0
       const hasUVs = o.coords.length > 0
-      let mesh = new Mesh(this._drawType, o.name)
+      let mesh = new Mesh(this._drawType, o.name, o.material)
       mesh.bufferVertex(o.positions);
       if (hasUVs) {
         mesh.bufferTexCoord(o.coords);
