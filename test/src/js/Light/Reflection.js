@@ -30,7 +30,7 @@ export default class Reflection extends Pipeline {
       index,
       normal,
       color
-    } = Torus(32, 32, 1.0, 2.0)
+    } = Torus(32, 32, .5, 2.0)
 
     this.posBuffer = new ArrayBuffer(gl, new Float32Array(pos))
     this.normalBuffer = new ArrayBuffer(gl, new Float32Array(normal))
@@ -53,20 +53,20 @@ export default class Reflection extends Pipeline {
   }
   prepare() {
 
-    let vMatrix = mat4.identity(mat4.create())
+
+
+  }
+  uniform() {
+    let vMatrix = this.camera.viewMatrix
     let pMatrix = mat4.identity(mat4.create())
 
     this.mvpMatrix = mat4.identity(mat4.create())
     this.tmpMatrix = mat4.identity(mat4.create())
 
-    mat4.lookAt(vMatrix, [0.0, 0.0, 15.0], [0, 0, 0], [0, 1, 0])
-
     mat4.perspective(pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 100)
 
     mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
 
-  }
-  uniform() {
     let mMatrix = mat4.identity(mat4.create())
 
     // this.count++

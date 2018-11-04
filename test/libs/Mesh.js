@@ -5,17 +5,23 @@ import {
 import {
   gl
 } from 'libs/GlTools'
+import Texture from 'libs/glTexture'
 
 export default class Mesh {
   _buffers = []
   iBuffer = null
   _useVao = true
   name = ''
-  material = ''
+  material = null
+  textures = {}
   constructor(mDrawingType, name, material) {
     this.drawingType = mDrawingType
     this.name = name
-    this.material = material
+    if(material) {
+      this.material = material
+      this._setMaterial()
+    }
+
   }
 
   bufferVertex(mData) {
@@ -96,6 +102,32 @@ export default class Mesh {
 
     }
     if(this.iBuffer) this.iBuffer.bind()
+    if (this.textures) {
+      let diffuseNr = 1
+      let specularNr = 1
+      let normalNr = 1
+      let heightNr = 1
+      let i = 0
+      for (let key in this.textures) {
+        gl.activeTexture(gl.TEXTURE0 + i)
+        let number =''
+        if(key === 'diffuseMap') {
+
+          number = (diffuseNr++) + ''
+        } else if(key === 'specularMap') {
+          number = (specularNr++) + ''
+        } else if(key === 'normalMap') {
+          number = (normalNr++) + ''
+        } else if (key === 'heightMap' || key === 'bumpMap') { // three.js takes bumpMap as heightMap
+          number = (heightNr++) + ''
+        }
+        let tmp = {}
+        tmp[key + number] = i
+        mProgram.style(tmp)
+        gl.bindTexture(gl.TEXTURE_2D, this.textures[key])
+        i++
+      }
+    }
   }
 
   draw(mDrawingType) {
@@ -110,6 +142,15 @@ export default class Mesh {
       t.drawTriangles()
     } else {
       t.draw(mDrawingType)
+    }
+  }
+
+  _setMaterial() {
+    for(let key in this.material){
+      if (this.material[key].constructor === HTMLImageElement) {
+        this.material[key] = new Texture(gl).fromImage(this.material[key]).id
+        this.textures[key] = this.material[key]
+      }
     }
   }
 

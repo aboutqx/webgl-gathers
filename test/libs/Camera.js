@@ -18,6 +18,7 @@ const getMouse = function (mEvent, mTarget, finger2) {
 
   return o;
 }
+const MIN_DIFF = 0.0001;
 
 export default class Camrea {
   cameraPos
@@ -32,12 +33,15 @@ export default class Camrea {
   _preRy = 0
   _targetRx = 0
   _targetRy = 0
-  _radius = 5
   _tmp = mat4.identity(mat4.create())
   _width = canvas.width
   _height = canvas.height
   sensitivity = 1.
-  _offset = [0, 0, 0]
+  target = [0, 0, 0]
+  offset = [0, 0, 0]
+  radius = 5
+  _targetRadius = 5
+  _updateWheel = false
   constructor (position = [0,0,0], up = [0, 1, 0]) {
     this.cameraPos = position
     this.up = up
@@ -50,6 +54,8 @@ export default class Camrea {
     canvas.addEventListener('mousemove', e => this._move(e))
     document.addEventListener('mouseup', e => this._up(e))
 
+    canvas.addEventListener('mousewheel', (e) => this._onWheel(e));
+    canvas.addEventListener('DOMMouseScroll', (e) => this._onWheel(e));
   }
 
   _down(mEvent) {
@@ -79,7 +85,7 @@ export default class Camrea {
   }
 
   updateMatrix (){
-    const MIN_DIFF = 0.0001;
+
     this._rx += (this._targetRx - this._rx) * 0.1 //ease out
     if (Math.abs(this._targetRx - this._rx) < MIN_DIFF) {
       this._rx = this._targetRx
@@ -89,29 +95,44 @@ export default class Camrea {
     if (Math.abs(this._targetRy - this._ry) < MIN_DIFF) {
       this._ry = this._targetRy
     }
+    // or use scheduling to add EF
+    if(this._updateWheel) {
+      this.radius += (this._targetRadius - this.radius) * 0.1 //ease out
+      if (Math.abs(this._targetRadius - this.radius) < MIN_DIFF) {
+        this.radius = this._targetRadius
+      }
+    }
 
-
-    this.cameraPos[1] = Math.sin(this._ry) * this._radius
-    let tr = Math.abs(Math.cos(this._ry) * this._radius) // 防止y突然从1变成-1，x，z的象限变化
+    this.cameraPos[1] = Math.sin(this._ry) * this.radius
+    let tr = Math.abs(Math.cos(this._ry) * this.radius) // 防止y突然从1变成-1，x，z的象限变化
     this.cameraPos[0] = Math.cos(this._rx + Math.PI * 0.5) * tr
     this.cameraPos[2] = Math.sin(this._rx + Math.PI * 0.5) * tr
 
     //mat4.lookAt(mat4.create(), this.cameraPos, this.cameraPos + this.cameraFront, this.up)
-    this.cameraPos = [this.cameraPos[0] + this._offset[0], this.cameraPos[1] + this._offset[1], this.cameraPos[2] + this._offset[2]]
-    mat4.lookAt(this._tmp, this.cameraPos, [0, 0, 0], this.up)
+    this.cameraPos = [this.cameraPos[0] + this.offset[0], this.cameraPos[1] + this.offset[1], this.cameraPos[2] + this.offset[2]]
+    mat4.lookAt(this._tmp, this.cameraPos, this.target, this.up)
   }
 
-  set offset(arr) {
-    this._offset = arr
-  }
+  _onWheel(mEvent) {
+    const w = mEvent.wheelDelta;
+    const d = mEvent.detail;
+    let value = 0;
+    if (d) {
+      if (w) {
+        value = w / d / 40 * d > 0 ? 1 : -1; // Opera
+      } else {
+        value = -d / 3; // Firefox;         TODO: do not /3 for OS X
+      }
+    } else {
+      value = w / 120;
+    }
 
+    this._targetRadius = this.radius + (-value * 2)
+    this._updateWheel = true
+  }
 
   get viewMatrix() {
-
     return this._tmp
   }
 
-  set radius(value) {
-    this._radius = value
-  }
 }

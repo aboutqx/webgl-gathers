@@ -64,7 +64,7 @@ export default class Mrt extends Pipeline {
       index,
       normal,
       color
-    } = Torus(64, 64, 1.0, 2.0, [1.0, 1.0, 1.0, 1.0])
+    } = Torus(64, 64, 1.0, 3.0, [1.0, 1.0, 1.0, 1.0])
 
     const tPosBuffer = new ArrayBuffer(gl, new Float32Array(pos))
     const tNormalBuffer = new ArrayBuffer(gl, new Float32Array(normal))
@@ -114,12 +114,11 @@ export default class Mrt extends Pipeline {
     this.mvpMatrix = mat4.create()
     this.tmpMatrix = mat4.create()
 
-    const eyePosition = [0.0, 80.0, 0.0]
+    const eyePosition = [0.0, 60.0, 0.0]
     const camUpDirection = [0., 0., -1.]
 
     mat4.lookAt(vMatrix, eyePosition, [0, 0, 0], camUpDirection)
-    let canvas = this.gl.canvas
-    mat4.perspective(pMatrix, toRadian(75), canvas.clientWidth / canvas.clientHeight, .1, 135)
+    mat4.perspective(pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 135)
     mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
 
 
@@ -127,11 +126,11 @@ export default class Mrt extends Pipeline {
     gl.depthFunc(gl.LEQUAL)
     gl.enable(gl.CULL_FACE) //double side
 
-    gl.clearColor(.3, .3, .7, 1.0)
+    gl.clearColor(.3, .3, .3, 1.0)
     gl.clearDepth(1.0)
 
 
-    frameBuffer = createFramebufferMRT(gl, gl.canvas.width, gl.canvas.height) //full canvas size
+    frameBuffer = createFramebufferMRT(canvas.width, canvas.height) //full canvas size
 
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, frameBuffer.t[0])
@@ -142,14 +141,8 @@ export default class Mrt extends Pipeline {
     gl.activeTexture(gl.TEXTURE3)
     gl.bindTexture(gl.TEXTURE_2D, frameBuffer.t[3])
     //z值为pespecte之后的z，camera从上往下看，z相同，所以depth里圆圈颜色相同，转动后，透视z值改变，颜色改变
-  }
-  uniform() {
-
-  }
-  render() {
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer.f)
-
     const bufferList = [
       ext.COLOR_ATTACHMENT0_WEBGL,
       ext.COLOR_ATTACHMENT1_WEBGL,
@@ -157,6 +150,12 @@ export default class Mrt extends Pipeline {
       ext.COLOR_ATTACHMENT3_WEBGL
     ]
     ext.drawBuffersWEBGL(bufferList) // 指定渲染目标
+  }
+
+  render() {
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer.f)
+
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
     const lightDirection = [-0.577, 0.577, 0.577]
@@ -173,7 +172,7 @@ export default class Mrt extends Pipeline {
       mat4.identity(mMatrix);
       //绕y轴旋转，改变model坐标系方向，便于后续移动错开
       mat4.rotate(mMatrix, mMatrix, i * 2 * Math.PI / 9, [0, 1, 0])
-      mat4.translate(mMatrix, mMatrix, [0.0, 0.0, 10.0])
+      mat4.translate(mMatrix, mMatrix, [0.0, 0.0, 15.0])
       mat4.rotate(mMatrix, mMatrix, rad, [1, 1, 0])
       mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
 
@@ -208,7 +207,7 @@ export default class Mrt extends Pipeline {
 }
 
 //链接纹理到framebuffer
-function createFramebufferMRT(gl, width, height) {
+function createFramebufferMRT(width, height) {
   let frameBuffer = gl.createFramebuffer()
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer)
