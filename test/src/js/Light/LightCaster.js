@@ -110,6 +110,8 @@ export default class LightCaster extends Pipeline {
     this.diffuseTexture = new Texture(gl, gl.RGBA).fromImage(getAssets.cubeDiffuse)
     this.specularTexture = new Texture(gl, gl.RGBA).fromImage(getAssets.cubeSpecular)
     this.emissionTexture = new Texture(gl, gl.RGBA).fromImage(getAssets.cubeEmission)
+
+    this.camera.radius = 6
   }
   _setGUI() {
     this.addGUIParams({
@@ -139,15 +141,7 @@ export default class LightCaster extends Pipeline {
   }
 
   uniform() {
-
-    let cameraPos = []
-    let camUpDirection = []
-
-    vec3.transformQuat(cameraPos, [0.0, 0.0, 6.0], this.rotateQ)
-    vec3.transformQuat(camUpDirection, [0.0, 1.0, 0.0], this.rotateQ)
-    this.cameraPos = cameraPos
-
-    mat4.lookAt(vMatrix, cameraPos, [0, 0, 0], camUpDirection)
+    vMatrix = this.camera.viewMatrix
     mat4.perspective(pMatrix, toRadian(60), canvas.clientWidth / canvas.clientHeight, .1, 100)
 
   }
@@ -162,10 +156,10 @@ export default class LightCaster extends Pipeline {
       this.prg.style({
         vMatrix,
         pMatrix,
-        camPos: this.cameraPos,
+        camPos: this.camera.cameraPos,
         'material.shininess': 30,
         'material.diffuse': 0,
-        'material.specualr': 1,
+        'material.specular': 1,
         'material.emission': 2,
         'light.ambient': [.2, .2, .2],
         'light.diffuse': [.5, .5, .5],
@@ -189,10 +183,10 @@ export default class LightCaster extends Pipeline {
       this.pointPrg.style({
         vMatrix,
         pMatrix,
-        camPos: this.cameraPos,
+        camPos: this.camera.cameraPos,
         'material.shininess': 30,
         'material.diffuse': 0,
-        'material.specualr': 1,
+        'material.specular': 1,
         'material.emission': 2,
         'light.ambient': [.2, .2, .2],
         'light.diffuse': [.5, .5, .5],
@@ -219,17 +213,17 @@ export default class LightCaster extends Pipeline {
       this.spotPrg.style({
         vMatrix,
         pMatrix,
-        camPos: this.cameraPos,
+        camPos: this.camera.cameraPos,
         'material.shininess': 30,
         'material.diffuse': 0,
-        'material.specualr': 1,
+        'material.specular': 1,
         'material.emission': 2,
-        'light.ambient': [.2, .2, .2],
+        'light.ambient': [.1, .1, .1],
         'light.diffuse': [.5, .5, .5],
         'light.specular': [1., 1., 1.],
-        'light.position': this.cameraPos,
-        'light.direction': this.cameraPos,
-        'light.cutOff': toRadian(32.5)
+        'light.position': this.camera.cameraPos,
+        'light.direction': [-this.camera.cameraPos[0], -this.camera.cameraPos[1], -this.camera.cameraPos[2]],
+        'light.cutOff': toRadian(12.5)
       })
       cubePosition.map((position, i) => {
         let cubemMatrix = mat4.create()

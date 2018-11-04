@@ -82,13 +82,16 @@ Program.prototype = {
       if (assign) return false
       return true
     })
-
-    if ((Date.now() - this.prevTime) < 1000 / 16 * 1000 && this.unAssigned.length === 0) {
+    if ((Date.now() - this.prevTime) < 1000 / 16 * 1000 && this.unAssigned.length === 0 && !(this.timer === null)) {
       clearTimeout(this.timer)
+      this.timer = null
     }
-    this.timer = setTimeout(() => {
-      if (this.unAssigned.length > 0) throw new Error('active uniform not assigned: ' + this.unAssigned)
-    }, 1 / 16)
+    if (this.unAssigned.length !== 0) {
+      this.timer = setTimeout(() => {
+        if (this.unAssigned.length > 0) throw new Error('active uniform not assigned: ' + this.unAssigned)
+      }, 1 / 16)
+    }
+
     this.prevTime = Date.now()
   },
   /**
