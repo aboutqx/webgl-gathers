@@ -45,3 +45,8 @@ Example renderable(can be attach to a framebuffer)
 iiradiance格式可为faces list, hdr rgbe，尺寸可以小一点,实时filter iiradiance别忘记设置为小尺寸，例如32x32，否则会有性能问题，出现webgl context lost。
 
 DistributionGGX里的最后除以的max(denom, 0.001)最好直接改成denom，这样才有锐利（sharp）的点光源效果
+
+## deferred shading
+使用blitFramebuffer从framebuffer中copy深度到屏幕framebuffer时，需要depth internal format匹配
+屏幕的时DEPTH24_STENCIL8
+[stackoverflow](https://stackoverflow.com/questions/9914046/opengl-how-to-use-depthbuffer-from-framebuffer-as-usual-depth-buffer)

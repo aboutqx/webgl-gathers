@@ -1,6 +1,6 @@
 let canvas = document.querySelector('canvas')
 const options = {
-  antialias: true,
+  antialias: false,
   stencil: true
 }
 let name = location.search.replace('?', '').toLocaleLowerCase()

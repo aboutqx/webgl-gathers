@@ -128,6 +128,7 @@ export default class Camrea {
     }
 
     this._targetRadius = this.radius + (-value * 2)
+    if(this._targetRadius <= 1) this._targetRadius = 1
     this._updateWheel = true
   }
 
