@@ -107,21 +107,6 @@ export default class Mrt extends Pipeline {
   }
 
   prepare() {
-
-    let vMatrix = mat4.create()
-    let pMatrix = mat4.create()
-
-    this.mvpMatrix = mat4.create()
-    this.tmpMatrix = mat4.create()
-
-    const eyePosition = [0.0, 60.0, 0.0]
-    const camUpDirection = [0., 0., -1.]
-
-    mat4.lookAt(vMatrix, eyePosition, [0, 0, 0], camUpDirection)
-    mat4.perspective(pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 135)
-    mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
-
-
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LEQUAL)
     gl.enable(gl.CULL_FACE) //double side
@@ -150,9 +135,21 @@ export default class Mrt extends Pipeline {
       ext.COLOR_ATTACHMENT3_WEBGL
     ]
     ext.drawBuffersWEBGL(bufferList) // 指定渲染目标
-  }
 
+    this.camera.radius = 28
+  }
+  uniform() {
+    let vMatrix = this.camera.viewMatrix
+    let pMatrix = mat4.create()
+
+    this.mvpMatrix = mat4.create()
+    this.tmpMatrix = mat4.create()
+
+    mat4.perspective(pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 100)
+    mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
+  }
   render() {
+
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer.f)
 

@@ -61,7 +61,7 @@ Program.prototype = {
     this.gl.useProgram(this.program)
   },
 
-  style: function (opt) {
+  style: function (opt, skip) {
     if (JSON.stringify(opt) === '{}' && this.uniforms.length === 0) {
       return
     } else if (JSON.stringify(opt) === '{}' && this.uniforms.length > 0) {
@@ -86,7 +86,7 @@ Program.prototype = {
       clearTimeout(this.timer)
       this.timer = null
     }
-    if (this.unAssigned.length !== 0) {
+    if (this.unAssigned.length !== 0 && (skip === undefined)) {
       this.timer = setTimeout(() => {
         if (this.unAssigned.length > 0) throw new Error('active uniform not assigned: ' + this.unAssigned)
       }, 1 / 16)

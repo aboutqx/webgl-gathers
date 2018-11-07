@@ -16,7 +16,8 @@ const mapAssets = {
   pbr: { ...Assets.ballMaps },
   pbrflow: { ...Assets.hdrSkybox, ...Assets.iblMaps, ...Assets.ballMaps },
   pbrmodel: { ...Assets.hdrSkybox, ...Assets.iblMaps,...Assets.orb },
-  deferredshading: { ...Assets.nanosuit }
+  deferredshading: { ...Assets.nanosuit },
+  ssao: { ...Assets.nanosuit }
 }
 for (let key in mapAssets) {
   if(name === key) assets = mapAssets[key]
