@@ -60,6 +60,10 @@ const Assets = {
   nanosuit: {
     nanosuit: { url: './assets/models/nanosuit/nanosuit.obj', type: 'text' },
     nanosuitMTL: { url: './assets/models/nanosuit/nanosuit.mtl', type: 'text' }
+  },
+  brickwall: {
+    brickwall: { url: './assets/brickwall.jpg' },
+    brickwallNormal: { url: './assets/brickwall_normal.jpg' }
   }
 
 }

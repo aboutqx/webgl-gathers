@@ -4,17 +4,16 @@ import {
   canvas,
   toRadian
 } from 'libs/GlTools'
-import vs from 'shaders/deferred_shading/finalQuad.vert'
-import fs from 'shaders/deferred_shading/finalQuad.frag'
+
 import gBufferVs from 'shaders/ssao/ssao_geometry.vert'
 import gBufferFs from 'shaders/ssao/ssao_geometry.frag'
-import fboVs from 'shaders/deferred_shading/fbo_debug.vert'
-import fboFs from 'shaders/deferred_shading/fbo_debug.frag'
-
-
+import ssaoVs from 'shaders/deferred_shading/finalQuad.vert'
+import ssaoFs from 'shaders/ssao/ssao.frag'
+import ssaoBlurFs from 'shaders/ssao/ssao_blur.frag'
+import ssaoLightingFs from 'shaders/ssao/ssao_lighting.frag'
 
 import {
-  CubeData
+  CubeData, QuadData
 } from '../Torus'
 import {
   mat4
@@ -23,22 +22,10 @@ import Mesh from 'libs/Mesh'
 import OBJLoader from 'libs/loaders/OBJLoader'
 import MTLLoader from 'libs/loaders/MTLLoader'
 
-const NR_LIGHTS = 32
-const lightPositions = []
-const lightColors = []
-for (let i = 0; i < NR_LIGHTS; i++) {
-  // calculate slightly random offsets
-  let xPos = Math.random() * 33 - 16.0;
-  let yPos = Math.random() * 10 - 2.0;
-  let zPos = Math.random() * 20 - 4.0;
-  lightPositions.push([xPos, yPos, zPos]);
-  // lightPositions.push()
-  // also calculate random color
-  let rColor = (Math.random() / 2.0) + 0.5; // between 0.5 and 1.0
-  let gColor = (Math.random() / 2.0) + 0.5; // between 0.5 and 1.0
-  let bColor = (Math.random() / 2.0) + 0.5; // between 0.5 and 1.0
-  lightColors.push([rColor, gColor, bColor]);
-}
+
+const lightPositions = [0 ,-1, 0]
+const lightColors = [.2, .2, .7]
+
 
 export default class SSAO extends Pipeline {
   count = 0
@@ -55,10 +42,10 @@ export default class SSAO extends Pipeline {
     // gl.getExtension('OES_texture_half_float')
     gl.getExtension('OES_texture_half_float_linear')
     // gl.getExtension('EXT_shader_texture_lod')
-    this.prg = this.compile(vs, fs)
     this.gBufferPrg = this.compile(gBufferVs, gBufferFs)
-    this.fboPrg = this.compile(fboVs, fboFs)
-
+    this.ssaoPrg = this.compile(ssaoVs, ssaoFs)
+    this.blurPrg = this.compile(ssaoVs, ssaoBlurFs)
+    this.prg = this.compile(ssaoVs, ssaoLightingFs)
   }
   async attrib() {
     let cube = new Mesh()
@@ -66,13 +53,8 @@ export default class SSAO extends Pipeline {
     this.cube = cube
 
     let quad = new Mesh()
-    let quadData = [
-      -1.0, 1.0, 0.0, 0.0, 1.0,
-      -1.0, -1.0, 0.0, 0.0, 0.0,
-      1.0, 1.0, 0.0, 1.0, 1.0,
-      1.0, -1.0, 0.0, 1.0, 0.0
-    ]
-    quad.bufferData(quadData, ['position', 'texCoord'], [3, 2])
+
+    quad.bufferData(QuadData, ['position', 'texCoord'], [3, 2])
     this.quad = quad
 
     const materials = await new MTLLoader('nanosuit.mtl', './assets/models/nanosuit').parse(getAssets.nanosuitMTL)
@@ -91,8 +73,9 @@ export default class SSAO extends Pipeline {
 
     // execute once
     this.camera.target = [0, -1., 0]
-    this.camera.offset = [1, 3., 0]
-    this.camera.radius = 18
+    this.camera.offset = [0, 0., 0]
+    this.camera.radius = 3
+    this.camera.rx = -1.5
   }
   uniform() {
 
@@ -100,7 +83,6 @@ export default class SSAO extends Pipeline {
     this.pMatrix = mat4.identity(mat4.create())
 
     mat4.perspective(this.pMatrix, toRadian(60), canvas.clientWidth / canvas.clientHeight, .1, 100)
-
   }
 
   render() {
@@ -109,39 +91,37 @@ export default class SSAO extends Pipeline {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
       this.gBufferPrg.use()
-
+      this.gBufferPrg.style({
+        vMatrix: this.vMatrix,
+        pMatrix: this.pMatrix
+      })
       if (this.nanosuit) { // loaded
-        this.gBufferPrg.style({
-          vMatrix: this.vMatrix,
-          pMatrix: this.pMatrix
-        })
-
         let mMatrix = mat4.identity(mat4.create())
-        mat4.rotate(mMatrix, mMatrix, Math.PI / 2, [1, 0, 0])
+        mat4.translate(mMatrix, mMatrix, [0, -3, 1.8])
+        mat4.scale(mMatrix, mMatrix, [.4, .4, .4])
+        mat4.rotate(mMatrix, mMatrix, -Math.PI / 2 +.06 , [1, 0, 0])
+
         this.gBufferPrg.style({
-          mMatrix
+          mMatrix,
+          invertedNormals: 0
         })
         for (let i = 0; i < this.nanosuit.length; i++) {
           this.nanosuit[i].bind(this.gBufferPrg, ['position', 'normal', 'texCoord'])
           this.nanosuit[i].draw()
         }
-
       }
 
+      let mMatrix = mat4.identity(mat4.create())
+      mat4.scale(mMatrix, mMatrix,[7, 4, 7])
+      this.gBufferPrg.style({
+        mMatrix,
+        invertedNormals: 1
+      })
       this.cube.bind(this.gBufferPrg, ['position', 'normal', 'texCoord'])
       this.cube.draw()
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-    // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[1])
-    // this.fboPrg.use()
-    // this.fboPrg.style({
-    //   fboAttachment: 0
-    // })
-    // this.quad.bind(this.fboPrg, ['position', 'texCoord'])
-    // this.quad.draw(gl.TRIANGLE_STRIP)
 
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[0])
@@ -154,16 +134,13 @@ export default class SSAO extends Pipeline {
       gPosition: 0,
       gNormal: 1,
       gAlbedoSpec: 2,
-      viewPos: this.camera.cameraPos
-    }, true)
-    for (let i = 0; i < lightPositions.length; i++) {
-      gl.uniform3fv(gl.getUniformLocation(this.prg.program, [`lights[${i}].Position`]), lightPositions[i])
-      gl.uniform3fv(gl.getUniformLocation(this.prg.program, [`lights[${i}].Color`]), lightColors[i])
+      viewPos: this.camera.cameraPos,
+      'lights.Position': lightPositions,
+      'lights.Color': lightColors,
+      'lights.Linear': .09,
+      'lights.Quadratic': .032
+    })
 
-      gl.uniform1f(gl.getUniformLocation(this.prg.program, [`lights[${i}].Linear`]), .1)
-      gl.uniform1f(gl.getUniformLocation(this.prg.program, [`lights[${i}].Quadratic`]), .6)
-
-    }
     this.quad.bind(this.prg, ['position', 'texCoord'])
     this.quad.draw(gl.TRIANGLE_STRIP)
 
@@ -216,5 +193,33 @@ function framebufferMRT(width, height, type) {
     texture: fTexture
   }
 }
+/*
+  // 几何处理阶段: 渲染到G缓冲中
+  glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+  [...]
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+  // 使用G缓冲渲染SSAO纹理
+  glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+  glClear(GL_COLOR_BUFFER_BIT);
+  shaderSSAO.Use();
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, gPositionDepth);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, gNormal);
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, noiseTexture);
+  SendKernelSamplesToShader();
+  glUniformMatrix4fv(projLocation, 1, GL_FALSE, glm::value_ptr(projection));
+  RenderQuad();
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+  // 光照处理阶段: 渲染场景光照
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  shaderLightingPass.Use();
+  [...]
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
+  [...]
+  RenderQuad();
+*/

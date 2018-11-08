@@ -8,6 +8,8 @@ out vec3 FragPos;
 out vec2 TexCoords;
 out vec3 Normal;
 
+uniform bool invertedNormals;
+
 uniform mat4 mMatrix;
 uniform mat4 vMatrix;
 uniform mat4 pMatrix;
@@ -19,7 +21,7 @@ void main()
     TexCoords = texCoord;
 
     mat3 normalMatrix = transpose(inverse(mat3(mMatrix)));
-    Normal = normalMatrix * normal;
+    Normal = normalMatrix * (invertedNormals ? -normal : normal);
 
     gl_Position = pMatrix * vMatrix * worldPos;
 }

@@ -108,6 +108,13 @@ export function Sphere(row, column, rad, color) {
     index: idx
   }
 }
+export const QuadData = [
+  // position texCoord
+  -1.0, 1.0, 0.0, 0.0, 1.0,
+  -1.0, -1.0, 0.0, 0.0, 0.0,
+  1.0, 1.0, 0.0, 1.0, 1.0,
+  1.0, -1.0, 0.0, 1.0, 0.0
+]
 
 export const CubeData = [
   // pos normal textCoord

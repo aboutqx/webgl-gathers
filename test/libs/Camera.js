@@ -85,7 +85,6 @@ export default class Camrea {
   }
 
   updateMatrix (){
-
     this._rx += (this._targetRx - this._rx) * 0.1 //ease out
     if (Math.abs(this._targetRx - this._rx) < MIN_DIFF) {
       this._rx = this._targetRx
@@ -136,4 +135,8 @@ export default class Camrea {
     return this._tmp
   }
 
+  // 设置旋转角度
+  set rx(value) {
+    this._targetRx = value
+  }
 }
