@@ -14,7 +14,7 @@ import lampVs from 'shaders/material/lamp.vert'
 import lampFs from 'shaders/material/lamp.frag'
 
 import {
-  CubeData
+  CubeData, QuadData
 } from '../Torus'
 import {
   mat4
@@ -78,13 +78,7 @@ export default class DeferredShading extends Pipeline {
     this.cube = cube
 
     let quad = new Mesh()
-    let quadData = [
-      -1.0, 1.0, 0.0, 0.0, 1.0,
-      -1.0, -1.0, 0.0, 0.0, 0.0,
-      1.0, 1.0, 0.0, 1.0, 1.0,
-      1.0, -1.0, 0.0, 1.0, 0.0
-    ]
-    quad.bufferData(quadData, ['position', 'texCoord'], [3, 2])
+    quad.bufferData(QuadData, ['position', 'texCoord'], [3, 2])
     this.quad = quad
 
     const materials = await new MTLLoader('nanosuit.mtl', './assets/models/nanosuit').parse(getAssets.nanosuitMTL)

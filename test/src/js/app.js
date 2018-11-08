@@ -13,6 +13,7 @@ if ( name === 'ibldiffuse' || name === 'iblfinal') {
 }
 const mapAssets = {
   lightcaster: { ...Assets.materialMaps },
+  normalmap: { ...Assets.brickwall },
   pbr: { ...Assets.ballMaps },
   pbrflow: { ...Assets.hdrSkybox, ...Assets.iblMaps, ...Assets.ballMaps },
   pbrmodel: { ...Assets.hdrSkybox, ...Assets.iblMaps,...Assets.orb },
