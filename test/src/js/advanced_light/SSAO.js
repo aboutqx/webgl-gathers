@@ -27,19 +27,23 @@ import Texture from 'libs/glTexture'
 const lightPositions = [0 ,-1, 0]
 const lightColors = [.2, .2, .7]
 const kernelSize = 64
-const ssaoKernel = []
-const ssaoNoise = []
+let ssaoKernel = new Float32Array(64*3)
+let ssaoNoise = new Float32Array(16*3)
 const generateSample = () => {
   for(let i =0; i < kernelSize; i++) {
     let sample = vec3.fromValues(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random())
-    ssaoKernel.push(sample[0])
-    ssaoKernel.push(sample[1])
-    ssaoKernel.push(sample[2])
+    ssaoKernel[i * 3] = sample[0]
+    ssaoKernel[i * 3 + 1] = sample[1]
+    ssaoKernel[i * 3 + 2] = sample[2]
   }
 }
 const generateNoise = () => {
-  let noise = vec3.fromValues(Math.random() * 2 - 1, Math.random() * 2 - 1, 0)
-  ssaoNoise.push(noise)
+  for (let i = 0; i < 16; i++) {
+    let noise = vec3.fromValues(Math.random() * 2 - 1, Math.random() * 2 - 1, 0)
+    ssaoNoise[i * 3] = noise[0]
+    ssaoNoise[i * 3 + 1] = noise[1]
+    ssaoNoise[i * 3 + 2] = noise[2]
+  }
 }
 export default class SSAO extends Pipeline {
   count = 0
@@ -51,7 +55,7 @@ export default class SSAO extends Pipeline {
     // use webgl2
     // gl.getExtension('OES_standard_derivatives')
     // gl.getExtension('OES_texture_float')
-    // gl.getExtension('OES_texture_float_linear') // Even WebGL2 requires OES_texture_float_linear
+    gl.getExtension('OES_texture_float_linear') // Even WebGL2 requires OES_texture_float_linear
     gl.getExtension("EXT_color_buffer_float")
     // gl.getExtension('OES_texture_half_float')
     gl.getExtension('OES_texture_half_float_linear')
@@ -86,10 +90,12 @@ export default class SSAO extends Pipeline {
     this.mrt = framebufferMRT(canvas.width, canvas.height, ['16f', '16f', 'rgba'])
     this.ssaoFbo = new Fbo(gl)
     this.ssaoFbo.resize(canvas.width, canvas.height)
+    this.blurFbo = new Fbo(gl)
+    this.blurFbo.resize(canvas.width, canvas.height)
 
     generateSample()
     generateNoise()
-    this.noiseTexture = new Texture(gl, gl.RGBA).fromData(4, 4, ssaoNoise, gl.RGBA16F)
+    this.noiseTexture = new Texture(gl, gl.RGB).fromData(4, 4, ssaoNoise, gl.RGB32F)
     this.noiseTexture.bind()
     this.noiseTexture.repeat()
     // execute once
@@ -118,9 +124,9 @@ export default class SSAO extends Pipeline {
       })
       if (this.nanosuit) { // loaded
         let mMatrix = mat4.identity(mat4.create())
-        mat4.translate(mMatrix, mMatrix, [0, -3, 1.8])
+        mat4.translate(mMatrix, mMatrix, [-1.0, -3.3, 3.])
         mat4.scale(mMatrix, mMatrix, [.4, .4, .4])
-        mat4.rotate(mMatrix, mMatrix, -Math.PI / 2 +.06 , [1, 0, 0])
+        mat4.rotate(mMatrix, mMatrix, -Math.PI / 2 , [1, 0, 0])
 
         this.gBufferPrg.style({
           mMatrix,
@@ -133,7 +139,7 @@ export default class SSAO extends Pipeline {
       }
 
       let mMatrix = mat4.identity(mat4.create())
-      mat4.scale(mMatrix, mMatrix,[7, 4, 7])
+      mat4.scale(mMatrix, mMatrix,[8, 4, 8])
       this.gBufferPrg.style({
         mMatrix,
         invertedNormals: 1
@@ -161,6 +167,16 @@ export default class SSAO extends Pipeline {
       this.quad.draw(gl.TRIANGLE_STRIP)
     this.ssaoFbo.unbind()
 
+    this.blurFbo.bind()
+      this.ssaoFbo.color.bind(0)
+      this.blurPrg.use()
+      this.blurPrg.style({
+        ssaoInput: 0
+      })
+      this.quad.bind(this.blurPrg, ['position', 'texCoord'])
+      this.quad.draw(gl.TRIANGLE_STRIP)
+    this.blurFbo.unbind()
+
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[0])
@@ -168,11 +184,13 @@ export default class SSAO extends Pipeline {
     gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[1])
     gl.activeTexture(gl.TEXTURE2)
     gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[2])
+    this.blurFbo.color.bind(3)
     this.prg.use()
     this.prg.style({
       gPosition: 0,
       gNormal: 1,
       gAlbedoSpec: 2,
+      ssao: 3,
       viewPos: this.camera.cameraPos,
       'lights.Position': lightPositions,
       'lights.Color': lightColors,

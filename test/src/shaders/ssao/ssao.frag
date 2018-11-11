@@ -39,7 +39,8 @@ void main() {
         offset.xyz = offset.xyz * 0.5 + 0.5; // 变换到0.0 - 1.0的值域
 
         float sampleDepth = texture(gPositionDepth, offset.xy).z;
-        occlusion += (sampleDepth >= sample1.z ? 1.0 : 0.0);
+        float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
+        occlusion += (sampleDepth >= sample1.z ? 1.0 : 0.0) * rangeCheck;
 
     }
     occlusion = 1.0 - (occlusion / float(kernelSize));
