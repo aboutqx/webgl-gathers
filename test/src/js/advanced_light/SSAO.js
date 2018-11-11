@@ -16,17 +16,31 @@ import {
   CubeData, QuadData
 } from '../Torus'
 import {
-  mat4
+  mat4, vec3
 } from 'gl-matrix'
 import Mesh from 'libs/Mesh'
 import OBJLoader from 'libs/loaders/OBJLoader'
 import MTLLoader from 'libs/loaders/MTLLoader'
-
+import Fbo from 'libs/glFbo'
+import Texture from 'libs/glTexture'
 
 const lightPositions = [0 ,-1, 0]
 const lightColors = [.2, .2, .7]
-
-
+const kernelSize = 64
+const ssaoKernel = []
+const ssaoNoise = []
+const generateSample = () => {
+  for(let i =0; i < kernelSize; i++) {
+    let sample = vec3.fromValues(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random())
+    ssaoKernel.push(sample[0])
+    ssaoKernel.push(sample[1])
+    ssaoKernel.push(sample[2])
+  }
+}
+const generateNoise = () => {
+  let noise = vec3.fromValues(Math.random() * 2 - 1, Math.random() * 2 - 1, 0)
+  ssaoNoise.push(noise)
+}
 export default class SSAO extends Pipeline {
   count = 0
   constructor() {
@@ -67,10 +81,17 @@ export default class SSAO extends Pipeline {
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LEQUAL)
 
+
     //position, normal, AlbedoSpec(diffuse, specular indensity)
     this.mrt = framebufferMRT(canvas.width, canvas.height, ['16f', '16f', 'rgba'])
+    this.ssaoFbo = new Fbo(gl)
+    this.ssaoFbo.resize(canvas.width, canvas.height)
 
-
+    generateSample()
+    generateNoise()
+    this.noiseTexture = new Texture(gl, gl.RGBA).fromData(4, 4, ssaoNoise, gl.RGBA16F)
+    this.noiseTexture.bind()
+    this.noiseTexture.repeat()
     // execute once
     this.camera.target = [0, -1., 0]
     this.camera.offset = [0, 0., 0]
@@ -121,8 +142,26 @@ export default class SSAO extends Pipeline {
       this.cube.draw()
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    this.ssaoFbo.bind()
+      gl.clear(gl.COLOR_BUFFER_BIT)
+      gl.activeTexture(gl.TEXTURE0)
+      gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[0])
+      gl.activeTexture(gl.TEXTURE1)
+      gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[1])
+      this.noiseTexture.bind(2)
+      this.ssaoPrg.use()
+      this.ssaoPrg.style({
+        gPositionDepth: 0,
+        gNormal: 1,
+        texNoise: 2,
+        samples: ssaoKernel,
+        pMatrix: this.pMatrix
+      })
+      this.quad.bind(this.ssaoPrg, ['position', 'texCoord'])
+      this.quad.draw(gl.TRIANGLE_STRIP)
+    this.ssaoFbo.unbind()
 
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[0])
     gl.activeTexture(gl.TEXTURE1)

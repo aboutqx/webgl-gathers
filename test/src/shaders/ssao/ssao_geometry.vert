@@ -16,12 +16,12 @@ uniform mat4 pMatrix;
 
 void main()
 {
-    vec4 worldPos = mMatrix * vec4(position, 1.0);
-    FragPos = worldPos.xyz;
+    vec4 viewPos = vMatrix * mMatrix * vec4(position, 1.0);
+    FragPos = vec3(viewPos);
     TexCoords = texCoord;
 
     mat3 normalMatrix = transpose(inverse(mat3(mMatrix)));
     Normal = normalMatrix * (invertedNormals ? -normal : normal);
 
-    gl_Position = pMatrix * vMatrix * worldPos;
+    gl_Position = pMatrix * viewPos;
 }

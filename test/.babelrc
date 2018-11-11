@@ -1,17 +1,21 @@
 {
   "presets": [
     [
-      "env",
+      "@babel/preset-env",
       {
         "modules": false
       }
-    ],
-    "stage-3"
+    ]
   ],
   "plugins": [
-    "transform-runtime",
-    "babel-plugin-transform-regenerator",
-    "transform-class-properties",
-    "babel-plugin-syntax-dynamic-import"
+    [
+      "@babel/plugin-transform-runtime",
+      {
+        "useESModules": true
+      }
+    ],
+    "@babel/plugin-transform-regenerator",
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-syntax-dynamic-import"
   ]
 }

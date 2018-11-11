@@ -182,7 +182,7 @@ export default class PbrFlow extends Pipeline {
 
 
     //brdf lookup texture
-    this.brdfLUTTexture = new Texture(gl, gl.RG).fromData(512, 512, null)
+    this.brdfLUTTexture = new Texture(gl, gl.RG).fromData(512, 512, null, gl.RG32F)
     this.brdfLUTTexture.bind()
     this.brdfLUTTexture.clamp()
 
