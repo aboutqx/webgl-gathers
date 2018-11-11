@@ -1,6 +1,6 @@
 #version 300 es
 precision mediump float;
-layout (location = 0) out vec3 gPosition;
+layout (location = 0) out vec3 gPositionDepth;
 layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gAlbedoSpec;
 
@@ -21,8 +21,8 @@ void main()
 {
     // store the fragment position vector in the first gbuffer texture
     gPositionDepth.xyz = FragPos;
-    // 储存线性深度到gPositionDepth的alpha分量
-    gPositionDepth.a = LinearizeDepth(gl_FragCoord.z); 
+    // // 储存线性深度到gPositionDepth的alpha分量
+    // gPositionDepth.a = LinearizeDepth(gl_FragCoord.z);
     // also store the per-fragment normals into the gbuffer
     gNormal = normalize(Normal);
     // and the diffuse per-fragment color

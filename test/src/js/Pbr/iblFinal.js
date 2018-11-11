@@ -337,11 +337,11 @@ export default class IblFinal extends Pipeline {
   setTexture() {
     let map = this.params.map
     if (map === 'none') return
-    this.texture0 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Albedo'])
-    this.texture1 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Roughness'])
-    this.texture2 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Metallic'])
-    this.texture3 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Ao'])
-    this.texture4 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Normal'])
+    this.texture0 = new Texture(gl).fromImage(getAssets[map + 'Albedo'])
+    this.texture1 = new Texture(gl).fromImage(getAssets[map + 'Roughness'])
+    this.texture2 = new Texture(gl).fromImage(getAssets[map + 'Metallic'])
+    this.texture3 = new Texture(gl).fromImage(getAssets[map + 'Ao'])
+    this.texture4 = new Texture(gl).fromImage(getAssets[map + 'Normal'])
   }
 
   render() {

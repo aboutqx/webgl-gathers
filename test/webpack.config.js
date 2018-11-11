@@ -42,16 +42,16 @@ let plugins = [
 
 if (isProd) {
   plugins = plugins.concat([
-    new webpack.optimize.UglifyJsPlugin({
-      sourceMap: false,
-      compress: {
-        drop_debugger: true,
-        drop_console: true,
-        screw_ie8: true
-      },
-      comments: false,
-      mangle: false
-    }),
+    // new webpack.optimize.UglifyJsPlugin({
+    //   sourceMap: false,
+    //   compress: {
+    //     drop_debugger: true,
+    //     drop_console: true,
+    //     screw_ie8: true
+    //   },
+    //   comments: false,
+    //   mangle: false
+    // }),
     new ExtractTextPlugin('[name].css'),
     new CopyWebpackPlugin([{
         from: 'src/img',
@@ -75,11 +75,12 @@ const output = {
   publicPath: !isProd ? `http://127.0.01:8081/` : '' // global ajax get file path
 }
 console.log(getOutput())
-const devtool = isProd ? 'source-map' : 'inline-source-map';
+const devtool = isProd ? 'none' : 'inline-source-map';
 
 const config = {
   entry,
   devtool,
+  mode: isProd ? 'production' : 'development',
   devServer: {
     host: '127.0.0.1',
     contentBase: './src',
