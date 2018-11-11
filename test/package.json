@@ -44,7 +44,7 @@
   },
   "browserslist": [
     "chrome > 58",
-    "ie >= 11"
+    "ie >= 12"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
