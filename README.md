@@ -50,3 +50,8 @@ DistributionGGX里的最后除以的max(denom, 0.001)最好直接改成denom，�
 使用blitFramebuffer从framebuffer中copy深度到屏幕framebuffer时，需要depth internal format匹配
 屏幕的时DEPTH24_STENCIL8
 [stackoverflow](https://stackoverflow.com/questions/9914046/opengl-how-to-use-depthbuffer-from-framebuffer-as-usual-depth-buffer)
+
+##skeletal animation
+gltf格式有定义动画的json，内容是float32array的bin数据文件，能直接被copy到gpu，其他是图片，能加快解析速度
+[引擎无关的gltf-loader](https://github.com/shrekshao/minimal-gltf-loader)
+使用WebAssembly能提升性能，[参考](https://github.com/sessamekesh/wasm-3d-animation-demo)
