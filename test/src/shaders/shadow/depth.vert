@@ -1,9 +1,9 @@
-attribute vec3 position;
-uniform   mat4 mvpMatrix;
+#version 300 es
+in vec3 position;
 
-varying   vec4 vPosition;
+uniform mat4 lightSpaceMatrix;
+uniform mat4 mMatrix;
 
 void main(void){
-    vPosition = mvpMatrix * vec4(position, 1.0);
-    gl_Position = vPosition;
+    gl_Position = lightSpaceMatrix * mMatrix * vec4(position, 1.0);
 }

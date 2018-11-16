@@ -35,6 +35,10 @@ Example renderable(can be attach to a framebuffer)
 ```
     gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA32F, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
 ```
+Depth texture is avaliable,while webgl1 need WEBGL_depth_texture extension.
+
+"The problem with this is that depthBuffer cannot be used as a texture. RenderBuffers do not provide a mechanism for reading back the values written into them, and as such while WebGL would utilize the buffer to correctly depth-test the scene the information stored within was effectively "lost"."
+[toji link](https://blog.tojicode.com/2012/07/using-webgldepthtexture.html)
 
 ## pbr work flow
 使用cmft生成radiance.dds时，须将mipmap调到最大(`log2(size)`)，否则生成的数据会有空数据，造成报错
@@ -51,7 +55,7 @@ DistributionGGX里的最后除以的max(denom, 0.001)最好直接改成denom，�
 屏幕的时DEPTH24_STENCIL8
 [stackoverflow](https://stackoverflow.com/questions/9914046/opengl-how-to-use-depthbuffer-from-framebuffer-as-usual-depth-buffer)
 
-##skeletal animation
+## skeletal animation
 gltf格式有定义动画的json，内容是float32array的bin数据文件，能直接被copy到gpu，其他是图片，能加快解析速度
 [引擎无关的gltf-loader](https://github.com/shrekshao/minimal-gltf-loader)
 使用WebAssembly能提升性能，[参考](https://github.com/sessamekesh/wasm-3d-animation-demo)
