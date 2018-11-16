@@ -1,9 +1,9 @@
-let canvas = document.querySelector('canvas')
+const canvas = document.querySelector('canvas')
 const options = {
   antialias: false,
   stencil: true
 }
-let name = location.search.replace('?', '').toLocaleLowerCase()
+const name = location.search.replace('?', '').toLocaleLowerCase()
 let gl
 if (name !== 'mrt' && name !== 'mirror' && name !== 'pbr' && name !== 'ibl' ) {
   gl = canvas.getContext('webgl2', options)
@@ -15,4 +15,8 @@ if (name !== 'mrt' && name !== 'mirror' && name !== 'pbr' && name !== 'ibl' ) {
 const toRadian = (deg) => {
   return deg / 180 * Math.PI
 }
-export { gl, canvas, toRadian }
+
+const canvasWidth = canvas.width
+const canvasHeight = canvas.height
+
+export { gl, canvas, toRadian, canvasWidth, canvasHeight }

@@ -2,7 +2,7 @@ import load from 'load-asset'
 import Assets from './Assets'
 
 let assets = {
-  koala: './assets/Koala.jpg',
+  wood: './assets/wood.png',
   splash: './assets/splash.jpg'
 }
 let name = location.search.replace('?', '').toLocaleLowerCase()
