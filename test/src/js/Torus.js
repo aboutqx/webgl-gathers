@@ -64,6 +64,7 @@ export function hsva(h, s, v, a) {
   return color
 }
 
+// 从平面到球，也是采用经纬度的方式
 export function Sphere(row, column, rad, color) {
   var pos = [],
     nor = [],
