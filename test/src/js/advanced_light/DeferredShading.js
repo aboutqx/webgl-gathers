@@ -164,7 +164,7 @@ export default class DeferredShading extends Pipeline {
       gl.uniform3fv(gl.getUniformLocation(this.prg.program, [`lights[${i}].Color`]), lightColors[i])
 
       gl.uniform1f(gl.getUniformLocation(this.prg.program, [`lights[${i}].Linear`]), .1)
-      gl.uniform1f(gl.getUniformLocation(this.prg.program, [`lights[${i}].Quadratic`]), .6)
+      gl.uniform1f(gl.getUniformLocation(this.prg.program, [`lights[${i}].Quadratic`]), .12)
 
     }
     this.quad.bind(this.prg, ['position', 'texCoord'])
