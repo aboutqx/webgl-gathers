@@ -3728,7 +3728,7 @@ class Mask extends _PipeLine__WEBPACK_IMPORTED_MODULE_1__["default"] {
     this.cubeVao = new libs_vao__WEBPACK_IMPORTED_MODULE_9___default.a(libs_GlTools__WEBPACK_IMPORTED_MODULE_3__[/* gl */ "d"]);
     this.cubeVao.setup(this.prg, [this.cubeBuffer]);
     this.texture = new libs_glTexture__WEBPACK_IMPORTED_MODULE_4___default.a(libs_GlTools__WEBPACK_IMPORTED_MODULE_3__[/* gl */ "d"], libs_GlTools__WEBPACK_IMPORTED_MODULE_3__[/* gl */ "d"].RGBA);
-    let img = getAssets.koala;
+    let img = getAssets.splash;
     this.texture.fromImage(img);
     this.texture.bind();
     libs_GlTools__WEBPACK_IMPORTED_MODULE_3__[/* gl */ "d"].texParameteri(libs_GlTools__WEBPACK_IMPORTED_MODULE_3__[/* gl */ "d"].TEXTURE_2D, libs_GlTools__WEBPACK_IMPORTED_MODULE_3__[/* gl */ "d"].TEXTURE_MAG_FILTER, libs_GlTools__WEBPACK_IMPORTED_MODULE_3__[/* gl */ "d"].LINEAR);
@@ -8037,6 +8037,20 @@ const importLists = {
   material: 'Light/Material',
   pbrmodel: 'Pbr/PbrModel'
 };
+
+function addList() {
+  let list = document.querySelector('.list');
+
+  for (let key in importLists) {
+    let link = document.createElement('a');
+    link.innerHTML = key;
+    link.setAttribute('href', '?' + key);
+    list.appendChild(link);
+    let br = document.createElement('br');
+    list.appendChild(br);
+  }
+}
+
 let obj;
 
 const dynamicImport = name => {
@@ -8050,7 +8064,7 @@ const dynamicImport = name => {
 };
 
 let name = location.search.replace('?', '').toLocaleLowerCase();
-dynamicImport(name);/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return gl; });
+if (name) dynamicImport(name);else addList();/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return gl; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return canvas; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return toRadian; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return canvasWidth; });

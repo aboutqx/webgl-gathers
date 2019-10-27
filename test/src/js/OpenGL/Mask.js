@@ -100,7 +100,7 @@ export default class Mask extends Pipeline {
     this.cubeVao.setup(this.prg, [this.cubeBuffer])
 
     this.texture = new Texture(gl, gl.RGBA)
-    let img = getAssets.koala
+    let img = getAssets.splash
     this.texture.fromImage(img)
     this.texture.bind()
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
