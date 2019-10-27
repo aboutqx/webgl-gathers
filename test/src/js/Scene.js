@@ -22,6 +22,18 @@ const importLists = {
   pbrmodel: 'Pbr/PbrModel'
 }
 
+function addList(){
+  let list = document.querySelector('.list')
+  for (let key in importLists) {
+    let link = document.createElement('a')
+    link.innerHTML = key
+    link.setAttribute('href','?'+key)
+    list.appendChild(link)
+    let br = document.createElement('br')
+    list.appendChild(br)
+  }
+}
+
 let obj
 const dynamicImport = (name) => {
   import(`./${importLists[name]}`).then((foo) => {
@@ -36,7 +48,8 @@ const dynamicImport = (name) => {
 }
 
 let name = location.search.replace('?', '').toLocaleLowerCase()
-dynamicImport(name)
+if(name) dynamicImport(name)
+else addList()
 
 
 
