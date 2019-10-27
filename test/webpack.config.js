@@ -53,15 +53,10 @@ if (isProd) {
     //   mangle: false
     // }),
     new ExtractTextPlugin('[name].css'),
-    /*new CopyWebpackPlugin([{
-        from: 'src/img',
-        to: 'img'
-      },
-      {
-        from: 'src/textures',
-        to: 'textures'
-      }
-    ])*/
+    new CopyWebpackPlugin([{
+      from: 'src/assets',
+      to: 'assets'
+    }])
   ])
 }
 
