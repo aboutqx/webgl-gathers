@@ -67,7 +67,10 @@ export default class Pbr extends Pipeline {
     let eyeDirection = []
     let camUpDirection = []
 
-    vec3.transformQuat(eyeDirection, [0.0, 0.0, 5.0], this.rotateQ)
+    if(this.params.map === 'none')
+      vec3.transformQuat(eyeDirection, [0.0, 0.0, 5.0], this.rotateQ)
+    else
+      vec3.transformQuat(eyeDirection, [0.0, 0.0, 1.0], this.rotateQ)
     vec3.transformQuat(camUpDirection, [0.0, 1.0, 0.0], this.rotateQ)
     this.eyeDirection = eyeDirection
 
@@ -111,6 +114,7 @@ export default class Pbr extends Pipeline {
   setTexture() {
     let map = this.params.map
     if (map === 'none') return
+
     this.texture0 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Albedo'])
     this.texture1 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Roughness'])
     this.texture2 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Metallic'])

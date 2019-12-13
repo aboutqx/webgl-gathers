@@ -19,7 +19,8 @@ const importLists = {
   lightcaster: 'Light/LightCaster',
   color: 'Light/Color',
   material: 'Light/Material',
-  pbrmodel: 'Pbr/PbrModel'
+  pbrmodel: 'Pbr/PbrModel',
+  shape: 'Shape'
 }
 
 function addList(){
