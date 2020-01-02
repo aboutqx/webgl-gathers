@@ -3,7 +3,7 @@ import Assets from './Assets'
 
 let assets = {
   wood: './assets/wood.png',
-  splash: './assets/splash.jpg'
+  splash: './assets/flower.png'
 }
 let name = location.search.replace('?', '').toLocaleLowerCase()
 
