@@ -3,6 +3,7 @@ export function Torus(circlePoints, circleNum, rdius, Origin2CicleCenter, colors
   let index = []
   let normal = []
   let color = []
+  let texCoord = []
   let tc
   for (let i = 0; i <= circlePoints; i++) {
     let theta = Math.PI * 2 / circlePoints * i
@@ -11,6 +12,7 @@ export function Torus(circlePoints, circleNum, rdius, Origin2CicleCenter, colors
     let ry = Math.sin(theta)
     // Origin2Cicle平面计算 x,z 平面
     for (let j = 0; j <= circleNum; j++) {
+      texCoord.push(j/circleNum, i/circlePoints);
       let alpha = Math.PI * 2 / circleNum * j
       let px = (rr * rdius + Origin2CicleCenter) * Math.cos(alpha)
       let py = ry * rdius
@@ -36,6 +38,7 @@ export function Torus(circlePoints, circleNum, rdius, Origin2CicleCenter, colors
   }
   return {
     pos,
+    texCoord,
     index,
     normal,
     color

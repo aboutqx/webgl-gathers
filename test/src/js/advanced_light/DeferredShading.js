@@ -194,7 +194,7 @@ export default class DeferredShading extends Pipeline {
         lightColor: lightColors[i]
 
       })
-      this.cube.bind(this.lampPrg, ['position'])
+      this.cube.bind(['position'])
       this.cube.draw()
     }
   }

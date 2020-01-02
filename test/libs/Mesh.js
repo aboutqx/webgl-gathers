@@ -6,6 +6,7 @@ import {
   gl
 } from 'libs/GlTools'
 import Texture from 'libs/glTexture'
+import Vao from 'libs/vao'
 
 export default class Mesh {
   _buffers = []
@@ -41,7 +42,7 @@ export default class Mesh {
   }
 
   bufferData(mData, mName, mItemSize) {
-    // support nName as Array, vertex mData like ( vec3 position + vec2 uvs)
+    // support mName as Array, vertex mData like ( vec3 position + vec2 uvs)
     //flatten data
     let bufferData = []
     if(mData[0].length){
@@ -74,13 +75,15 @@ export default class Mesh {
     }
   }
 
-  bufferIndices(mIndex, isDynamic = false) {
+  bufferIndex(mIndex, isDynamic = false) {
     let drawType = isDynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW
     this.iBuffer = new IndexBuffer(gl, gl.UNSIGNED_SHORT, new Uint16Array(mIndex), drawType)
   }
 
-  // 针对多个array buffer，list可以只激活部分attribute
+  // 针对多个array buffer，list可以只激活部分attribute, mProgram 指的是glProgram实例
   bind(mProgram, list) {
+
+    //if(!mProgram) mProgram = gl.getParameter(gl.CURRENT_PROGRAM)
     //所有data在一个arrybuffer里
     if(this._buffers.length === 1) {
       this._buffers[0].buffer.attribPointer(mProgram, list)

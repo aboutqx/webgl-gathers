@@ -1,9 +1,5 @@
 import Pipeline from '../PipeLine'
 import {
-  ArrayBuffer,
-  IndexBuffer
-} from 'libs/glBuffer'
-import {
   gl,
   canvas,
   toRadian
@@ -13,11 +9,20 @@ import vs from 'shaders/mask.vert'
 import fs from 'shaders/mask.frag'
 import outlineFs from 'shaders/maskOutline.frag'
 import { mat4 } from 'gl-matrix'
-import Vao from 'libs/vao'
+import { CubeData, Torus } from '../Torus'
+import Mesh from 'libs/Mesh'
+import Intersect from 'libs/Intersect'
 
-
+function spliceCube(CubeData){
+  let position =[]
+  for(let i=0; i < CubeData.length/8; i++){
+    position.push(CubeData[i*8+0])
+    position.push(CubeData[i*8+1])
+    position.push(CubeData[i*8+2])
+  }
+  return position
+}
 export default class Mask extends Pipeline {
-  count = 0
   constructor() {
     super()
   }
@@ -26,79 +31,41 @@ export default class Mask extends Pipeline {
     this.prg = this.compile(vs, fs)
     // flip texture
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
+    gl.cullFace(gl.BACK)
+
+    this._drawCube = this._drawCube.bind(this)
+    this._drawTorus = this._drawTorus.bind(this)
+
+    this.intersect = new Intersect()
   }
   attrib() {
-    let cubeVertices = [
-        // positions          // texture Coords
-        -0.5, -0.5, -0.5,  0.0, 0.0,
-         0.5, -0.5, -0.5,  1.0, 0.0,
-         0.5,  0.5, -0.5,  1.0, 1.0,
-         0.5,  0.5, -0.5,  1.0, 1.0,
-        -0.5,  0.5, -0.5,  0.0, 1.0,
-        -0.5, -0.5, -0.5,  0.0, 0.0,
+ 
+    this.cube = new Mesh()
+    this.cube.bufferData(CubeData, ['position', 'normal', 'texCoord'], [3, 3, 2])
 
-        -0.5, -0.5,  0.5,  0.0, 0.0,
-         0.5, -0.5,  0.5,  1.0, 0.0,
-         0.5,  0.5,  0.5,  1.0, 1.0,
-         0.5,  0.5,  0.5,  1.0, 1.0,
-        -0.5,  0.5,  0.5,  0.0, 1.0,
-        -0.5, -0.5,  0.5,  0.0, 0.0,
+    let {
+      pos,
+      texCoord,
+      index
+    } = Torus(64, 64, .1, .4)
 
-        -0.5,  0.5,  0.5,  1.0, 0.0,
-        -0.5,  0.5, -0.5,  1.0, 1.0,
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-        -0.5, -0.5,  0.5,  0.0, 0.0,
-        -0.5,  0.5,  0.5,  1.0, 0.0,
+    this.torus = new Mesh()
+    this.torus.bufferVertex(pos)
+    this.torus.bufferTexCoord(texCoord)
+    this.torus.bufferIndex(index)
+/* bounding mesh
+    let torusAABB = this.intersect.boundingVolume(pos)
+    this.torusFrame = new Mesh()
+    this.torusFrame.bufferVertex(torusAABB.position)
+    this.torusFrame.bufferTexCoord(torusAABB.texCoord)
+    this.torusFrame.bufferIndex(torusAABB.index)
 
-         0.5,  0.5,  0.5,  1.0, 0.0,
-         0.5,  0.5, -0.5,  1.0, 1.0,
-         0.5, -0.5, -0.5,  0.0, 1.0,
-         0.5, -0.5, -0.5,  0.0, 1.0,
-         0.5, -0.5,  0.5,  0.0, 0.0,
-         0.5,  0.5,  0.5,  1.0, 0.0,
-
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-         0.5, -0.5, -0.5,  1.0, 1.0,
-         0.5, -0.5,  0.5,  1.0, 0.0,
-         0.5, -0.5,  0.5,  1.0, 0.0,
-        -0.5, -0.5,  0.5,  0.0, 0.0,
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-
-        -0.5,  0.5, -0.5,  0.0, 1.0,
-         0.5,  0.5, -0.5,  1.0, 1.0,
-         0.5,  0.5,  0.5,  1.0, 0.0,
-         0.5,  0.5,  0.5,  1.0, 0.0,
-        -0.5,  0.5,  0.5,  0.0, 0.0,
-        -0.5,  0.5, -0.5,  0.0, 1.0
-    ]
-    let planeVertices = [
-        // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-         3.0, -0.5,  3.0,  1.0, 0.0,
-        -3.0, -0.5,  3.0,  0.0, 0.0,
-        -3.0, -0.5, -3.0,  0.0, 1.0,
-
-         3.0, -0.5,  3.0,  1.0, 0.0,
-        -3.0, -0.5, -3.0,  0.0, 1.0,
-         3.0, -0.5, -3.0,  1.0, 1.0
-    ]
-
-    this.cubeBuffer = new ArrayBuffer(gl, new Float32Array(cubeVertices))
-    this.planeBuffer = new ArrayBuffer(gl, new Float32Array(planeVertices))
-
-    this.cubeBuffer.attrib('position', 3, gl.FLOAT)
-    this.cubeBuffer.attrib('texcoord', 2, gl.FLOAT)
-
-
-    this.planeBuffer.attrib('position', 3, gl.FLOAT)
-    this.planeBuffer.attrib('texcoord', 2, gl.FLOAT)
-
-    this.planeVao = new Vao(gl)
-    this.planeVao.setup(this.prg, [this.planeBuffer])
-
-    this.cubeVao = new Vao(gl)
-    this.cubeVao.setup(this.prg, [this.cubeBuffer])
-
+    let cubeAABB = this.intersect.boundingVolume(spliceCube(CubeData))
+    this.cubeFrame = new Mesh()
+    this.cubeFrame.bufferVertex(cubeAABB.position)
+    this.cubeFrame.bufferTexCoord(cubeAABB.texCoord)
+    this.cubeFrame.bufferIndex(cubeAABB.index)
+*/
     this.texture = new Texture(gl, gl.RGBA)
     let img = getAssets.splash
     this.texture.fromImage(img)
@@ -110,7 +77,7 @@ export default class Mask extends Pipeline {
   }
   _setGUI() {
     this.addGUIParams({
-      lod: 5.,
+      lod: 1.,
       LINEAR_MIPMAP_LINEAR: false,
       NEAREST_MIPMAP_NEAREST: true
     })
@@ -136,19 +103,6 @@ export default class Mask extends Pipeline {
     this.params[val] = true
   }
   prepare() {
-
-    let vMatrix = mat4.identity(mat4.create())
-    let pMatrix = mat4.identity(mat4.create())
-
-    this.mvpMatrix = mat4.identity(mat4.create())
-    this.tmpMatrix = mat4.identity(mat4.create())
-
-    mat4.lookAt(vMatrix, [0.0, 0.0, 4.0], [0, 0, 0.0], [0, 1, 0])
-
-    mat4.perspective(pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 1000)
-
-    mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
-
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LESS);
     gl.enable(gl.STENCIL_TEST);
@@ -157,62 +111,88 @@ export default class Mask extends Pipeline {
 
   }
   uniform() {
-    let mMatrix = mat4.identity(mat4.create())
+    let vMatrix = this.camera.viewMatrix
+    let pMatrix = mat4.identity(mat4.create())
 
-    this.count++
+    this.mvpMatrix = mat4.identity(mat4.create())
+    this.tmpMatrix = mat4.identity(mat4.create())
 
-    let rad = (this.count % 360) * Math.PI / 180
+    mat4.perspective(pMatrix, toRadian(50), canvas.clientWidth / canvas.clientHeight, 1, 100)
 
-    mat4.rotate(mMatrix, mMatrix, rad, [0, 1, 1])
-    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
+    mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
 
-
-    this.prg.use()
     this.texture.bind(0)
-
-    this.prg.style({
-      mvpMatrix: this.mvpMatrix,
-      texture: 0,
-      lod: this.params.lod
-    })
   }
   render() {
 
     gl.clearColor(0.3, 0.3, .3, 1.0)
     gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
-
     gl.stencilMask(0x00) //写入0
 
-    this.prg.use()
-    this.planeVao.bind()
-    this.planeBuffer.drawTriangles()
-    this.planeVao.unbind()
+    let mMatrix = mat4.identity(mat4.create())
+    mat4.scale(mMatrix, mMatrix, [.5, .5, .5])
+    mat4.translate(mMatrix, mMatrix, [-2.5, 0, 0])
+    this.renderOutline(mMatrix, this._drawCube)
 
+    mMatrix = mat4.identity(mat4.create())
+    mat4.translate(mMatrix, mMatrix, [1.5, 0, 0])
+    this.renderOutline(mMatrix, this._drawTorus)
+/*draw boundingVolume
+    mMatrix = mat4.identity(mat4.create())
+    mat4.translate(mMatrix, mMatrix, [1.5, 0, 0])
+    this.prg.use()
+    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
+    this.prg.style({
+      mvpMatrix: this.mvpMatrix,
+      texture: 0,
+      lod: this.params.lod
+    })
+    this.torusFrame.bind(this.prg, ['position', 'texCoord'])
+    this.torusFrame.draw(3)
+
+    mMatrix = mat4.identity(mat4.create())
+    mat4.scale(mMatrix, mMatrix, [.6, .6, .6])
+    mat4.translate(mMatrix, mMatrix, [-2.05, 0, 0])
+    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
+    this.prg.style({
+      mvpMatrix: this.mvpMatrix,
+      texture: 0,
+      lod: this.params.lod
+    })
+    this.cubeFrame.bind(this.prg, ['position', 'texCoord'])
+    this.cubeFrame.draw(3)
+*/
+  }
+  renderOutline(mMatrix,draw){
+    this.prg.use()
+    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
+    this.prg.style({
+      mvpMatrix: this.mvpMatrix,
+      texture: 0,
+      lod: this.params.lod
+    })
     gl.stencilFunc(gl.ALWAYS, 1, 0xff)
     gl.stencilMask(0xff) //写入1
-    this.cubeVao.bind()
-    this.cubeBuffer.drawTriangles()
-    this.cubeVao.unbind()
+    draw(this.prg)
 
     gl.stencilFunc(gl.NOTEQUAL, 1, 0xff);//不等于1的才能通过测试
     gl.stencilMask(0x00); //写入0
-    this.outlinePrg.use()
     const scale = 1.1;
-
-    let mMatrix = mat4.identity(mat4.create())
-
-    let rad = (this.count % 360) * Math.PI / 180 //不旋转看到的会是一个mask方面
-
-    mat4.rotate(mMatrix, mMatrix, rad, [0, 1, 1])
     mat4.scale(mMatrix, mMatrix, [scale, scale, scale])
     mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
+    this.outlinePrg.use()
     this.outlinePrg.style({
       mvpMatrix: this.mvpMatrix
     })
-    this.cubeVao.bind()
-    this.cubeBuffer.drawTriangles()
-    this.cubeVao.unbind()
-    gl.stencilMask(0xff)
+    draw(this.outlinePrg)
+  }
+  _drawCube(prg){
+    this.cube.bind(prg, ['position', 'texCoord'])
+    this.cube.draw()
+  }
+  _drawTorus(prg){
+    this.torus.bind(prg)
+    this.torus.draw()
   }
 }
