@@ -7,6 +7,7 @@ import * as dat from 'dat.gui'
 
 export default class Pipeline {
   rotateQ = quat.create()
+  mousePos = { x:0, y:0 }
   camera = new Camera()
   _params = {}
   gui = new dat.GUI({
