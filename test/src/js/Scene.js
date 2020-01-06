@@ -42,7 +42,9 @@ const dynamicImport = (name) => {
     obj = new foo.default()
 
     canvas.addEventListener('mousemove', (e) => {
-      obj.rotateQ = MouseMove(e, canvas)
+      let t = MouseMove(e, canvas)
+      obj.rotateQ = t.q
+      obj.mousePos = t.mousePos
     })
     obj.play()
   })

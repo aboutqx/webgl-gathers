@@ -1,15 +1,43 @@
-import AABB  from 'libs/Geometry3D'
+import { Ray, AABB, RayCast }  from 'libs/Geometry3D'
+import {
+    canvas
+  } from 'libs/GlTools'
+import { vec3, vec4, mat4 } from 'gl-matrix'
+
 export default class Intersect {
-    _ray
-    constructor(mouseX, mouseY){
-        this._createRay()
+    ray
+    aabb
+    constructor(){
+        this.rayCast = new RayCast()
     }
-    _createRay(){
+    setRay(mouseX, mouseY, pMatrix, vMatrix, cameraPos){
+        mouseX = mouseX - canvas.getBoundingClientRect().left
+        mouseY = mouseY - canvas.getBoundingClientRect().top
 
+        let x = (2.0 * mouseX) / canvas.clientWidth - 1.0;
+        let y = 1.0 - (2.0 * mouseY) / canvas.clientHeight;
+        let z = 1.0;
+        let rayNds = vec3.fromValues(x, y, z)
+        let rayClip = vec4.fromValues(x, y, -1, 1)
+        let rayEye = vec4.create()
+        mat4.invert(pMatrix, pMatrix)
+        mat4.multiply(rayEye, pMatrix, rayClip)
+        rayEye = vec4.fromValues(rayEye[0], rayEye[1], -1, 0)
+        let _rayWorld = vec4.create()
+        mat4.invert(vMatrix, vMatrix)
+        mat4.multiply(_rayWorld, vMatrix, rayEye)
+        let rayWorld = vec3.fromValues(_rayWorld[0], _rayWorld[1], _rayWorld[2])
+        this.ray = new Ray(cameraPos, vec3.normalize(rayWorld, rayWorld))
     }
 
-    _intersect(object){
 
+    castRay(position, type = 'AABB'){
+        let result = false
+        if(type == 'AABB'){
+            this.boundingVolume(position)
+            result = this.rayCast.rayAABB(this.aabb, this.ray)
+        }
+        return result
     }
 
 
@@ -34,7 +62,7 @@ export default class Intersect {
 
         } else if(type == 'AABB'){
             let box = new AABB().fromMinMax(boundMin, boundMax)
-            console.log(boundMin,boundMax,box.origin,box.size)
+            this.aabb = box
             return{
                 position: box.position,
                 index: box.index,
@@ -43,12 +71,5 @@ export default class Intersect {
         }
     }
 
-    get ray() {
-        return this._ray
-    }
-
-    set ray(value){
-        this._ray = value
-    }
 
 }
