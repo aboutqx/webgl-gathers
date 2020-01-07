@@ -18,11 +18,11 @@ export default class Intersect {
         let y = 1.0 - (2.0 * mouseY) / canvas.clientHeight;
         let z = 1.0;
         let rayNds = vec3.fromValues(x, y, z)
-        let rayClip = vec4.fromValues(x, y, -1, 1)
+        let rayClip = vec4.fromValues(x, y, -1., 1.)
         let rayEye = vec4.create()
         mat4.invert(pMatrix, pMatrix)
         mat4.multiply(rayEye, pMatrix, rayClip)
-        rayEye = vec4.fromValues(rayEye[0], rayEye[1], -1, 0)
+        rayEye = vec4.fromValues(rayEye[0], rayEye[1], -1., 0.)
         let _rayWorld = vec4.create()
         mat4.invert(vMatrix, vMatrix)
         mat4.multiply(_rayWorld, vMatrix, rayEye)
@@ -43,21 +43,21 @@ export default class Intersect {
 
     boundingVolume(position, type = 'AABB'){
         let minX,maxX,minY,maxY,minZ,maxZ
-        minX=maxX=minY=maxY=minZ=maxZ=0
         let sphereCenter,sphereRadius,boundMin,boundMax
         if(!(position.length%3 == 0)) console.error('position 不是3个一组')
         for(let i =0; i <= position.length/3; i++){
-            if (position[i*3] > maxX) maxX = position[i*3]
-            if(position[i*3]  < minX) minX = position[i*3]
-            if (position[i*3+1] > maxY) maxY = position[i*3+1]
-            if(position[i*3+1]  < minY) minY = position[i*3+1]
-            if (position[i*3+2] > maxZ) maxZ = position[i*3+2]
-            if(position[i*3+2]  < minZ) minZ = position[i*3+2]
+            if (position[i*3] > maxX || !maxX) maxX = position[i*3]
+            if(position[i*3]  < minX || !minX) minX = position[i*3]
+            if (position[i*3+1] > maxY || !maxY) maxY = position[i*3+1]
+            if(position[i*3+1]  < minY || !minY) minY = position[i*3+1]
+            if (position[i*3+2] > maxZ || !maxZ) maxZ = position[i*3+2]
+            if(position[i*3+2]  < minZ || !minZ) minZ = position[i*3+2]
         }
         sphereCenter = [minX + (maxX-minX)/2, minY + (maxY-minY)/2, minZ + (maxZ-minZ)/2]
         sphereRadius = Math.max((maxX-minX)/2,(maxY-minY)/2,(maxZ-minZ)/2)
-        boundMin = [minX, minY, minZ]
-        boundMax = [maxX, maxY, maxZ]
+        boundMin = vec3.fromValues(minX, minY, minZ)
+        boundMax = vec3.fromValues(maxX, maxY, maxZ)
+
         if(type == 'sphere'){
 
         } else if(type == 'AABB'){

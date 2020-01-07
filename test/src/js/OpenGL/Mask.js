@@ -148,14 +148,16 @@ export default class Mask extends Pipeline {
 
     let mMatrix = mat4.identity(mat4.create())
     mat4.scale(mMatrix, mMatrix, [.5, .5, .5])
-    mat4.translate(mMatrix, mMatrix, [-2.5, 0, 0])
+    // translate 之后鼠标放在cube水平中心点很远的地方也能触发outline，这是个bug,原因是boundingbox计算有问题，初始minX，maxX这些值为0，0实际上已经是一个值了
+    // 应该换成循环的第一个值为min和max，而不是0
+    mat4.translate(mMatrix, mMatrix, [-3, 0, 0])
 
     if(this.intersect.castRay(transformPosition(this.cube.position, mMatrix))){
       this.renderOutline(mMatrix, this._drawCube)
     } else this.renderDefault(mMatrix, this._drawCube)
 
     mMatrix = mat4.identity(mat4.create())
-    mat4.translate(mMatrix, mMatrix, [1.5, 0, 0])
+    mat4.translate(mMatrix, mMatrix, [2., 0, 0])
     if(this.intersect.castRay(transformPosition(this.torus.position, mMatrix))){
       this.renderOutline(mMatrix, this._drawTorus)
     } else this.renderDefault(mMatrix, this._drawTorus)
@@ -218,5 +220,8 @@ export default class Mask extends Pipeline {
   _drawTorus(prg){
     this.torus.bind(prg)
     this.torus.draw()
+  }
+  _drawLine(){
+
   }
 }
