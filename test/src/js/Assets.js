@@ -64,6 +64,17 @@ const Assets = {
   brickwall: {
     brickwall: { url: './assets/brickwall.jpg' },
     brickwallNormal: { url: './assets/brickwall_normal.jpg' }
+  },
+  skybox:{
+    irradiancePosX: { url: './assets/skybox/irr_posx.hdr', type: 'binary' },
+    irradiancePosY: { url: './assets/skybox/irr_posy.hdr', type: 'binary' },
+    irradiancePosZ: { url: './assets/skybox/irr_posz.hdr', type: 'binary' },
+    irradianceNegX: { url: './assets/skybox/irr_negx.hdr', type: 'binary' },
+    irradianceNegY: { url: './assets/skybox/irr_negy.hdr', type: 'binary' },
+    irradianceNegZ: { url: './assets/skybox/irr_negz.hdr', type: 'binary' },
+  },
+  venus: {
+    venus: { url:'./assets/models/venus.obj', type: 'text'}
   }
 
 }

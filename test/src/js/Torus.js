@@ -180,3 +180,22 @@ export const CubeData = [
   -1.0, 1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 1.0, // top-left
   -1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0 // bottom-left
 ]
+
+
+function f(){
+
+}
+function g(){
+
+}
+function h(){
+
+}
+
+export function TorusKnot(){
+
+}
+
+export function regularPolyhedron(){
+  
+}

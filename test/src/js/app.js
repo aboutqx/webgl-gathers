@@ -5,7 +5,7 @@ let assets = {
   wood: './assets/wood.png',
   splash: './assets/flower.png'
 }
-let name = location.search.replace('?', '').toLocaleLowerCase()
+let name = location.search.replace('?', '')
 
 if ( name === 'ibldiffuse' || name === 'iblfinal') {
   Object.assign(assets, Assets.hdrSkybox)
@@ -18,7 +18,8 @@ const mapAssets = {
   pbrflow: { ...Assets.hdrSkybox, ...Assets.iblMaps, ...Assets.ballMaps },
   pbrmodel: { ...Assets.hdrSkybox, ...Assets.iblMaps,...Assets.orb },
   deferredshading: { ...Assets.nanosuit },
-  ssao: { ...Assets.nanosuit }
+  ssao: { ...Assets.nanosuit },
+  envMap: { ...Assets.skybox, ...Assets.venus }
 }
 for (let key in mapAssets) {
   if(name === key) assets = mapAssets[key]

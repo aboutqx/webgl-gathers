@@ -27,7 +27,7 @@ import {
 } from 'gl-matrix'
 import Mesh from 'libs/Mesh'
 import Texture from 'libs/glTexture'
-import HDRParser from 'utils/HDRParser'
+import HDRParser from 'libs/loaders/HDRParser'
 import CubeFrameBuffer from 'libs/CubeFrameBuffer'
 
 
