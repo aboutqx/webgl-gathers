@@ -306,7 +306,7 @@ class ObjLoader {
       if (hasUVs) {
         mesh.bufferTexCoord(o.coords);
       }
-      mesh.bufferIndices(o.indices);
+      mesh.bufferIndex(o.indices);
       if (hasNormals) {
         mesh.bufferNormal(o.normals);
       }

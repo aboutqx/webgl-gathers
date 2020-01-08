@@ -6,21 +6,21 @@ import MouseMove from './MouseMove'
 const importLists = {
   reflection: 'Light/Reflection',
   mask: 'OpenGL/Mask',
-  shadow: 'advanced_light/Shadow',
-  deferredshading: 'advanced_light/DeferredShading',
+  shadow: 'AdvancedLight/Shadow',
+  deferredshading: 'AdvancedLight/DeferredShading',
   mrt: 'OpenGL/Mrt',
   mirror: 'OpenGL/Mirror',
   pbr: 'Pbr/Pbr',
   ibldiffuse: 'Pbr/IblDiffuse',
   iblfinal: 'Pbr/iblFinal',
-  ssao: 'advanced_light/SSAO',
-  normalmap: 'advanced_light/NormalMap',
+  ssao: 'AdvancedLight/SSAO',
+  normalmap: 'AdvancedLight/NormalMap',
   pbrflow: 'Pbr/PbrFlow',
   lightcaster: 'Light/LightCaster',
   color: 'Light/Color',
   material: 'Light/Material',
   pbrmodel: 'Pbr/PbrModel',
-  shape: 'Shape'
+  envMap: 'AdvancedLight/EnvironmentMap'
 }
 
 function addList(){
@@ -50,7 +50,7 @@ const dynamicImport = (name) => {
   })
 }
 
-let name = location.search.replace('?', '').toLocaleLowerCase()
+let name = location.search.replace('?', '')
 if(name) dynamicImport(name)
 else addList()
 

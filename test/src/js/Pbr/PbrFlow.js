@@ -30,7 +30,7 @@ import {
 } from 'gl-matrix'
 import Mesh from 'libs/Mesh'
 import Texture from 'libs/glTexture'
-import HDRParser from 'utils/HDRParser'
+import HDRParser from 'libs/loaders/HDRParser'
 import GLCubeTexture from 'libs/GLCubeTexture'
 
 const nrRows = 7

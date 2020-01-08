@@ -1,6 +1,6 @@
 import Program from 'libs/glProgram'
 import Camera from 'libs/Camera'
-import { quat } from 'gl-matrix';
+import { quat, mat4 } from 'gl-matrix';
 import { gl } from 'libs/GlTools'
 import * as dat from 'dat.gui'
 
@@ -9,12 +9,16 @@ export default class Pipeline {
   rotateQ = quat.create()
   mousePos = { x:0, y:0 }
   camera = new Camera()
+  pMatrix = mat4.identity(mat4.create())
+  mvpMatrix = mat4.identity(mat4.create())
+  tmpMatrix = mat4.identity(mat4.create())
+
   _params = {}
   gui = new dat.GUI({
     width: 300
   })
   constructor() {
-
+    this.vMatrix = this.camera.viewMatrix
     this.init()
     this.attrib()
     this.prepare()
@@ -23,7 +27,7 @@ export default class Pipeline {
     this._animate = this.animate.bind(this)
   }
   init() {
-
+    
   }
   compile(vs, fs) {
     let prg = new Program(gl)
