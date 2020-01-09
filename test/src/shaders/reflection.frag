@@ -7,7 +7,7 @@ uniform vec3 lightDirection;
 uniform vec3 eyeDirection;
 uniform vec4 ambientColor;
 in vec3 vNormal;
-in vec4 vColor;
+in vec3 vColor;
 out vec4 FragColor;
 
 void main(void){
@@ -16,6 +16,6 @@ void main(void){
     vec3  halfLE    = normalize(invLight + invEye);
     float diffuse   = clamp(dot(vNormal, invLight), 0.0, 1.0);
     float specular  = pow(clamp(dot(vNormal, halfLE), 0.0, 1.0), 50.0);
-    vec4  destColor = vColor * vec4(vec3(diffuse), 1.0) + vec4(vec3(specular), 1.0) + ambientColor;
+    vec4  destColor = vec4(vColor, 1.) * vec4(vec3(diffuse), 1.0) + vec4(vec3(specular), 1.0) + ambientColor;
     FragColor    = destColor;
 }

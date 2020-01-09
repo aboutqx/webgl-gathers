@@ -36,7 +36,7 @@ export default class Mirror extends Pipeline {
 
     let torus = new Mesh()
     torus.bufferVertex(pos)
-    torus.bufferIndices(index)
+    torus.bufferIndex(index)
     torus.bufferNormal(normal)
     torus.bufferColor(color)
     this.torus = torus
@@ -66,7 +66,7 @@ export default class Mirror extends Pipeline {
 
     let plane = new Mesh()
     plane.bufferVertex(position)
-    plane.bufferIndices(index)
+    plane.bufferIndex(index)
     plane.bufferTexCoord(texCoord)
     plane.bufferColor(color)
     this.plane = plane

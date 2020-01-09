@@ -1,5 +1,5 @@
 import load from 'load-asset'
-import Assets from './Assets'
+import mapAssets from './Assets'
 
 let assets = {
   wood: './assets/wood.png',
@@ -7,20 +7,6 @@ let assets = {
 }
 let name = location.search.replace('?', '')
 
-if ( name === 'ibldiffuse' || name === 'iblfinal') {
-  Object.assign(assets, Assets.hdrSkybox)
-
-}
-const mapAssets = {
-  lightcaster: { ...Assets.materialMaps },
-  normalmap: { ...Assets.brickwall },
-  pbr: { ...Assets.ballMaps },
-  pbrflow: { ...Assets.hdrSkybox, ...Assets.iblMaps, ...Assets.ballMaps },
-  pbrmodel: { ...Assets.hdrSkybox, ...Assets.iblMaps,...Assets.orb },
-  deferredshading: { ...Assets.nanosuit },
-  ssao: { ...Assets.nanosuit },
-  envMap: { ...Assets.skybox, ...Assets.venus }
-}
 for (let key in mapAssets) {
   if(name === key) assets = mapAssets[key]
 }
