@@ -1,337 +1,321 @@
 // ObjLoader.js
-// from https: //github.com/yiwenl/alfrid
+
 'use strict';
 
 import Mesh from '../Mesh';
 
-class ObjLoader {
-  object = null
-  objectList = []
-  meshes = []
-  materialLibraries = []
-  load(url, callback, drawType = 4) {
-    this._drawType = drawType;
-    super.load(url, callback);
-  }
-
-  _onLoaded() {
-    this.parseObj(this._req.response);
-  }
-
-  parseObj(objStr, materials) {
-    this.materials = materials
-    const lines = objStr.split('\n');
-    // 实际buffer的数据
-    const positions = [];
-    const coords = [];
-    const finalNormals = [];
-    const indices = [];
-
-    // add face 调用，把暂时的vertices，normals，uvs根据解析来的indices填充到实际buffer的数据里,
-    const vertices = [];
-    const normals = [];
-    const uvs = [];
+class ObjLoader  {
 
-    let result;
+	load(url, callback, drawType = 4) {
+		this._drawType = drawType;
+		super.load(url, callback);
+	}
 
-    // o object_name | g group_name
-    //ignore mtl
-    const objectPattern = /^[og]\s*(.+)?/;
-    	// mtllib file_reference
-    const material_library_pattern = /^mtllib /;
-    // usemtl material_name
-    const material_use_pattern = /^usemtl /;
-    // v float float float
-    const vertexPattern = /v( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+	_onLoaded() {
+		this.parseObj(this._req.response);
+	}
 
-    // vn float float float
-    const normalPattern = /vn( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+	parseObj(objStr) {
+		const lines = objStr.split('\n');
 
-    // vt float float
-    const uvPattern = /vt( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+		const positions    = [];
+		const coords       = [];
+		const finalNormals = [];
+		const vertices     = [];
+		const normals      = [];
+		const uvs          = [];
+		const indices      = [];
+		let count        = 0;
+		let result;
 
-    // f vertex vertex vertex ...
-    const facePattern1 = /f( +-?\d+)( +-?\d+)( +-?\d+)( +-?\d+)?/;
+		// v float float float
+		const vertexPattern = /v( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
 
-    // f vertex/uv vertex/uv vertex/uv ...
-    const facePattern2 = /f( +(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+))?/;
+		// vn float float float
+		const normalPattern = /vn( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
 
-    // f vertex/uv/normal vertex/uv/normal vertex/uv/normal ...
-    const facePattern3 = /f( +(-?\d+)\/(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+)\/(-?\d+))?/;
+		// vt float float
+		const uvPattern = /vt( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
 
-    // f vertex//normal vertex//normal vertex//normal ...
-    const facePattern4 = /f( +(-?\d+)\/\/(-?\d+))( +(-?\d+)\/\/(-?\d+))( +(-?\d+)\/\/(-?\d+))( +(-?\d+)\/\/(-?\d+))?/;
+		// f vertex vertex vertex ...
+		const facePattern1 = /f( +-?\d+)( +-?\d+)( +-?\d+)( +-?\d+)?/;
 
+		// f vertex/uv vertex/uv vertex/uv ...
+		const facePattern2 = /f( +(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+))?/;
 
-    function parseVertexIndex(value) {
-      const index = parseInt(value);
-      return (index >= 0 ? index - 1 : index + vertices.length / 3) * 3;
-    }
+		// f vertex/uv/normal vertex/uv/normal vertex/uv/normal ...
+		const facePattern3 = /f( +(-?\d+)\/(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+)\/(-?\d+))( +(-?\d+)\/(-?\d+)\/(-?\d+))?/;
 
-    function parseNormalIndex(value) {
-      const index = parseInt(value);
-      return (index >= 0 ? index - 1 : index + normals.length / 3) * 3;
-    }
+		// f vertex//normal vertex//normal vertex//normal ... 
+		const facePattern4 = /f( +(-?\d+)\/\/(-?\d+))( +(-?\d+)\/\/(-?\d+))( +(-?\d+)\/\/(-?\d+))( +(-?\d+)\/\/(-?\d+))?/;
 
-    function parseUVIndex(value) {
-      const index = parseInt(value);
-      return (index >= 0 ? index - 1 : index + uvs.length / 2) * 2;
-    }
 
+		function parseVertexIndex(value) {
+			const index = parseInt(value);
+			return (index >= 0 ? index - 1 : index + vertices.length / 3) * 3;
+		}
 
-    const addVertex = (a, b, c) => {
-      // 1个face 3个index a,b,c,顶点是依次输入的，所以没用重用，index是连续的，没有重用
-      this.object.positions.push([vertices[a], vertices[a + 1], vertices[a + 2]]);
-      this.object.positions.push([vertices[b], vertices[b + 1], vertices[b + 2]]);
-      this.object.positions.push([vertices[c], vertices[c + 1], vertices[c + 2]]);
+		function parseNormalIndex(value) {
+			const index = parseInt(value);
+			return (index >= 0 ? index - 1 : index + normals.length / 3) * 3;
+		}
 
-      this.object.indices.push(this.object.count * 3 + 0);
-      this.object.indices.push(this.object.count * 3 + 1);
-      this.object.indices.push(this.object.count * 3 + 2);
+		function parseUVIndex(value) {
+			const index = parseInt(value);
+			return (index >= 0 ? index - 1 : index + uvs.length / 2) * 2;
+		}
 
-      this.object.count++;
 
-    }
+		function addVertex(a, b, c) {
+			positions.push([vertices[a], vertices[a + 1], vertices[a + 2]]);
+			positions.push([vertices[b], vertices[b + 1], vertices[b + 2]]);
+			positions.push([vertices[c], vertices[c + 1], vertices[c + 2]]);
 
+			indices.push(count * 3 + 0);
+			indices.push(count * 3 + 1);
+			indices.push(count * 3 + 2);
 
-    const addUV = (a, b, c) => {
-      this.object.coords.push([uvs[a], uvs[a + 1]]);
-      this.object.coords.push([uvs[b], uvs[b + 1]]);
-      this.object.coords.push([uvs[c], uvs[c + 1]]);
-    }
+			count ++;
+		}
 
 
-    const addNormal = (a, b, c) => {
-      this.object.finalNormals.push([normals[a], normals[a + 1], normals[a + 2]]);
-      this.object.finalNormals.push([normals[b], normals[b + 1], normals[b + 2]]);
-      this.object.finalNormals.push([normals[c], normals[c + 1], normals[c + 2]]);
-    }
+		function addUV(a, b, c) {
+			coords.push([uvs[a], uvs[a + 1]]);
+			coords.push([uvs[b], uvs[b + 1]]);
+			coords.push([uvs[c], uvs[c + 1]]);
+		}
 
-    // 定义之前vertex lists里的相关索引，vertex indices,uv indices,normal indices etc.
-    // 使用整个obj文件的顶点为索引，即不区分是哪个对象，f从1开始，直到全部对象顶点的结尾
-    // 实际buffer数据在此添加
-    function addFace(a, b, c, d, ua, ub, uc, ud, na, nb, nc, nd) {
-      let ia = parseVertexIndex(a);
-      let ib = parseVertexIndex(b);
-      let ic = parseVertexIndex(c);
-      let id;
 
-      if (d === undefined) {
+		function addNormal(a, b, c) {
+			finalNormals.push([normals[a], normals[a + 1], normals[a + 2]]);
+			finalNormals.push([normals[b], normals[b + 1], normals[b + 2]]);
+			finalNormals.push([normals[c], normals[c + 1], normals[c + 2]]);
+		}
 
-        addVertex(ia, ib, ic);
+		function addFace(a, b, c, d,  ua, ub, uc, ud,  na, nb, nc, nd) {
+			let ia = parseVertexIndex(a);
+			let ib = parseVertexIndex(b);
+			let ic = parseVertexIndex(c);
+			let id;
 
-      } else {
+			if (d === undefined) {
 
-        id = parseVertexIndex(d);
+				addVertex(ia, ib, ic);
 
-        addVertex(ia, ib, id);
-        addVertex(ib, ic, id);
+			} else {
 
-      }
+				id = parseVertexIndex(d);
 
+				addVertex(ia, ib, id);
+				addVertex(ib, ic, id);
 
-      if (ua !== undefined) {
+			}
 
-        ia = parseUVIndex(ua);
-        ib = parseUVIndex(ub);
-        ic = parseUVIndex(uc);
 
-        if (d === undefined) {
+			if (ua !== undefined) {
 
-          addUV(ia, ib, ic);
+				ia = parseUVIndex(ua);
+				ib = parseUVIndex(ub);
+				ic = parseUVIndex(uc);
 
-        } else {
+				if (d === undefined) {
 
-          id = parseUVIndex(ud);
+					addUV(ia, ib, ic);
 
-          addUV(ia, ib, id);
-          addUV(ib, ic, id);
+				} else {
 
-        }
+					id = parseUVIndex(ud);
 
-      }
+					addUV(ia, ib, id);
+					addUV(ib, ic, id);
 
-      if (na !== undefined) {
+				}
 
-        ia = parseNormalIndex(na);
-        ib = parseNormalIndex(nb);
-        ic = parseNormalIndex(nc);
+			}
 
-        if (d === undefined) {
+			if (na !== undefined) {
 
-          addNormal(ia, ib, ic);
+				ia = parseNormalIndex(na);
+				ib = parseNormalIndex(nb);
+				ic = parseNormalIndex(nc);
 
-        } else {
+				if (d === undefined) {
 
-          id = parseNormalIndex(nd);
+					addNormal(ia, ib, ic);
 
-          addNormal(ia, ib, id);
-          addNormal(ib, ic, id);
+				} else {
 
-        }
+					id = parseNormalIndex(nd);
 
-      }
-    }
+					addNormal(ia, ib, id);
+					addNormal(ib, ic, id);
 
+				}
 
-    for (let i = 0; i < lines.length; i++) {
-      let line = lines[i];
-      line = line.trim();
+			}
+		}
 
-      if (line.length === 0 || line.charAt(0) === '#') {
 
-        continue;
+		for (let i = 0; i < lines.length; i ++) {
+			let line = lines[i];
+			line = line.trim();
 
-      }
-      let lineFirstChar = line.charAt(0)
-      if (material_library_pattern.test(line)) {
+			if (line.length === 0 || line.charAt(0) === '#') {
 
-        // mtl file
+				continue;
 
-        this.materialLibraries.push(line.substring(7).trim());
+			} else if ((result = vertexPattern.exec(line)) !== null) {
 
-      } else if (material_use_pattern.test(line)) {
+				vertices.push(
+					parseFloat(result[1]),
+					parseFloat(result[2]),
+					parseFloat(result[3])
+				);
 
-        this._startMaterial(line.substring(7).trim(), this.materialLibraries)
+			} else if ((result = normalPattern.exec(line)) !== null) {
 
-      } else if ((result = objectPattern.exec(line)) !== null) {
-        // o object_name
-        // or
-        // g group_name
+				normals.push(
+					parseFloat(result[1]),
+					parseFloat(result[2]),
+					parseFloat(result[3])
+				);
 
-        // WORKAROUND: https://bugs.chromium.org/p/v8/issues/detail?id=2869
-        // var name = result[ 0 ].substr( 1 ).trim();
-        let name = (" " + result[0].substr(1).trim()).substr(1)
+			} else if ((result = uvPattern.exec(line)) !== null) {
 
-        this._startObject(name);
-      } else if ((result = vertexPattern.exec(line)) !== null) {
+				uvs.push(
+					parseFloat(result[1]),
+					parseFloat(result[2])
+				);
 
-        vertices.push(
-          parseFloat(result[1]),
-          parseFloat(result[2]),
-          parseFloat(result[3])
-        );
+			} else if ((result = facePattern1.exec(line)) !== null) {
 
-      } else if ((result = normalPattern.exec(line)) !== null) {
+				addFace(
+					result[1], result[2], result[3], result[4]
+				);
 
-        normals.push(
-          parseFloat(result[1]),
-          parseFloat(result[2]),
-          parseFloat(result[3])
-        );
+			} else if ((result = facePattern2.exec(line)) !== null) {
 
-      } else if ((result = uvPattern.exec(line)) !== null) {
+				addFace(
+					result[2], result[5], result[8], result[11],
+					result[3], result[6], result[9], result[12]
+				);
 
-        uvs.push(
-          parseFloat(result[1]),
-          parseFloat(result[2])
-        );
+			} else if ((result = facePattern3.exec(line)) !== null) {
+				addFace(
+					result[2], result[6], result[10], result[14],
+					result[3], result[7], result[11], result[15],
+					result[4], result[8], result[12], result[16]
+				);
 
-      } else if ((result = facePattern1.exec(line)) !== null) {
+			} else if ((result = facePattern4.exec(line)) !== null) {
+				addFace(
+					result[2], result[5], result[8], result[11],
+					undefined, undefined, undefined, undefined,
+					result[3], result[6], result[9], result[12]
+				);
 
-        addFace(
-          result[1], result[2], result[3], result[4]
-        );
+			} 
+		}
 
-      } else if ((result = facePattern2.exec(line)) !== null) {
+		return this._generateMeshes({	
+			positions:positions,
+			coords:coords,
+			normals:finalNormals,
+			indices:indices
+		});
+		
+	}
 
-        addFace(
-          result[2], result[5], result[8], result[11],
-          result[3], result[6], result[9], result[12]
-        );
+	_generateMeshes(o) {
+		const maxNumVertices = 65535;
+		const hasNormals = o.normals.length > 0;
+		const hasUVs = o.coords.length > 0;
+		let mesh;
+		console.log('vertices length:'+o.positions.length)
+		if(o.positions.length > maxNumVertices) {
+			const meshes = [];
+			let lastIndex = 0;
 
-      } else if ((result = facePattern3.exec(line)) !== null) {
-        addFace(
-          result[2], result[6], result[10], result[14],
-          result[3], result[7], result[11], result[15],
-          result[4], result[8], result[12], result[16]
-        );
+			const oCopy       = {};
+			oCopy.positions = o.positions.concat();
+			oCopy.coords    = o.coords.concat();
+			oCopy.indices   = o.indices.concat();
+			oCopy.normals   = o.normals.concat();
 
-      } else if ((result = facePattern4.exec(line)) !== null) {
-        addFace(
-          result[2], result[5], result[8], result[11],
-          undefined, undefined, undefined, undefined,
-          result[3], result[6], result[9], result[12]
-        );
+			while(o.indices.length > 0) {
 
-      }
-    }
+				const sliceNum  = Math.min(maxNumVertices, o.positions.length);
+				const indices   = o.indices.splice(0, sliceNum);
+				const positions = [];
+				const coords    = [];
+				const normals   = [];
+				let index, tmpIndex = 0;
 
-    return this._generateMeshes();
+				for(let i = 0; i < indices.length; i++) {
+					if(indices[i] > tmpIndex) {
+						tmpIndex = indices[i];
+					}
 
-  }
+					index = indices[i];
 
-  _startObject (name) {
-    if(has(this.objectList, 'name', name) !== -1) return
-    // console.log('start object', name)
-    this.object = {
-      name,
-      positions: [],
-      coords: [],
-      finalNormals: [],
-      indices: [],
-      count: 0 // index
-    }
+					positions.push(oCopy.positions[index]);
+					if(hasUVs) {
+						coords.push(oCopy.coords[index]);	
+					}
+					if(hasNormals) {
+						normals.push(oCopy.normals[index]);	
+					}
+					
+					indices[i] -= lastIndex;
+				}
 
-    this.objectList.push(this.object)
-  }
+				lastIndex = tmpIndex + 1;
 
-  _startMaterial (name, lib) {
-    let material = {
-      name,
-      mtlLib: lib[lib.length - 1]
-    }
+				mesh = new Mesh(this._drawType);
+				mesh.bufferVertex(positions);
+				if(hasUVs) {
+					mesh.bufferTexCoord(coords);	
+				}
+				
+				mesh.bufferIndex(indices);
+				if(hasNormals) {
+					mesh.bufferNormal(normals);
+				}
 
-    this.object.material = material
-  }
+				meshes.push(mesh);
+			}
 
-  _generateMeshes() {
-    let o
-    for(let i = 0; i < this.objectList.length; i++){
-      o = {
-        positions: this.objectList[i].positions,
-        coords: this.objectList[i].coords,
-        indices: this.objectList[i].indices,
-        normals: this.objectList[i].finalNormals,
-        name: this.objectList[i].name,
-        material: this.materials ? { ...this.materials[this.objectList[i].material.name],
-          mtlLib: this.objectList[i].material.mtlLib } : this.objectList[i].material
-          
-      }
+			if(this._callback) {
+				this._callback(meshes, oCopy);
+			}
 
-      const hasNormals = o.normals.length > 0
-      const hasUVs = o.coords.length > 0
-      let mesh = new Mesh(this._drawType, o.name, o.material)
-      mesh.bufferVertex(o.positions);
-      if (hasUVs) {
-        mesh.bufferTexCoord(o.coords);
-      }
-      mesh.bufferIndex(o.indices);
-      if (hasNormals) {
-        mesh.bufferNormal(o.normals);
-      }
+			return meshes;
+		} else {
+			mesh = new Mesh(this._drawType);
+			mesh.bufferVertex(o.positions);
+			if(hasUVs) {
+				mesh.bufferTexCoord(o.coords);	
+			}
+			mesh.bufferIndex(o.indices);
+			if(hasNormals) {
+				mesh.bufferNormal(o.normals);
+			}
 
-      if (this._callback) {
-        this._callback(mesh, o);
-      }
-      this.meshes.push(mesh)
-    }
-    return this.meshes
-  }
+			if(this._callback) {
+				this._callback(mesh, o);
+			}
 
+			return mesh;
+		}
+		
+		return null;
+	}
 }
 
 
 ObjLoader.parse = function (objStr) {
-  const loader = new ObjLoader();
-  return loader.parseObj(objStr);
+	const loader = new ObjLoader();
+	return loader.parseObj(objStr);
 };
-function has(arr, key, value) { // array child object has key-value
-  if (!arr || !arr.length) return -1
-  for (let i = 0; i < arr.length; i++) {
-    if (arr[i][key] === value) return i
-  }
-  return -1
-}
 
 export default ObjLoader;

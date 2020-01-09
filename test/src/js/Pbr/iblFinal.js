@@ -67,7 +67,7 @@ export default class IblFinal extends Pipeline {
 
     let sphere = new Mesh()
     sphere.bufferVertex(pos)
-    sphere.bufferIndices(index)
+    sphere.bufferIndex(index)
     sphere.bufferNormal(normal)
     sphere.bufferTexCoord(uv)
     this.sphere = sphere

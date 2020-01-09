@@ -66,16 +66,32 @@ const Assets = {
     brickwallNormal: { url: './assets/brickwall_normal.jpg' }
   },
   skybox:{
-    irradiancePosX: { url: './assets/skybox/irr_posx.hdr', type: 'binary' },
-    irradiancePosY: { url: './assets/skybox/irr_posy.hdr', type: 'binary' },
-    irradiancePosZ: { url: './assets/skybox/irr_posz.hdr', type: 'binary' },
-    irradianceNegX: { url: './assets/skybox/irr_negx.hdr', type: 'binary' },
-    irradianceNegY: { url: './assets/skybox/irr_negy.hdr', type: 'binary' },
-    irradianceNegZ: { url: './assets/skybox/irr_negz.hdr', type: 'binary' },
+    skyboxPosX: { url: './assets/skybox/output_skybox_posx.hdr', type: 'binary' },
+    skyboxPosY: { url: './assets/skybox/output_skybox_posy.hdr', type: 'binary' },
+    skyboxPosZ: { url: './assets/skybox/output_skybox_posz.hdr', type: 'binary' },
+    skyboxNegX: { url: './assets/skybox/output_skybox_negx.hdr', type: 'binary' },
+    skyboxNegY: { url: './assets/skybox/output_skybox_negy.hdr', type: 'binary' },
+    skyboxNegZ: { url: './assets/skybox/output_skybox_negz.hdr', type: 'binary' },
   },
   venus: {
     venus: { url:'./assets/models/venus.obj', type: 'text'}
+  },
+  statue: {
+    statue: { url:'./assets/models/statue.obj', type: 'text'}
   }
 
 }
-export default Assets
+const mapAssets = {
+  reflection: { ...Assets.statue, ...Assets.venus },
+  lightcaster: { ...Assets.materialMaps },
+  normalmap: { ...Assets.brickwall },
+  pbr: { ...Assets.ballMaps },
+  pbrflow: { ...Assets.hdrSkybox, ...Assets.iblMaps, ...Assets.ballMaps },
+  pbrmodel: { ...Assets.hdrSkybox, ...Assets.iblMaps,...Assets.orb },
+  ibldiffuse: { ...Assets.hdrSkybox },
+  iblfinal: { ...Assets.hdrSkybox },
+  deferredshading: { ...Assets.nanosuit },
+  ssao: { ...Assets.nanosuit },
+  envMap: { ...Assets.skybox, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue }
+}
+export default mapAssets

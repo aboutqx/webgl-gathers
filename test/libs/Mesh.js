@@ -11,7 +11,7 @@ import Vao from 'libs/vao'
 export default class Mesh {
   _buffers = []
   iBuffer = null
-  _useVao = true
+  _useVao = false
   name = ''
   material = null
   textures = {}
@@ -133,6 +133,20 @@ export default class Mesh {
     }
   }
 
+  unbind() {
+		if(this._useVAO) {
+			gl.bindVertexArray(null);	
+		}
+		
+		this._buffers.forEach((buffer)=> {
+      buffer.attribs.forEach((attribute) =>{
+        if(attribute.isInstanced) {
+          gl.vertexAttribDivisor(attribute.attrPosition, 0)
+        }
+      })
+    })
+  }
+  
   draw(mDrawingType) {
     let t
     if(!this.iBuffer) {
