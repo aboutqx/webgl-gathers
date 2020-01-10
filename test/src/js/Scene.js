@@ -20,7 +20,8 @@ const importLists = {
   color: 'Light/Color',
   material: 'Light/Material',
   pbrmodel: 'Pbr/PbrModel',
-  envMap: 'AdvancedLight/EnvironmentMap'
+  envMap: 'AdvancedLight/EnvironmentMap',
+  gltf: 'Pbr/gltf'
 }
 
 function addList(){

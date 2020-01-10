@@ -5,15 +5,10 @@ import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
 import vs from 'shaders/skybox/skybox.vert'
 import fs from 'shaders/skybox/skybox.frag'
-import sVs from 'shaders/env_map/env_specular.vert'
-import sFs from 'shaders/env_map/env_specular.frag'
-import rVs from 'shaders/env_map/env_refract.vert'
-import rFs from 'shaders/env_map/env_refract.frag'
-import fVs from 'shaders/env_map/fresnell_chromatic.vert'
-import fFs from 'shaders/env_map/fresnell_chromatic.frag'
+import GLTFLoader from 'libs/loaders/GLTFLoader'
 import GLCubeTexture from 'libs/GLCubeTexture'
 import HDRParser from 'libs/loaders/HDRParser'
-import OBJLoader from 'libs/loaders/OBJLoader'
+
 import {
   mat4
 } from 'gl-matrix'
@@ -23,7 +18,7 @@ import {
   toRadian
 } from 'libs/GlTools'
 
-export default class EnvMap extends Pipeline {
+export default class GLTF extends Pipeline {
   count = 0
   constructor() {
     super()
@@ -31,9 +26,7 @@ export default class EnvMap extends Pipeline {
   }
   init() {
     this.prg = this.compile(vs, fs)
-    this.specularPrg = this.compile(sVs, sFs)
-    this.refractPrg = this.compile(rVs, rFs)
-    this.frenellPrg = this.compile(fVs, fFs)
+
   }
   attrib() {
     this.skybox = Geom.skybox(40)
@@ -49,7 +42,23 @@ export default class EnvMap extends Pipeline {
 
 
     this.skyMap = new GLCubeTexture([sky_posx, sky_negx, sky_posy, sky_negy, sky_posz, sky_negz])
-    this.venus = new OBJLoader().parseObj(getAssets.statue)
+    const url = 'assets/gltf/FlightHelmet.gltf';
+    GLTFLoader.load(url)
+    .then((gltfInfo)=> {
+        this.gltf = gltfInfo;
+        const { meshes } = gltfInfo.output;
+        this.scenes = gltfInfo.output.scenes;
+console.log(this.scenes)
+        meshes.forEach( mesh => {
+            mesh.material.uniforms.uBRDFMap = this.textureBrdf;
+            mesh.material.uniforms.uIrradianceMap = this.textureIrr;
+            mesh.material.uniforms.uRadianceMap = this.textureRad;
+        });
+
+    })
+    .catch(e => {
+        console.log('Error loading gltf:', e);
+    });
 
     this.camera.radius = 6
 
@@ -100,41 +109,7 @@ export default class EnvMap extends Pipeline {
       this.venus[i].draw()
     }
 
-    mMatrix = mat4.identity(mat4.create())
-    mat4.translate(mMatrix, mMatrix, [3,0, 0])
-    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
-    this.refractPrg.use()
-    this.refractPrg.style({
-      mMatrix: mMatrix,
-      vMatrix: this.vMatrix,
-      pMatrix: this.pMatrix,
-      skybox: 0,
-      cameraPos: this.camera.cameraPos
-    })
-    for(let i =0;i<this.venus.length;i++){
-      this.venus[i].bind(this.refractPrg, ['position', 'normal'])
-      this.venus[i].draw()
-    }
-    
-    mMatrix = mat4.identity(mat4.create())
-    mat4.translate(mMatrix, mMatrix, [0,0, 0])
-    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
-    this.refractPrg.use()
-    this.refractPrg.style({
-      mMatrix: mMatrix,
-      vMatrix: this.vMatrix,
-      pMatrix: this.pMatrix,
-      skybox: 0,
-      cameraPos: this.camera.cameraPos,
-      etaRatio: [.65, .67,.69],
-      fresnelPower: .8,
-      fresnelBias: .1,
-      fresnelScale: .9
-    })
-    for(let i =0;i<this.venus.length;i++){
-      this.venus[i].bind(this.refractPrg, ['position', 'normal'])
-      this.venus[i].draw()
-    }
+
     
   }
 }
