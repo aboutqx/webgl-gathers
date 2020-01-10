@@ -3,8 +3,7 @@
 */
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
-import vs from 'shaders/skybox/skybox.vert'
-import fs from 'shaders/skybox/skybox.frag'
+import CustomShaders from 'libs/shaders/CustomShaders'
 import GLTFLoader from 'libs/loaders/GLTFLoader'
 import GLCubeTexture from 'libs/GLCubeTexture'
 import HDRParser from 'libs/loaders/HDRParser'
@@ -25,8 +24,8 @@ export default class GLTF extends Pipeline {
 
   }
   init() {
-    this.prg = this.compile(vs, fs)
-
+    this.skyboxPrg = this.compile(CustomShaders.skyboxVert, CustomShaders.skyboxFrag)
+    this.gltfPrg = this.compile(CustomShaders.gltfVert, CustomShaders.gltfFrag)
   }
   attrib() {
     this.skybox = Geom.skybox(40)
@@ -75,8 +74,8 @@ console.log(this.scenes)
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.skyMap.texture)
 
-    this.prg.use()
-    this.prg.style({
+    this.skyboxPrg.use()
+    this.skyboxPrg.style({
       mvpMatrix: this.mvpMatrix,
       uGamma: 2.2,
       uExposure: 5.,
@@ -89,15 +88,14 @@ console.log(this.scenes)
     gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    this.prg.use()
     this.skybox.bind(this.prg, ['position'])
     this.skybox.draw()
 
     let mMatrix = mat4.identity(mat4.create())
     mat4.translate(mMatrix, mMatrix, [-3,0, 0])
     mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
-    this.specularPrg.use()
-    this.specularPrg.style({
+    this.prg.use()
+    this.prg.style({
       mMatrix: mMatrix,
       vMatrix: this.vMatrix,
       pMatrix: this.pMatrix,
@@ -105,7 +103,7 @@ console.log(this.scenes)
       cameraPos: this.camera.cameraPos
     })
     for(let i =0;i<this.venus.length;i++){
-      this.venus[i].bind(this.specularPrg, ['position', 'normal'])
+      this.venus[i].bind(this.prg, ['position', 'normal'])
       this.venus[i].draw()
     }
 

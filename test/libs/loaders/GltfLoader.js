@@ -6,11 +6,11 @@ import Geometry from '../Geometry';
 import Material from '../Material';
 import Mesh from '../Mesh';
 
-import ShaderLibs from '../shaders/ShaderLibs';
+import CustomShaders from 'libs/shaders/CustomShaders'
 
 
-import GLTexture from '../GLTexture';
-import Object3D from '../objects/Object3D';
+import GLTexture from '../glTexture';
+import Object3D from 'physics/Object3D';
 
 
 
@@ -230,7 +230,7 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 				uniforms.uOcclusionStrength = occlusionTexture.strength || 1;
 			}
 
-			const material = new Material(ShaderLibs.gltfVert, ShaderLibs.gltfFrag, uniforms, defines);
+			const material = new Material(CustomShaders.gltfVert, CustomShaders.gltfFrag, uniforms, defines);
 			const mesh = new Mesh(geometry, material);
 			gltf.output.meshes.push(mesh);
 		});

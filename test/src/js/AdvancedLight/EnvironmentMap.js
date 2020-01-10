@@ -3,8 +3,7 @@
 */
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
-import vs from 'shaders/skybox/skybox.vert'
-import fs from 'shaders/skybox/skybox.frag'
+import CustomShaders from 'libs/shaders/CustomShaders'
 import sVs from 'shaders/env_map/env_specular.vert'
 import sFs from 'shaders/env_map/env_specular.frag'
 import rVs from 'shaders/env_map/env_refract.vert'
@@ -12,8 +11,8 @@ import rFs from 'shaders/env_map/env_refract.frag'
 import fVs from 'shaders/env_map/fresnell_chromatic.vert'
 import fFs from 'shaders/env_map/fresnell_chromatic.frag'
 import GLCubeTexture from 'libs/GLCubeTexture'
-import HDRParser from 'libs/loaders/HDRParser'
-import OBJLoader from 'libs/loaders/OBJLoader'
+import HDRParser from 'loaders/HDRParser'
+import OBJLoader from 'loaders/OBJLoader'
 import {
   mat4
 } from 'gl-matrix'
@@ -30,7 +29,7 @@ export default class EnvMap extends Pipeline {
 
   }
   init() {
-    this.prg = this.compile(vs, fs)
+    this.prg = this.compile(CustomShaders.skyboxVert, CustomShaders.skyboxFrag)
     this.specularPrg = this.compile(sVs, sFs)
     this.refractPrg = this.compile(rVs, rFs)
     this.frenellPrg = this.compile(fVs, fFs)
