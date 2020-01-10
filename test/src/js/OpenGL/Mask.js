@@ -11,7 +11,7 @@ import outlineFs from 'shaders/maskOutline.frag'
 import { mat4, vec4 } from 'gl-matrix'
 import { CubeData, Torus } from '../Torus'
 import Mesh from 'libs/Mesh'
-import Intersect from 'libs/Intersect'
+import Intersect from 'physics/Intersect'
 
 function spliceCube(CubeData){
   let position =[]

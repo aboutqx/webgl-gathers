@@ -1,5 +1,5 @@
 import Program from 'libs/glProgram'
-import Camera from 'libs/Camera'
+import Camera from 'libs/cameras/Camera'
 import { quat, mat4 } from 'gl-matrix';
 import { gl } from 'libs/GlTools'
 import * as dat from 'dat.gui'

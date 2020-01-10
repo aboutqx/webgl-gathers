@@ -1,4 +1,4 @@
-import { Ray, AABB, RayCast }  from 'libs/Geometry3D'
+import { Ray, AABB, RayCast }  from './Geometry3D'
 import {
     canvas
   } from 'libs/GlTools'
