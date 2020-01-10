@@ -78,7 +78,43 @@ const Assets = {
   },
   statue: {
     statue: { url:'./assets/models/statue.obj', type: 'text'}
+  },
+  gltf:{
+    albedo:{"url":"assets/img/albedo.jpg","type":"image"},
+    ao:{"url":"assets/img/ao.jpg","type":"image"},
+    brdfLUT:{"url":"assets/img/brdfLUT.png","type":"image"},
+    metalGloss:{"url":"assets/img/metalGloss.jpg","type":"image"},
+    normal:{"url":"assets/img/normal.jpg","type":"image"},
+    pisa_irradiance:{"url":"assets/img/pisa_irradiance.dds","type":"binary"},
+    pisa_radiance:{"url":"assets/img/pisa_radiance.dds","type":"binary"},
+    studio10_irradiance:{"url":"assets/img/studio10_irradiance.dds","type":"binary"},
+    studio10_radiance:{"url":"assets/img/studio10_radiance.dds","type":"binary"},
+    studio11_irradiance:{"url":"assets/img/studio11_irradiance.dds","type":"binary"},
+    studio11_radiance:{"url":"assets/img/studio11_radiance.dds","type":"binary"},
+    studio12_irradiance:{"url":"assets/img/studio12_irradiance.dds","type":"binary"},
+    studio12_radiance:{"url":"assets/img/studio12_radiance.dds","type":"binary"},
+    studio1_irradiance:{"url":"assets/img/studio1_irradiance.dds","type":"binary"},
+    studio1_radiance:{"url":"assets/img/studio1_radiance.dds","type":"binary"},
+    studio2_irradiance:{"url":"assets/img/studio2_irradiance.dds","type":"binary"},
+    studio2_radiance:{"url":"assets/img/studio2_radiance.dds","type":"binary"},
+    studio3_irradiance:{"url":"assets/img/studio3_irradiance.dds","type":"binary"},
+    studio3_radiance:{"url":"assets/img/studio3_radiance.dds","type":"binary"},
+    studio4_irradiance:{"url":"assets/img/studio4_irradiance.dds","type":"binary"},
+    studio4_radiance:{"url":"assets/img/studio4_radiance.dds","type":"binary"},
+    studio5_irradiance:{"url":"assets/img/studio5_irradiance.dds","type":"binary"},
+    studio5_radiance:{"url":"assets/img/studio5_radiance.dds","type":"binary"},
+    studio6_irradiance:{"url":"assets/img/studio6_irradiance.dds","type":"binary"},
+    studio6_radiance:{"url":"assets/img/studio6_radiance.dds","type":"binary"},
+    studio7_irradiance:{"url":"assets/img/studio7_irradiance.dds","type":"binary"},
+    studio7_radiance:{"url":"assets/img/studio7_radiance.dds","type":"binary"},
+    studio8_irradiance:{"url":"assets/img/studio8_irradiance.dds","type":"binary"},
+    studio8_radiance:{"url":"assets/img/studio8_radiance.dds","type":"binary"},
+    studio9_irradiance:{"url":"assets/img/studio9_irradiance.dds","type":"binary"},
+    studio9_radiance:{"url":"assets/img/studio9_radiance.dds","type":"binary"},
+    vatican_irradiance:{"url":"assets/img/vatican_irradiance.dds","type":"binary"},
+    vatican_radiance:{"url":"assets/img/vatican_radiance.dds","type":"binary"}
   }
+
 
 }
 const mapAssets = {
@@ -92,6 +128,7 @@ const mapAssets = {
   iblfinal: { ...Assets.hdrSkybox },
   deferredshading: { ...Assets.nanosuit },
   ssao: { ...Assets.nanosuit },
-  envMap: { ...Assets.skybox, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue }
+  envMap: { ...Assets.skybox, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue },
+  gltf: { ...Assets.skybox, ...Assets.gltf }
 }
 export default mapAssets
