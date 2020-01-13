@@ -2,14 +2,13 @@
 
 import xhr from './xhr';
 import loadImages from './loadImages';
-import Geometry from '../Geometry';
 import Material from '../Material';
 import Mesh from '../Mesh';
 
 import CustomShaders from 'libs/shaders/CustomShaders'
 
 
-import GLTexture from '../glTexture';
+import GLTexture from '../GLTexture2';
 import Object3D from 'physics/Object3D';
 
 
@@ -172,14 +171,13 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 				};
 			}
 
-			const geometry = new Geometry();
-
+			const mesh = new Mesh();
 			for(const s in geometryInfo) {
 				const data = geometryInfo[s];
 				if(s !== 'indices') {
-					geometry.bufferFlattenData(data.value, s, data.size);
+					mesh.bufferFlattenData(data.value, s, data.size);
 				} else {
-					geometry.bufferIndex(data.value);
+					mesh.bufferIndex(data.value);
 				}
 			}
 
@@ -230,8 +228,8 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 				uniforms.uOcclusionStrength = occlusionTexture.strength || 1;
 			}
 
-			const material = new Material(CustomShaders.gltfVert, CustomShaders.gltfFrag, uniforms, defines);
-			const mesh = new Mesh(geometry, material);
+			const material = new Material(CustomShaders.gltfVert, CustomShaders.gltfFrag, uniforms, defines)
+			mesh.setMaterial(material)
 			gltf.output.meshes.push(mesh);
 		});
 	});
