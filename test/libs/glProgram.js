@@ -59,6 +59,7 @@ Program.prototype = {
       this._grabParameters()
     }
     this.gl.useProgram(this.program)
+    return this
   },
 
   style: function (opt, skip) {
