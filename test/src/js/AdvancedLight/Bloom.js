@@ -39,6 +39,7 @@ export default class Bloom extends Pipeline {
     gl.bindFramebuffer(gl.FRAMEBUFFER, 0)
 
     this.hdrFbo = hdrFbo
+    this.textures = textures
   }
 
   uniform() {
