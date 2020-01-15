@@ -56,10 +56,6 @@ export default class Reflection extends Pipeline {
     gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LEQUAL)
-    gl.enable(gl.CULL_FACE)
-
     this.prg.use()
     for(let i =0;i<this.statue.length;i++){
       this.statue[i].bind()

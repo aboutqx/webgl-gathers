@@ -13,7 +13,7 @@ import ssaoBlurFs from 'shaders/ssao/ssao_blur.frag'
 import ssaoLightingFs from 'shaders/ssao/ssao_lighting.frag'
 
 import {
-  CubeData, QuadData
+  QuadData
 } from '../Torus'
 import {
   mat4, vec3
@@ -23,6 +23,7 @@ import OBJLoader from 'libs/loaders/ObjLoader'
 import MTLLoader from 'libs/loaders/MTLLoader'
 import Fbo from 'libs/glFbo'
 import Texture from 'libs/glTexture'
+import Geom from 'libs/Geom'
 
 const lightPositions = [0 ,-1, 0]
 const lightColors = [.2, .2, .7]
@@ -66,9 +67,8 @@ export default class SSAO extends Pipeline {
     this.prg = this.compile(ssaoVs, ssaoLightingFs)
   }
   async attrib() {
-    let cube = new Mesh()
-    cube.bufferData(CubeData, ['position', 'normal', 'texCoord'], [3, 3, 2])
-    this.cube = cube
+
+    this.cube = Geom.cube(2)
 
     let quad = new Mesh()
 
