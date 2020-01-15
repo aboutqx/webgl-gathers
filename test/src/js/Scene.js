@@ -21,7 +21,8 @@ const importLists = {
   material: 'Light/Material',
   pbrmodel: 'Pbr/PbrModel',
   envMap: 'AdvancedLight/EnvironmentMap',
-  gltf: 'Pbr/gltf'
+  gltf: 'Pbr/gltf',
+  bloom: 'AdvancedLight/Bloom'
 }
 
 function addList(){

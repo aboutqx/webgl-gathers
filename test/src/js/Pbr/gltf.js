@@ -22,9 +22,6 @@ export default class GLTF extends Pipeline {
   init() {
     this.skyboxPrg = this.compile(CustomShaders.skyboxVert, CustomShaders.skyboxFrag)
 
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LEQUAL)
-    gl.enable(gl.CULL_FACE)
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);	
   }
@@ -36,7 +33,7 @@ export default class GLTF extends Pipeline {
 
     this.skyMap = getAssets.outputskybox
 
-    this.env = 'studio2'
+    this.env = 'studio3'
     this.textureIrr = getAssets[`${this.env}_irradiance`];
     this.textureRad = getAssets[`${this.env}_radiance`];
     this.textureBrdf = getAssets['brdfLUT']
@@ -97,7 +94,6 @@ export default class GLTF extends Pipeline {
 
     if(this.scenes) {
 			this.scenes.forEach( scene => {
-        console.log(scene)
         scene.scaleX = 100
         scene.scaleY = 100
         scene.scaleZ = 100

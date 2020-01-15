@@ -26,6 +26,11 @@ export default class Pipeline {
     this._setGUI()
 
     this._animate = this.animate.bind(this)
+    
+    gl.enable(gl.DEPTH_TEST)
+    gl.depthFunc(gl.LEQUAL)
+    gl.enable(gl.CULL_FACE)
+
   }
   init() {
     

@@ -129,6 +129,7 @@ const mapAssets = {
   deferredshading: { ...Assets.nanosuit },
   ssao: { ...Assets.nanosuit },
   envMap: { ...Assets.skybox, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue },
-  gltf: { ...Assets.skybox, ...Assets.gltf }
+  gltf: { ...Assets.skybox, ...Assets.gltf },
+  bloom: { ...Assets.statue }
 }
 export default mapAssets

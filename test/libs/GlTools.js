@@ -20,9 +20,6 @@ const toRadian = (deg) => {
   return deg / 180 * Math.PI
 }
 
-const canvasWidth = canvas.width
-const canvasHeight = canvas.height
-
 class GlTool{
   shader
   shaderProgram
@@ -30,6 +27,12 @@ class GlTool{
   _normalMatrix           = mat3.create()
   _inverseModelViewMatrix = mat3.create()
   _modelMatrix
+
+  clear(r, g, b) {
+    gl.clearColor(r || 0.3, g || 0.3, b || .3, 1.0)
+    gl.clearDepth(1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+  }
 
   setCamera(camera){
     this.camera = camera
@@ -108,4 +111,4 @@ draw(mObj, modelMatrix){
   }
 }
 let GlTools = new GlTool()
-export { gl, canvas, toRadian, canvasWidth, canvasHeight, GlTools }
+export { gl, canvas, toRadian, GlTools }
