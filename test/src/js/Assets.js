@@ -66,12 +66,12 @@ const Assets = {
     brickwallNormal: { url: './assets/brickwall_normal.jpg' }
   },
   skybox:{
-    skyboxPosX: { url: './assets/skybox/output_skybox_posx.hdr', type: 'binary' },
-    skyboxPosY: { url: './assets/skybox/output_skybox_posy.hdr', type: 'binary' },
-    skyboxPosZ: { url: './assets/skybox/output_skybox_posz.hdr', type: 'binary' },
-    skyboxNegX: { url: './assets/skybox/output_skybox_negx.hdr', type: 'binary' },
-    skyboxNegY: { url: './assets/skybox/output_skybox_negy.hdr', type: 'binary' },
-    skyboxNegZ: { url: './assets/skybox/output_skybox_negz.hdr', type: 'binary' },
+    outputskyboxPosX: { url: './assets/skybox/output_skybox_posx.hdr', type: 'binary' },
+    outputskyboxPosY: { url: './assets/skybox/output_skybox_posy.hdr', type: 'binary' },
+    outputskyboxPosZ: { url: './assets/skybox/output_skybox_posz.hdr', type: 'binary' },
+    outputskyboxNegX: { url: './assets/skybox/output_skybox_negx.hdr', type: 'binary' },
+    outputskyboxNegY: { url: './assets/skybox/output_skybox_negy.hdr', type: 'binary' },
+    outputskyboxNegZ: { url: './assets/skybox/output_skybox_negz.hdr', type: 'binary' },
   },
   venus: {
     venus: { url:'./assets/models/venus.obj', type: 'text'}

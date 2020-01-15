@@ -33,14 +33,14 @@ const SIZE_MAP = {
 };
 
 const semanticAttributeMap = {
-	NORMAL: 'aNormal',
-	POSITION: 'aVertexPosition',
+	NORMAL: 'normal',
+	POSITION: 'position',
 	// 'TANGENT': 'aTangent',
-	TEXCOORD_0: 'aTextureCoord',
+	TEXCOORD_0: 'texCoord',
 	// TEXCOORD_1: 'aTextureCoord1',
 	WEIGHTS_0: 'aWeight',
 	JOINTS_0: 'aJoint',
-	COLOR: 'aColor'
+	COLOR: 'color'
 };
 
 let base;
@@ -186,7 +186,8 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 			
 
 			const {
-				emissiveFacotr,
+				emissiveFactor,
+				emissiveTexture,
 				normalTexture,
 				occlusionTexture,
 				pbrMetallicRoughness,
@@ -198,7 +199,7 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 			} = pbrMetallicRoughness;
 
 			const uniforms = {
-				uEmissiveFactor:emissiveFacotr || [0, 0, 0],
+				uEmissiveFactor:emissiveFactor || [0, 0, 0],
 				uBaseColor:pbrMetallicRoughness.baseColorFactor || [1, 1, 1, 1],
 				uRoughness:pbrMetallicRoughness.roughnessFactor || 1,
 				uMetallic:pbrMetallicRoughness.metallicFactor || 1,
@@ -226,6 +227,10 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 			if (occlusionTexture) {
 				uniforms.uAoMap = occlusionTexture.glTexture;
 				uniforms.uOcclusionStrength = occlusionTexture.strength || 1;
+			}
+
+			if(emissiveTexture) {
+				uniforms.uEmissiveMap = emissiveTexture.glTexture
 			}
 
 			const material = new Material(CustomShaders.gltfVert, CustomShaders.gltfFrag, uniforms, defines)
@@ -335,6 +340,10 @@ const _parseMaterials = (gltfInfo) => new Promise((resolve, reject) => {
 			material.occlusionTexture.glTexture = textures[material.occlusionTexture.index];	
 		}
 
+		if(material.emissiveTexture) {
+			material.defines.HAS_EMISSIVEMAP = 1;
+			material.emissiveTexture.glTexture = textures[material.emissiveTexture.index];	
+		}
 
 		// if(material.pbrMetallicRoughness) {
 		if(material.pbrMetallicRoughness.baseColorTexture) {

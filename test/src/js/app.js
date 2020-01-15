@@ -1,5 +1,6 @@
 import load from 'load-asset'
 import mapAssets from './Assets'
+import AssetsInit from './AssetsInit'
 
 let assets = {
   wood: './assets/wood.png',
@@ -11,13 +12,14 @@ for (let key in mapAssets) {
   if(name === key) assets = mapAssets[key]
 }
 async function loadScene () {
-  window.getAssets = await load.any(assets, ({
+  let files = await load.any(assets, ({
     progress,
     error
   }) => {
     // progressbar.innerHTML = 'Loading...' + (progress * 100).toFixed() + '%';
     if (error) console.error(error)
   })
+  window.getAssets = AssetsInit(assets, files)
   import('./Scene')
 
 }

@@ -276,6 +276,6 @@ void main() {
 	
 	// output the fragment color
 	FragColor        = vec4(pow(color,vec3(1.0/uGamma)), baseColor.a);
-	// gl_FragColor        = vec4(vec3(metallic), 1.0);
+	//FragColor        = vec4(vec3(emissive), 1.0);
 
 }

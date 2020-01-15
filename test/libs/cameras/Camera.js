@@ -1,5 +1,5 @@
 import { mat4 } from 'gl-matrix'
-import { canvas } from 'libs/GlTools'
+import { canvas, toRadian } from 'libs/GlTools'
 // cameraFront = -(cameraPos - camraTarget)
 const getMouse = function (mEvent, mTarget, finger2) {
 
@@ -33,7 +33,7 @@ export default class Camrea {
   _preRy = 0
   _targetRx = 0
   _targetRy = 0
-  _tmp = mat4.identity(mat4.create())
+  _viewMatrix = mat4.identity(mat4.create())
   _width = canvas.width
   _height = canvas.height
   sensitivity = 1.
@@ -45,8 +45,13 @@ export default class Camrea {
   constructor (position = [0,0,0], up = [0, 1, 0]) {
     this.cameraPos = position
     this.up = up
-
+    this.projMatrix = mat4.create()
+    mat4.perspective(this.projMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 100)
     this._addEvents()
+  }
+
+  setProj(fov, near, far){
+    mat4.perspective(this.projMatrix, toRadian(fov), canvas.clientWidth / canvas.clientHeight, near, far)
   }
 
   _addEvents () {
@@ -109,7 +114,7 @@ export default class Camrea {
 
     //mat4.lookAt(mat4.create(), this.cameraPos, this.cameraPos + this.cameraFront, this.up)
     this.cameraPos = [this.cameraPos[0] + this.offset[0], this.cameraPos[1] + this.offset[1], this.cameraPos[2] + this.offset[2]]
-    mat4.lookAt(this._tmp, this.cameraPos, this.target, this.up)
+    mat4.lookAt(this._viewMatrix, this.cameraPos, this.target, this.up)
   }
 
   _onWheel(mEvent) {
@@ -132,7 +137,7 @@ export default class Camrea {
   }
 
   get viewMatrix() {
-    return this._tmp
+    return this._viewMatrix
   }
 
   // 设置旋转角度

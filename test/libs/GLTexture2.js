@@ -43,7 +43,7 @@ class GLTexture {
 
 	_uploadTexture() {
 		gl.bindTexture(gl.TEXTURE_2D, this._texture);
-		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
 		if(this._isSourceHtmlElement()) {
 			gl.texImage2D(gl.TEXTURE_2D, 0, this._params.internalFormat, this._params.format, this._texelType, this._source);
@@ -76,7 +76,6 @@ class GLTexture {
 
 	bind(index) {
 		if(index === undefined) { index = 0; }
-		if(!gl.shader) { return; }
 
 		gl.activeTexture(gl.TEXTURE0 + index);
 		if(this._isTextureReady) {
@@ -84,7 +83,6 @@ class GLTexture {
 		} else {
 			gl.bindTexture(gl.TEXTURE_2D, GLTexture.blackTexture().texture);
 		}
-		
 		this._bindIndex = index;
 	}
 

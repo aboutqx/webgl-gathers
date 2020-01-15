@@ -10,9 +10,6 @@ import rVs from 'shaders/env_map/env_refract.vert'
 import rFs from 'shaders/env_map/env_refract.frag'
 import fVs from 'shaders/env_map/fresnell_chromatic.vert'
 import fFs from 'shaders/env_map/fresnell_chromatic.frag'
-import GLCubeTexture from 'libs/GLCubeTexture'
-import HDRParser from 'loaders/HDRParser'
-import OBJLoader from 'loaders/OBJLoader'
 import {
   mat4
 } from 'gl-matrix'
@@ -39,16 +36,9 @@ export default class EnvMap extends Pipeline {
 
   }
   prepare() {
-    let sky_posx = HDRParser(getAssets.skyboxPosX);
-    let sky_negx = HDRParser(getAssets.skyboxNegX);
-    let sky_posy = HDRParser(getAssets.skyboxPosY);
-    let sky_negy = HDRParser(getAssets.skyboxNegY);
-    let sky_posz = HDRParser(getAssets.skyboxPosZ);
-    let sky_negz = HDRParser(getAssets.skyboxNegZ);
 
-
-    this.skyMap = new GLCubeTexture([sky_posx, sky_negx, sky_posy, sky_negy, sky_posz, sky_negz])
-    this.venus = new OBJLoader().parseObj(getAssets.statue)
+    this.skyMap = getAssets.outputskybox
+    this.venus = getAssets.statue
 
     this.camera.radius = 6
 

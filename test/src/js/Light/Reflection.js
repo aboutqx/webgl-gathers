@@ -1,14 +1,12 @@
 import Pipeline from '../PipeLine'
 import vs from 'shaders/reflection.vert'
 import fs from 'shaders/reflection.frag'
-import OBJLoader from 'libs/loaders/OBJLoader'
 import {
   mat4
 } from 'gl-matrix'
 import {
   gl,
-  canvas,
-  toRadian
+  GlTools
 } from 'libs/GlTools'
 
 export default class Reflection extends Pipeline {
@@ -21,7 +19,7 @@ export default class Reflection extends Pipeline {
     this.prg = this.compile(vs, fs)
   }
   attrib() {
-    this.statue = new OBJLoader().parseObj(getAssets.statue)
+    this.statue = getAssets.statue
 
   }
   prepare(){
@@ -37,19 +35,14 @@ export default class Reflection extends Pipeline {
   }
   uniform() {
 
-    mat4.perspective(this.pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 100)
-
-    mat4.multiply(this.tmpMatrix, this.pMatrix, this.vMatrix)
-
     let mMatrix = mat4.identity(mat4.create())
-    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
 
     let invMatrix = mat4.identity(mat4.create())
     mat4.invert(invMatrix, mMatrix)
 
     this.prg.use()
     this.prg.style({
-      mvpMatrix: this.mvpMatrix,
+      uModelMatrix: mMatrix,
       invMatrix,
       color: [this.params.color[0] / 255, this.params.color[1] / 255, this.params.color[2] / 255],
       lightDirection: [-0.5, 0.5, 0.5],
@@ -69,8 +62,8 @@ export default class Reflection extends Pipeline {
 
     this.prg.use()
     for(let i =0;i<this.statue.length;i++){
-      this.statue[i].bind(this.prg, ['position', 'normal'])
-      this.statue[i].draw()
+      this.statue[i].bind()
+      GlTools.draw(this.statue[i])
     }
 
   }

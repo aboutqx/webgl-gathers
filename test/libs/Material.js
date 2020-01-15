@@ -5,7 +5,6 @@ export default class Material{
 
     constructor(vs, fs, uniforms={}, defines={}) {
 		this._shader= Shader.get(vs, fs, defines);
-		console.log(uniforms)
 		this.uniforms = Object.assign({}, uniforms);
 	}
 
@@ -15,5 +14,7 @@ export default class Material{
 		this._shader.uniform(this.uniforms);
     }
     
-
+	get shader() {
+		return this._shader
+	}
 }

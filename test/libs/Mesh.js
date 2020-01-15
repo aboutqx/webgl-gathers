@@ -20,6 +20,21 @@ const getBuffer = function (attr) {
 	return buffer;
 }
 
+const formBuffer = function (mData, mNum) {
+	const ary = [];
+
+	for(let i=0; i<mData.length; i+= mNum) {
+		const o = [];
+		for(let j=0; j<mNum; j++) {
+			o.push(mData[i+j]);
+		}
+
+		ary.push(o);
+	}
+
+	return ary;
+};
+
 export default class Mesh  extends Object3D {
   iBuffer = null
   _useVao = false
@@ -36,12 +51,12 @@ export default class Mesh  extends Object3D {
   name = ''
   material = null
   textures = {}
-  constructor(mDrawingType, name, material) {
+  constructor(mDrawingType = 4, name, material) {
     super()
 
     this._extVAO                 = !!gl.createVertexArray;
 		this._useVAO             	 = !!this._extVAO;
-    this.drawingType = mDrawingType
+    this.drawType = mDrawingType
     this.name = name
     if(material) {
       this.material = material
@@ -66,45 +81,42 @@ export default class Mesh  extends Object3D {
     this.bufferData(mData, 'color', 4)
   }
 
-  bufferFlattenData(mData, mName, mItemSize) {
-    let bufferData = []
-    //flatten data
-    for (let i = 0; i < mData.length; i++) {
-      for (let j = 0; j < mData[i].length; j++) {
-        bufferData.push(mData[i][j]);
-      }
-    }
-    this.bufferData(bufferData, mName, mItemSize)
+  bufferFlattenData(mData, mName, mItemSize, mDrawType = STATIC_DRAW, isInstanced = false) {
+    const data = formBuffer(mData, mItemSize);
+		this.bufferData(data, mName, mItemSize, mDrawType = STATIC_DRAW, isInstanced = false);
+		return this;
+
   }
 
   bufferData(mData, mName, mItemSize, mDrawType = STATIC_DRAW, isInstanced = false) {
     const drawType   = mDrawType;
+    let bufferData = []
 
-    let buffer = new ArrayBuffer(gl, new Float32Array(mData))
-    if(mData[0]&&mData[0].length) {
-
-      this.bufferFlattenData(mData, mName, mItemSize)
-
-    } else {
-
-      const dataArray = new Float32Array(mData);
-      const attribute = this.getAttribute(mName);
-  
-      
-      if(attribute) {	
-        //	attribute existed, replace with new data
-        attribute.itemSize = mItemSize;
-        attribute.dataArray = dataArray;
-        attribute.source = mData;
-      } else {
-        //	attribute not exist yet, create new attribute object
-        this._attributes.push({ name:mName, source:mData, itemSize: mItemSize, drawType, dataArray, isInstanced });
+    
+    //	flatten buffer data		
+    for(let i = 0; i < mData.length; i++) {
+      for(let j = 0; j < mData[i].length; j++) {
+        bufferData.push(mData[i][j]);
       }
-  
-      this._bufferChanged.push(mName);
-      
-
     }
+
+
+    const dataArray = new Float32Array(bufferData);
+    const attribute = this.getAttribute(mName);
+
+    
+    if(attribute) {	
+      //	attribute existed, replace with new data
+      attribute.itemSize = mItemSize;
+      attribute.dataArray = dataArray;
+      attribute.source = mData;
+    } else {
+      //	attribute not exist yet, create new attribute object
+      this._attributes.push({ name:mName, source:mData, itemSize: mItemSize, drawType, dataArray, isInstanced });
+    }
+    this._bufferChanged.push(mName);
+    
+    
     return this;
   }
 
@@ -115,22 +127,22 @@ export default class Mesh  extends Object3D {
 		} else {
 			this._indices = mArrayIndices;
 		}
-		
-		this._numItems 		  = this._indices.length;
+
+    this._numItems 		  = this._indices.length;
 		return this;
 
   }
 
   // 针对多个array buffer，list可以只激活部分attribute, mProgram 指的是glProgram实例
-  bind(mShaderProgram) {
+  bind() {
+    let mShaderProgram = GlTools.shaderProgram
+    if(!mShaderProgram) console.error('no current program used')
 
-    //if(!mShaderProgram) console.error('bind parameter mProgram undefined')
-    GlTools.mShaderProgram = mShaderProgram
-    //所有data在一个arrybuffer里
+    //所有data在一个arrybuffer里（现在不支持了）
     this.generateBuffers(mShaderProgram);
 
 		if(this.hasVAO) {
-			gl.bindVertexArray(this.vao); 
+			gl.bindVertexArray(this.vao);
 		} else {
 			this.attributes.forEach((attribute)=> {
 				gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
@@ -146,11 +158,7 @@ export default class Mesh  extends Object3D {
 			//	BIND INDEX BUFFER
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.iBuffer);	
     }
-    
-    if(this.material instanceof Material) {
-      this.material.update()
-      return
-    }
+
     if (this.textures) {
       let diffuseNr = 1
       let specularNr = 1
@@ -190,7 +198,7 @@ export default class Mesh  extends Object3D {
 			}
 			
 			gl.bindVertexArray(this._vao);
-
+      
 			//	UPDATE BUFFERS
 			this._attributes.forEach((attrObj) => {
 
@@ -199,7 +207,8 @@ export default class Mesh  extends Object3D {
 					gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 					gl.bufferData(gl.ARRAY_BUFFER, attrObj.dataArray, attrObj.drawType);
 
-					const attrPosition = getAttribLoc(gl, mShaderProgram, attrObj.name);
+          const attrPosition = getAttribLoc(gl, mShaderProgram, attrObj.name)
+          if(attrPosition < 0) return
 					gl.enableVertexAttribArray(attrPosition); 
 					gl.vertexAttribPointer(attrPosition, attrObj.itemSize, gl.FLOAT, false, 0, 0);
 					attrObj.attrPosition = attrPosition;
@@ -285,7 +294,6 @@ export default class Mesh  extends Object3D {
 
   setMaterial(material) {
     this.material = material
-    this.material.update()
   }
 
   get positionBuffer() {

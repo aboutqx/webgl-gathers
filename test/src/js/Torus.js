@@ -1,3 +1,4 @@
+import Mesh from 'libs/Mesh'
 export function Torus(circlePoints, circleNum, rdius, Origin2CicleCenter, colors) {
   let pos = []
   let index = []
@@ -36,13 +37,20 @@ export function Torus(circlePoints, circleNum, rdius, Origin2CicleCenter, colors
       index.push(r + circleNum + 1, r + circleNum + 2, r + 1)
     }
   }
-  return {
+  let t =  {
     pos,
     texCoord,
     index,
     normal,
     color
   }
+  let torus = new Mesh()
+  torus.bufferFlattenData(pos, 'position', 3)
+  torus.bufferFlattenData(texCoord, 'texCoord', 2)
+  torus.bufferFlattenData(color, 'color', 4)
+  torus.bufferIndex(index)
+  torus.bufferFlattenData(normal, 'normal', 3)
+  return torus
 }
 
 export function hsva(h, s, v, a) {
@@ -133,52 +141,6 @@ export const QuadData = [
   -1.0, -1.0, 0.0, 0.0, 0.0,
   1.0, 1.0, 0.0, 1.0, 1.0,
   1.0, -1.0, 0.0, 1.0, 0.0
-]
-
-export const CubeData = [
-  // pos normal textCoord
-  // back face
-  -1.0, -1.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, // bottom-left
-  1.0, 1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 1.0, // top-right
-  1.0, -1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 0.0, // bottom-right
-  1.0, 1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 1.0, // top-right
-  -1.0, -1.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, // bottom-left
-  -1.0, 1.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, // top-left
-  // front face
-  -1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom-left
-  1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, // bottom-right
-  1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, // top-right
-  1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, // top-right
-  -1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, // top-left
-  -1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom-left
-  // left face
-  -1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 1.0, 0.0, // top-right
-  -1.0, 1.0, -1.0, -1.0, 0.0, 0.0, 1.0, 1.0, // top-left
-  -1.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, // bottom-left
-  -1.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, // bottom-left
-  -1.0, -1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, // bottom-right
-  -1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 1.0, 0.0, // top-right
-  // right face
-  1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, // top-left
-  1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 1.0, // bottom-right
-  1.0, 1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 1.0, // top-right
-  1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 1.0, // bottom-right
-  1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, // top-left
-  1.0, -1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, // bottom-left
-  // bottom face
-  -1.0, -1.0, -1.0, 0.0, -1.0, 0.0, 0.0, 1.0, // top-right
-  1.0, -1.0, -1.0, 0.0, -1.0, 0.0, 1.0, 1.0, // top-left
-  1.0, -1.0, 1.0, 0.0, -1.0, 0.0, 1.0, 0.0, // bottom-left
-  1.0, -1.0, 1.0, 0.0, -1.0, 0.0, 1.0, 0.0, // bottom-left
-  -1.0, -1.0, 1.0, 0.0, -1.0, 0.0, 0.0, 0.0, // bottom-right
-  -1.0, -1.0, -1.0, 0.0, -1.0, 0.0, 0.0, 1.0, // top-right
-  // top face
-  -1.0, 1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 1.0, // top-left
-  1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom-right
-  1.0, 1.0, -1.0, 0.0, 1.0, 0.0, 1.0, 1.0, // top-right
-  1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom-right
-  -1.0, 1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 1.0, // top-left
-  -1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0 // bottom-left
 ]
 
 
