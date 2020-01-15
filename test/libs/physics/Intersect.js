@@ -31,27 +31,26 @@ export default class Intersect {
     }
 
 
-    castRay(position, type = 'AABB'){
+    castRay(vertices, type = 'AABB'){
         let result = false
         if(type == 'AABB'){
-            this.boundingVolume(position)
+            this.boundingVolume(vertices)
             result = this.rayCast.rayAABB(this.aabb, this.ray)
         }
         return result
     }
 
 
-    boundingVolume(position, type = 'AABB'){
+    boundingVolume(vertices, type = 'AABB'){
         let minX,maxX,minY,maxY,minZ,maxZ
         let sphereCenter,sphereRadius,boundMin,boundMax
-        if(!(position.length%3 == 0)) console.error('position 不是3个一组')
-        for(let i =0; i <= position.length/3; i++){
-            if (position[i*3] > maxX || !maxX) maxX = position[i*3]
-            if(position[i*3]  < minX || !minX) minX = position[i*3]
-            if (position[i*3+1] > maxY || !maxY) maxY = position[i*3+1]
-            if(position[i*3+1]  < minY || !minY) minY = position[i*3+1]
-            if (position[i*3+2] > maxZ || !maxZ) maxZ = position[i*3+2]
-            if(position[i*3+2]  < minZ || !minZ) minZ = position[i*3+2]
+        for(let i =0; i < vertices.length; i++){
+            if (vertices[i][0] > maxX || !maxX) maxX = vertices[i][0]
+            if(vertices[i][0]  < minX || !minX) minX = vertices[i][0]
+            if (vertices[i][1] > maxY || !maxY) maxY = vertices[i][1]
+            if(vertices[i][1]  < minY || !minY) minY = vertices[i][1]
+            if (vertices[i][2] > maxZ || !maxZ) maxZ = vertices[i][2]
+            if(vertices[i][2]  < minZ || !minZ) minZ = vertices[i][2]
         }
         sphereCenter = [minX + (maxX-minX)/2, minY + (maxY-minY)/2, minZ + (maxZ-minZ)/2]
         sphereRadius = Math.max((maxX-minX)/2,(maxY-minY)/2,(maxZ-minZ)/2)

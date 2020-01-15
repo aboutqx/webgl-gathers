@@ -1,7 +1,7 @@
-import Program from 'libs/glProgram'
+import Program from 'libs/GLShader'
 import Camera from 'libs/cameras/Camera'
 import { quat, mat4 } from 'gl-matrix';
-import { gl } from 'libs/GlTools'
+import { gl, GlTools } from 'libs/GlTools'
 import * as dat from 'dat.gui'
 
 
@@ -19,6 +19,7 @@ export default class Pipeline {
   })
   constructor() {
     this.vMatrix = this.camera.viewMatrix
+    GlTools.setCamera(this.camera)
     this.init()
     this.attrib()
     this.prepare()
@@ -30,8 +31,8 @@ export default class Pipeline {
     
   }
   compile(vs, fs) {
-    let prg = new Program(gl)
-    prg.compile(vs, fs)
+    let prg = new Program(vs,fs)
+
     return prg
   }
   attrib() {

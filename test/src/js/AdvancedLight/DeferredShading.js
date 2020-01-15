@@ -12,15 +12,15 @@ import fboVs from 'shaders/deferred_shading/fbo_debug.vert'
 import fboFs from 'shaders/deferred_shading/fbo_debug.frag'
 import lampVs from 'shaders/material/lamp.vert'
 import lampFs from 'shaders/material/lamp.frag'
-
+import Geom from 'libs/Geom'
 import {
-  CubeData, QuadData
+  QuadData
 } from '../Torus'
 import {
   mat4
 } from 'gl-matrix'
 import Mesh from 'libs/Mesh'
-import OBJLoader from 'libs/loaders/OBJLoader2'
+import OBJLoader from 'libs/loaders/ObjLoader'
 import MTLLoader from 'libs/loaders/MTLLoader'
 const offset = 10.
 const objectPositions = [
@@ -73,9 +73,7 @@ export default class DeferredShading extends Pipeline {
 
   }
   async attrib() {
-    let cube = new Mesh()
-    cube.bufferData(CubeData, ['position', 'normal', 'texCoord'], [3, 3, 2])
-    this.cube = cube
+    this.cube = Geom.cube(1)
 
     let quad = new Mesh()
     quad.bufferData(QuadData, ['position', 'texCoord'], [3, 2])

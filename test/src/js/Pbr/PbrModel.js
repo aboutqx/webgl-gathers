@@ -27,7 +27,7 @@ import Mesh from 'libs/Mesh'
 import Texture from 'libs/glTexture'
 import HDRParser from 'libs/loaders/HDRParser'
 import GLCubeTexture from 'libs/GLCubeTexture'
-import OBJLoader from 'libs/loaders/OBJLoader'
+import OBJLoader from 'libs/loaders/ObjLoader'
 
 /* irradianceMap, prefilterMap 用cmftStudio生成
 

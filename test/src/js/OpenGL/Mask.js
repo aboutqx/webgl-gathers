@@ -1,39 +1,27 @@
 import Pipeline from '../PipeLine'
 import {
   gl,
-  canvas,
-  toRadian
+  GlTools
 } from 'libs/GlTools'
-import Texture from 'libs/glTexture'
 import vs from 'shaders/mask.vert'
 import fs from 'shaders/mask.frag'
 import outlineFs from 'shaders/maskOutline.frag'
 import { mat4, vec4 } from 'gl-matrix'
-import { CubeData, Torus } from '../Torus'
-import Mesh from 'libs/Mesh'
+import { Torus } from '../Torus'
 import Intersect from 'physics/Intersect'
+import Geom from 'libs/Geom'
 
-function spliceCube(CubeData){
-  let position =[]
-  for(let i=0; i < CubeData.length/8; i++){
-    position.push(CubeData[i*8+0])
-    position.push(CubeData[i*8+1])
-    position.push(CubeData[i*8+2])
-  }
-  return position
-}
-
-function transformPosition(CubeData, mMatrix){ // cubedata has been spliced
+function transformPosition(vertices, mMatrix){
   let t1
-  let flatPos = []
-  for(let i=0; i < CubeData.length/3; i++){
-    t1 = vec4.fromValues(CubeData[i*3], CubeData[i*3+1], CubeData[i*3+2], 1)
+  let result = []
+  for(let i=0; i < vertices.length; i++){
+    t1 = vec4.fromValues(vertices[i][0], vertices[i][1], vertices[i][2], 1)
     let t = vec4.create()
     vec4.transformMat4(t, t1, mMatrix)
     let tmp = Array(...t).splice(0,3,1)
-    flatPos = flatPos.concat(tmp)
+    result.push(tmp)
   }
-  return flatPos
+  return result
 }
 export default class Mask extends Pipeline {
   constructor() {
@@ -42,8 +30,7 @@ export default class Mask extends Pipeline {
   init(){
     this.outlinePrg = this.compile(vs, outlineFs)
     this.prg = this.compile(vs, fs)
-    // flip texture
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
+    
     gl.cullFace(gl.BACK)
 
     this._drawCube = this._drawCube.bind(this)
@@ -52,21 +39,8 @@ export default class Mask extends Pipeline {
   }
   attrib() {
  
-    this.cube = new Mesh()
-    this.cube.bufferData(CubeData, ['position', 'normal', 'texCoord'], [3, 3, 2])
-    this.cube.position = spliceCube(CubeData)
-
-    let {
-      pos,
-      texCoord,
-      index
-    } = Torus(64, 64, .1, .4)
-
-    this.torus = new Mesh()
-    this.torus.bufferVertex(pos)
-    this.torus.bufferTexCoord(texCoord)
-    this.torus.bufferIndex(index)
-    this.torus.position = pos
+    this.cube = Geom.cube(1)
+    this.torus = Torus(64, 64, .1, .4)
 /* bounding mesh
     let torusAABB = this.intersect.boundingVolume(pos)
     this.torusFrame = new Mesh()
@@ -80,9 +54,7 @@ export default class Mask extends Pipeline {
     this.cubeFrame.bufferTexCoord(cubeAABB.texCoord)
     this.cubeFrame.bufferIndex(cubeAABB.index)
 */
-    this.texture = new Texture(gl, gl.RGBA)
-    let img = getAssets.splash
-    this.texture.fromImage(img)
+    this.texture = getAssets.splash
     this.texture.bind()
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
@@ -110,11 +82,13 @@ export default class Mask extends Pipeline {
     folder1.open()
   }
   setChecked(val){
+    
     this.texture.bind()
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl[val]);
     this.params.LINEAR_MIPMAP_LINEAR = false
     this.params.NEAREST_MIPMAP_NEAREST = false
     this.params[val] = true
+    
   }
   prepare() {
     gl.enable(gl.DEPTH_TEST);
@@ -123,19 +97,12 @@ export default class Mask extends Pipeline {
     gl.stencilFunc(gl.NOTEQUAL, 1, 0xff);
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
+    this.camera.setProj(60, .1, 100)
   }
   uniform() {
-    let vMatrix = this.camera.viewMatrix
-    let pMatrix = mat4.identity(mat4.create())
 
-    this.mvpMatrix = mat4.identity(mat4.create())
-    this.tmpMatrix = mat4.identity(mat4.create())
-
-    mat4.perspective(pMatrix, toRadian(50), canvas.clientWidth / canvas.clientHeight, 1, 100)
-
-    mat4.multiply(this.tmpMatrix, pMatrix, vMatrix)
-
-    this.texture.bind(0)
+    let pMatrix = mat4.clone(this.camera.projMatrix)
+    let vMatrix = mat4.clone(this.camera.viewMatrix)
     this.intersect.setRay(this.mousePos.x, this.mousePos.y, pMatrix, vMatrix, this.camera.cameraPos)
 
   }
@@ -147,20 +114,20 @@ export default class Mask extends Pipeline {
     gl.stencilMask(0x00) //写入0
 
     let mMatrix = mat4.identity(mat4.create())
-    mat4.scale(mMatrix, mMatrix, [.5, .5, .5])
     // translate 之后鼠标放在cube水平中心点很远的地方也能触发outline，这是个bug,原因是boundingbox计算有问题，初始minX，maxX这些值为0，0实际上已经是一个值了
     // 应该换成循环的第一个值为min和max，而不是0
-    mat4.translate(mMatrix, mMatrix, [-3, 0, 0])
+    mat4.translate(mMatrix, mMatrix, [-2.5, 0, 0])
 
-    if(this.intersect.castRay(transformPosition(this.cube.position, mMatrix))){
+    if(this.intersect.castRay(transformPosition(this.cube.vertices, mMatrix))){
       this.renderOutline(mMatrix, this._drawCube)
     } else this.renderDefault(mMatrix, this._drawCube)
 
     mMatrix = mat4.identity(mat4.create())
     mat4.translate(mMatrix, mMatrix, [2., 0, 0])
-    if(this.intersect.castRay(transformPosition(this.torus.position, mMatrix))){
+    if(this.intersect.castRay(transformPosition(this.torus.vertices, mMatrix))){
       this.renderOutline(mMatrix, this._drawTorus)
     } else this.renderDefault(mMatrix, this._drawTorus)
+
 /*draw boundingVolume
     mMatrix = mat4.identity(mat4.create())
     mat4.translate(mMatrix, mMatrix, [1.5, 0, 0])
@@ -189,13 +156,12 @@ export default class Mask extends Pipeline {
   }
   renderDefault(mMatrix,draw){
     this.prg.use()
-    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
     this.prg.style({
-      mvpMatrix: this.mvpMatrix,
-      texture: 0,
+      texture: this.texture,
+      uModelMatrix: mMatrix,
       lod: this.params.lod
     })
-    draw(this.prg)
+    draw()
   }
   renderOutline(mMatrix,draw){
     gl.stencilFunc(gl.ALWAYS, 1, 0xff)
@@ -206,22 +172,20 @@ export default class Mask extends Pipeline {
     gl.stencilMask(0x00); //写入0
     const scale = 1.1;
     mat4.scale(mMatrix, mMatrix, [scale, scale, scale])
-    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
+
     this.outlinePrg.use()
     this.outlinePrg.style({
-      mvpMatrix: this.mvpMatrix
+      uModelMatrix: mMatrix,
     })
-    draw(this.outlinePrg)
+    draw()
   }
-  _drawCube(prg){
-    this.cube.bind(prg, ['position', 'texCoord'])
-    this.cube.draw()
+  _drawCube(){
+    this.cube.bind()
+    GlTools.draw(this.cube, true)
   }
-  _drawTorus(prg){
-    this.torus.bind(prg)
-    this.torus.draw()
+  _drawTorus(){
+    this.torus.bind()
+    GlTools.draw(this.torus, true)
   }
-  _drawLine(){
 
-  }
 }

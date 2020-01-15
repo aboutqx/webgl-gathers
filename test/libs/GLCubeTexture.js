@@ -129,7 +129,7 @@ GLCubeTexture.parseDDS = function parseDDS(mArrayBuffer) {
   const {
     flags
   } = ddsInfos;
-  console.log('ddsInfos', ddsInfos)
+
   const header = new Int32Array(mArrayBuffer, 0, headerLengthInt);
   let mipmapCount = 1;
   if (flags & DDSD_MIPMAPCOUNT) {

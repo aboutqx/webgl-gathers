@@ -19,7 +19,7 @@ import {
   mat4, vec3
 } from 'gl-matrix'
 import Mesh from 'libs/Mesh'
-import OBJLoader from 'libs/loaders/OBJLoader'
+import OBJLoader from 'libs/loaders/ObjLoader'
 import MTLLoader from 'libs/loaders/MTLLoader'
 import Fbo from 'libs/glFbo'
 import Texture from 'libs/glTexture'

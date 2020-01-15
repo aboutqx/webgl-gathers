@@ -1,5 +1,6 @@
 import Mesh from './Mesh';
 import Object3D from 'physics/Object3D';
+import { mat3, mat4 } from 'gl-matrix'
 
 const canvas = document.querySelector('canvas')
 const options = {
@@ -23,45 +24,60 @@ const canvasWidth = canvas.width
 const canvasHeight = canvas.height
 
 class GlTool{
-  shaderProgram= null
+  shader
+  shaderProgram
+  identityMatrix          = mat4.create()
+  _normalMatrix           = mat3.create()
+  _inverseModelViewMatrix = mat3.create()
+  _modelMatrix
 
-  drawMesh(mGeometry, modelMatrix) {
-    if(mGeometry.length) {
-      for(let i = 0; i < mGeometry.length; i++) {
-        this.draw(mGeometry[i]);
+  setCamera(camera){
+    this.camera = camera
+  }
+
+  useShader(shader) {
+    this.shader = shader
+    this.shaderProgram = this.shader.shaderProgram
+  }
+
+  drawMesh(mMesh, modelMatrix) {
+    if(mMesh.material) mMesh.material.update()
+
+    if(mMesh.length) {
+      for(let i = 0; i < mMesh.length; i++) {
+        this.draw(mMesh[i]);
       }
       return;
     }
 
-    mGeometry.bind(this.shaderProgram);
+    mMesh.bind(this.shaderProgram);
 
     if(this.shader){
       //	DEFAULT UNIFORMS
       if(this.camera !== undefined) {
-        this.shader.uniform('uProjectionMatrix', 'mat4', this.camera.projection);	
-        this.shader.uniform('uViewMatrix', 'mat4', this.camera.matrix);
+        this.shader.uniform('uProjectionMatrix', 'mat4', this.camera.projMatrix);	
+        this.shader.uniform('uViewMatrix', 'mat4', this.camera.viewMatrix);
       }
       
-      this.shader.uniform('uCameraPos', 'vec3', this.camera.position);
-      this.shader.uniform('uModelMatrix', 'mat4', modelMatrix || this._modelMatrix);
+      this.shader.uniform('uCameraPos', 'vec3', this.camera.cameraPos);
+      if(!modelMatrix) this.shader.uniform('uModelMatrix', 'mat4', mMesh.matrix);
       this.shader.uniform('uNormalMatrix', 'mat3', this._normalMatrix);
       this.shader.uniform('uModelViewMatrixInverse', 'mat3', this._inverseModelViewMatrix);
     }
    
 
-    const drawType = mGeometry.drawType;
+    const drawType = mMesh.drawType;
 
-    if(mGeometry.isInstanced) {
-      gl.drawElementsInstanced(mGeometry.drawType, mGeometry.iBuffer.numItems, gl.UNSIGNED_SHORT, 0, mGeometry.numInstance);
+    if(mMesh.isInstanced) {
+      gl.drawElementsInstanced(mMesh.drawType, mMesh.iBuffer.numItems, gl.UNSIGNED_SHORT, 0, mMesh.numInstance);
     } else {
       if(drawType === gl.POINTS) {
-        gl.drawArrays(drawType, 0, mGeometry.vertexSize);	
+        gl.drawArrays(drawType, 0, mMesh.vertexSize);	
       } else {
-        gl.drawElements(drawType, mGeometry.iBuffer.numItems, gl.UNSIGNED_SHORT, 0);	
+        gl.drawElements(drawType, mMesh.iBuffer.numItems, gl.UNSIGNED_SHORT, 0);	
       }	
     }
-
-    mGeometry.unbind();
+    mMesh.unbind();
   }
 
 
@@ -79,9 +95,9 @@ class GlTool{
 // }
 
 
-draw(mObj){
+draw(mObj, modelMatrix){
     if(mObj instanceof Mesh) {
-      this.drawMesh(mObj);
+      this.drawMesh(mObj, modelMatrix);
     } else if(mObj instanceof Object3D) {
       
       mObj.updateMatrix();

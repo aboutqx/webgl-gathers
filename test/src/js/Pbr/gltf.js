@@ -1,12 +1,8 @@
-/*
- https://developer.download.nvidia.cn/CgTutorial/cg_tutorial_chapter07.html
-*/
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
 import CustomShaders from 'libs/shaders/CustomShaders'
 import GLTFLoader from 'libs/loaders/GLTFLoader'
-import GLCubeTexture from 'libs/GLCubeTexture'
-import HDRParser from 'libs/loaders/HDRParser'
+import { GlTools } from 'libs/GlTools'
 
 import {
   mat4
@@ -25,35 +21,42 @@ export default class GLTF extends Pipeline {
   }
   init() {
     this.skyboxPrg = this.compile(CustomShaders.skyboxVert, CustomShaders.skyboxFrag)
-    this.gltfPrg = this.compile(CustomShaders.gltfVert, CustomShaders.gltfFrag)
+
+    gl.enable(gl.DEPTH_TEST)
+    gl.depthFunc(gl.LEQUAL)
+    gl.enable(gl.CULL_FACE)
+    gl.enable(gl.BLEND)
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);	
   }
   attrib() {
     this.skybox = Geom.skybox(40)
 
   }
   prepare() {
-    let sky_posx = HDRParser(getAssets.skyboxPosX);
-    let sky_negx = HDRParser(getAssets.skyboxNegX);
-    let sky_posy = HDRParser(getAssets.skyboxPosY);
-    let sky_negy = HDRParser(getAssets.skyboxNegY);
-    let sky_posz = HDRParser(getAssets.skyboxPosZ);
-    let sky_negz = HDRParser(getAssets.skyboxNegZ);
 
+    this.skyMap = getAssets.outputskybox
 
-    this.skyMap = new GLCubeTexture([sky_posx, sky_negx, sky_posy, sky_negy, sky_posz, sky_negz])
-    const url = 'assets/gltf/FlightHelmet.gltf';
+    this.env = 'studio2'
+    this.textureIrr = getAssets[`${this.env}_irradiance`];
+    this.textureRad = getAssets[`${this.env}_radiance`];
+    this.textureBrdf = getAssets['brdfLUT']
+
+    const gltfList = ['chinatown_lion', 'BoomBox', 'FlightHelmet', 'horse_statuette', 'swan_sculpture', 'triton_on_a_frieze']
+    const index = 1
+    const url = `assets/gltf/${gltfList[index]}/scene.gltf`
     GLTFLoader.load(url)
     .then((gltfInfo)=> {
         this.gltf = gltfInfo;
         const { meshes } = gltfInfo.output;
         this.scenes = gltfInfo.output.scenes;
-console.log(this.scenes)
+
         meshes.forEach( mesh => {
             mesh.material.uniforms.uBRDFMap = this.textureBrdf;
             mesh.material.uniforms.uIrradianceMap = this.textureIrr;
             mesh.material.uniforms.uRadianceMap = this.textureRad;
         });
 
+        this.gltfPrg = meshes[0].material.shader
     })
     .catch(e => {
         console.log('Error loading gltf:', e);
@@ -71,43 +74,36 @@ console.log(this.scenes)
     let mMatrix = mat4.identity(mat4.create())
     mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
 
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.skyMap.texture)
-
     this.skyboxPrg.use()
     this.skyboxPrg.style({
       mvpMatrix: this.mvpMatrix,
       uGamma: 2.2,
       uExposure: 5.,
-      tex: 0
+      tex: this.skyMap
     })
   }
   render() {
 
     gl.clearColor(0.3, 0.3, .3, 1.0)
-    gl.clearDepth(1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    gl.clear(gl.COLOR_BUFFER_BIT)
 
-    this.skybox.bind(this.prg, ['position'])
-    this.skybox.draw()
+    this.skyboxPrg.use()
+    this.skybox.bind()
+    GlTools.draw(this.skybox)
 
-    let mMatrix = mat4.identity(mat4.create())
-    mat4.translate(mMatrix, mMatrix, [-3,0, 0])
-    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
-    this.prg.use()
-    this.prg.style({
-      mMatrix: mMatrix,
-      vMatrix: this.vMatrix,
-      pMatrix: this.pMatrix,
-      skybox: 0,
-      cameraPos: this.camera.cameraPos
-    })
-    for(let i =0;i<this.venus.length;i++){
-      this.venus[i].bind(this.prg, ['position', 'normal'])
-      this.venus[i].draw()
+    if(this.gltfPrg){
+      this.gltfPrg.use()
     }
 
-
+    if(this.scenes) {
+			this.scenes.forEach( scene => {
+        console.log(scene)
+        scene.scaleX = 100
+        scene.scaleY = 100
+        scene.scaleZ = 100
+				GlTools.draw(scene)
+			});	
+		}
     
   }
 }

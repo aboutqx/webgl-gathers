@@ -68,7 +68,10 @@ class GLShader {
 		this._attachShaderProgram(vsShader, fsShader);
 
 	}
-
+	
+	use() {
+		this.bind()
+	}
 
 	bind() {
 
@@ -76,7 +79,7 @@ class GLShader {
 		// 	return;
 		// }
 		gl.useProgram(this.shaderProgram);
-		GlTools.shaderProgram = this.shaderProgram
+		GlTools.useShader(this)
 		// this.uniformTextures = [];
 
 	}
@@ -156,6 +159,12 @@ class GLShader {
 
 	}
 
+	style(mUniformObj) {
+		
+		this.uniformObject(mUniformObj)
+
+	}
+
 	uniformObject(mUniformObj) {
 		for(const uniformName in mUniformObj) {
 			
@@ -183,7 +192,7 @@ class GLShader {
 			} else {
 				let uniformValue = mUniformObj[uniformName];
 				const uniformType = GLShader.getUniformType(uniformValue);
-
+				//console.log(uniformType, uniformName, uniformValue)
 				if(uniformValue.concat && uniformValue[0].concat) {
 					let tmp = [];
 					for(let i=0; i<uniformValue.length; i++) {
@@ -238,7 +247,7 @@ class GLShader {
 }
 
 GLShader.getUniformType = function (mValue) {
-	const isArray = !!mValue.concat;
+	const isArray = !!mValue.length
 
 	const getArrayUniformType = function (mValue) {
 		if(mValue.length === 9) {
