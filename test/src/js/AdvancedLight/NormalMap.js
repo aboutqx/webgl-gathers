@@ -1,6 +1,5 @@
 import Pipeline from '../PipeLine'
 import Mesh from 'libs/Mesh'
-import Texture from 'libs/glTexture'
 
 import vs from 'shaders/normal_map/normal_map.vert'
 import fs from 'shaders/normal_map/normal_map.frag'
@@ -11,7 +10,8 @@ import {
 import {
   gl,
   canvas,
-  toRadian
+  toRadian,
+  GlTools
 } from 'libs/GlTools'
 
 let vMatrix = mat4.identity(mat4.create())
@@ -125,7 +125,7 @@ export default class NormalMap extends Pipeline {
   attrib() {
     const quadVertices = caculateTBN()
     this.quad = new Mesh()
-    this.quad.bufferData(quadVertices, ['position', 'normal', 'texCoord', 'tangent', 'bitangent'], [3,3,2,3,3])
+    this.quad.bufferFlattenData(quadVertices, ['position', 'normal', 'texCoord', 'tangent', 'bitangent'], [3,3,2,3,3])
 
   }
   prepare() {
@@ -135,8 +135,8 @@ export default class NormalMap extends Pipeline {
     gl.clearColor(0.3, 0.3, .3, 1.0)
     gl.clearDepth(1.0)
 
-    const brickwall = new Texture(gl).fromImage(getAssets.brickwall)
-    const brickwallNormal = new Texture(gl).fromImage(getAssets.brickwallNormal)
+    const brickwall = getAssets.brickwall
+    const brickwallNormal = getAssets.brickwallNormal
     brickwall.bind(0)
     brickwallNormal.bind(1)
   }
@@ -161,9 +161,9 @@ export default class NormalMap extends Pipeline {
   }
   render() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-    this.quad.bind(this.prg, ['position', 'normal', 'texCoord', 'tangent'])
-    this.quad.draw()
-
+    
+    this.prg.use()
+    this.quad.bind()
+    GlTools.draw(this.quad)
   }
 }

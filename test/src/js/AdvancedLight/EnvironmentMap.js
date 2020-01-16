@@ -16,7 +16,8 @@ import {
 import {
   gl,
   canvas,
-  toRadian
+  toRadian,
+  GlTools
 } from 'libs/GlTools'
 
 export default class EnvMap extends Pipeline {
@@ -70,8 +71,7 @@ export default class EnvMap extends Pipeline {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
     this.prg.use()
-    this.skybox.bind(this.prg, ['position'])
-    this.skybox.draw()
+    GlTools.draw(this.skybox)
 
     let mMatrix = mat4.identity(mat4.create())
     mat4.translate(mMatrix, mMatrix, [-3,0, 0])
@@ -85,8 +85,7 @@ export default class EnvMap extends Pipeline {
       cameraPos: this.camera.cameraPos
     })
     for(let i =0;i<this.venus.length;i++){
-      this.venus[i].bind(this.specularPrg, ['position', 'normal'])
-      this.venus[i].draw()
+      GlTools.draw(this.venus[i], true)
     }
 
     mMatrix = mat4.identity(mat4.create())
@@ -101,8 +100,7 @@ export default class EnvMap extends Pipeline {
       cameraPos: this.camera.cameraPos
     })
     for(let i =0;i<this.venus.length;i++){
-      this.venus[i].bind(this.refractPrg, ['position', 'normal'])
-      this.venus[i].draw()
+      GlTools.draw(this.venus[i], true)
     }
     
     mMatrix = mat4.identity(mat4.create())
@@ -121,8 +119,7 @@ export default class EnvMap extends Pipeline {
       fresnelScale: .9
     })
     for(let i =0;i<this.venus.length;i++){
-      this.venus[i].bind(this.refractPrg, ['position', 'normal'])
-      this.venus[i].draw()
+      GlTools.draw(this.venus[i], true)
     }
     
   }

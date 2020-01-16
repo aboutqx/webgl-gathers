@@ -85,7 +85,6 @@ export default class GLTF extends Pipeline {
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     this.skyboxPrg.use()
-    this.skybox.bind()
     GlTools.draw(this.skybox)
 
     if(this.gltfPrg){
