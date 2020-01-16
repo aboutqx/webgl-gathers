@@ -57,10 +57,9 @@ export default class Reflection extends Pipeline {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
     this.prg.use()
-    for(let i =0;i<this.statue.length;i++){
-      this.statue[i].bind()
-      GlTools.draw(this.statue[i])
-    }
+
+    GlTools.draw(this.statue)
+    
 
   }
 }

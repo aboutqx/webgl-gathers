@@ -180,11 +180,9 @@ export default class Mask extends Pipeline {
     draw()
   }
   _drawCube(){
-    this.cube.bind()
     GlTools.draw(this.cube, true)
   }
   _drawTorus(){
-    this.torus.bind()
     GlTools.draw(this.torus, true)
   }
 

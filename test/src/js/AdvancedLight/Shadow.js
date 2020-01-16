@@ -1,6 +1,6 @@
 import Pipeline from '../PipeLine'
 import {
-  gl, canvasWidth, canvasHeight, toRadian
+  gl
 } from 'libs/GlTools'
 import Texture from 'libs/glTexture'
 import vs from 'shaders/shadow/depth.vert'
@@ -66,8 +66,6 @@ export default class Shadow extends Pipeline {
     mat4.ortho(lightProjection, -25, 25, -25, 25, nearPlane, farPlane)
     mat4.lookAt(lightView, lightPos, [0, 0, 0], [0, 1, 0])
     mat4.multiply(this.tmpMatrix, lightProjection, lightView)
-
-    mat4.perspective(pMatrix, toRadian(60), canvasWidth / canvasHeight, .1, 100)
 
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LESS);

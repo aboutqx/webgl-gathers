@@ -1,4 +1,5 @@
 #version 300 es
+precision mediump float;
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 
@@ -14,24 +15,23 @@ struct Light {
 };
 
 uniform Light lights[4];
-uniform sampler2D diffuseTexture;
-uniform vec3 viewPos;
+uniform vec3 baseColor;
+uniform vec3 uCameraPos;
 
 void main()
 {           
-    vec3 color = texture(diffuseTexture, TexCoords).rgb;
     vec3 normal = normalize(Normal);
     // ambient
-    vec3 ambient = 0.0 * color;
+    vec3 ambient = 0.0 * baseColor;
     // lighting
     vec3 lighting = vec3(0.0);
-    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 viewDir = normalize(uCameraPos - FragPos);
     for(int i = 0; i < 4; i++)
     {
         // diffuse
         vec3 lightDir = normalize(lights[i].Position - FragPos);
         float diff = max(dot(lightDir, normal), 0.0);
-        vec3 result = lights[i].Color * diff * color;      
+        vec3 result = lights[i].Color * diff * baseColor;      
         // attenuation (use quadratic as we have gamma correction)
         float distance = length(FragPos - lights[i].Position);
         result *= 1.0 / (distance * distance);

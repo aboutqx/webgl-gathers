@@ -522,7 +522,7 @@ Geom.bigTriangle = function bigTriangle() {
 		];
 		
 		meshTri = new Mesh();
-		meshTri.bufferData(positions, 'aPosition', 2);
+		meshTri.bufferData(positions, 'position', 2);
 		meshTri.bufferIndex(indices);	
 	}
 	

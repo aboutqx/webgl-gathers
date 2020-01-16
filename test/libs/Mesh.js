@@ -2,8 +2,7 @@ import getAttribLoc from './utils/getAttribLoc';
 import {
   gl, GlTools
 } from 'libs/GlTools'
-import Texture from 'libs/glTexture'
-import Material from 'libs/Material'
+import Texture from 'libs/GLTexture2'
 import Object3D from 'physics/Object3D'
 const STATIC_DRAW = 35044;
 
@@ -286,7 +285,7 @@ export default class Mesh  extends Object3D {
   _setMaterial() {
     for(let key in this.material){
       if (this.material[key].constructor === HTMLImageElement) {
-        this.material[key] = new Texture(gl).fromImage(this.material[key]).id
+        this.material[key] = new Texture(this.material[key]).texture
         this.textures[key] = this.material[key]
       }
     }

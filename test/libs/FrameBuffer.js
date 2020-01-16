@@ -1,21 +1,20 @@
 // FrameBuffer.js
 
-import GL from './GLTool';
-import GLTexture from './GLTexture';
+import { gl, GlTools } from './GlTools';
+import GLTexture from './GLTexture2';
 import WebglNumber from './utils/WebglNumber';
-import objectAssign from 'object-assign';
 
-let gl;
+
 let webglDepthTexture;
 let hasCheckedMultiRenderSupport = false;
 let extDrawBuffer;
 
 
 const checkMultiRender = function () {
-	if(GL.webgl2) {
+	if(window.useWebgl2) {
 		return true;
 	} else {
-		extDrawBuffer = GL.getExtension('WEBGL_draw_buffers');
+		extDrawBuffer = gl.getExtension('WEBGL_draw_buffers');
 		return !!extDrawBuffer;
 	}
 	
@@ -25,8 +24,7 @@ const checkMultiRender = function () {
 class FrameBuffer {
 
 	constructor(mWidth, mHeight, mParameters = {}, mNumTargets = 1) {
-		gl = GL.gl;
-		webglDepthTexture = GL.checkExtension('WEBGL_depth_texture');
+		webglDepthTexture = gl.getExtension('WEBGL_depth_texture');
 
 		this.width            = mWidth;
 		this.height           = mHeight;
@@ -52,7 +50,7 @@ class FrameBuffer {
 		this.frameBuffer        = gl.createFramebuffer();		
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
 
-		if(GL.webgl2) {
+		if(window.useWebgl2) {
 			// this.renderBufferDepth = gl.createRenderbuffer();
 			// gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBufferDepth);
 			// gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
@@ -107,7 +105,7 @@ class FrameBuffer {
 	}
 
 	_checkMaxNumRenderTarget() {
-		const maxNumDrawBuffers = GL.gl.getParameter(extDrawBuffer.MAX_DRAW_BUFFERS_WEBGL);
+		const maxNumDrawBuffers = window.useWebgl2 ? gl.getParameter(gl.MAX_DRAW_BUFFERS) :gl.getParameter(extDrawBuffer.MAX_DRAW_BUFFERS_WEBGL);
 		if(this._numTargets > maxNumDrawBuffers) {
 			console.error('Over max number of draw buffers supported : ', maxNumDrawBuffers);
 			this._numTargets = maxNumDrawBuffers;
@@ -122,20 +120,20 @@ class FrameBuffer {
 		}
 
 		
-		if(GL.webgl2) { 
+		if(window.useWebgl2) { 
 			this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT16, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, true);
 		} else {
-			this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, { minFilter:GL.LINEAR });
+			this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, { minFilter:gl.LINEAR });
 		}
 	}
 
 	_createTexture(mInternalformat, mTexelType, mFormat, mParameters = {}) {
-		const parameters = objectAssign({}, this._parameters);
+		const parameters = Object.assign({}, this._parameters);
 		if(!mFormat) {	mFormat = mInternalformat; }
 		
 		parameters.internalFormat = mInternalformat || gl.RGBA;
 		parameters.format = mFormat;
-		parameters.type = mTexelType || parameters.type || GL.UNSIGNED_BYTE;
+		parameters.type = mTexelType || parameters.type || gl.UNSIGNED_BYTE;
 		for(const s in mParameters) {
 			parameters[s] = mParameters[s];
 		}
@@ -148,7 +146,7 @@ class FrameBuffer {
 
 	bind(mAutoSetViewport=true) {
 		if(mAutoSetViewport) {
-			GL.viewport(0, 0, this.width, this.height);	
+			gl.viewport(0, 0, this.width, this.height);	
 		}
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
 	}
@@ -156,7 +154,7 @@ class FrameBuffer {
 
 	unbind(mAutoSetViewport=true) {
 		if(mAutoSetViewport) {
-			GL.viewport(0, 0, GL.width, GL.height);	
+			gl.viewport(0, 0, gl.width, gl.height);	
 		}
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -168,15 +166,15 @@ class FrameBuffer {
 
 	clear(r = 0, g = 0, b = 0, a = 0) {
 		this.bind();
-		GL.clear(r, g, b, a);
+		GlTools.clear(r, g, b, a);
 		this.unbind();
 	}	
 
 
 	//	TEXTURES
 
-	getTexture(mIndex = 0) {
-		return this._textures[mIndex];
+	get textures() {
+		return this._textures
 	}
 
 	getDepthTexture() {
@@ -185,8 +183,8 @@ class FrameBuffer {
 
 	//	TOUGHTS : Should I remove these from frame buffer ? 
 	//	Shouldn't these be set individually to each texture ? 
-	//	e.g. fbo.getTexture(0).minFilter = GL.NEAREST;
-	//		 fbo.getTexture(1).minFilter = GL.LINEAR; ... etc ? 
+	//	e.g. fbo.getTexture(0).minFilter = gl.NEAREST;
+	//		 fbo.getTexture(1).minFilter = gl.LINEAR; ... etc ? 
 
 	//	MIPMAP FILTER
 

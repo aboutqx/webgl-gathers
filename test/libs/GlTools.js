@@ -28,8 +28,8 @@ class GlTool{
   _inverseModelViewMatrix = mat3.create()
   _modelMatrix
 
-  clear(r, g, b) {
-    gl.clearColor(r || 0.3, g || 0.3, b || .3, 1.0)
+  clear(r = .3, g =.3, b =.3, a = 1) {
+    gl.clearColor(r, g, b, a)
     gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
   }
@@ -44,14 +44,8 @@ class GlTool{
   }
 
   drawMesh(mMesh, modelMatrix) {
-    if(mMesh.material) mMesh.material.update()
 
-    if(mMesh.length) {
-      for(let i = 0; i < mMesh.length; i++) {
-        this.draw(mMesh[i]);
-      }
-      return;
-    }
+    if(mMesh.material) mMesh.material.update()
 
     mMesh.bind(this.shaderProgram);
 
@@ -98,9 +92,15 @@ class GlTool{
 // }
 
 
-draw(mObj, modelMatrix){
+  draw(mObj, modelMatrix){
+    if(mObj.length) {
+      for(let i = 0; i < mObj.length; i++) {
+        this.draw(mObj[i], modelMatrix);
+      }
+      return;
+    }
     if(mObj instanceof Mesh) {
-      this.drawMesh(mObj, modelMatrix);
+        this.drawMesh(mObj, modelMatrix);
     } else if(mObj instanceof Object3D) {
       
       mObj.updateMatrix();
