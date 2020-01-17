@@ -64,6 +64,7 @@ export default class Bloom extends Pipeline {
     let invMatrix = mat4.identity(mat4.create())
     mat4.invert(invMatrix, mMatrix)
   }
+  
   renderScene(){
     let a =[10, 10, 10]
     let b = a.map(x => x* this.params.lightScale)
@@ -82,9 +83,10 @@ export default class Bloom extends Pipeline {
       baseColor:[0., 0.3, 0.3],
       uAlpha: this.params.uAlpha
     })
-
+    this.statue.rotationY = 12
     GlTools.draw(this.statue)
   }
+
   render() {
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.hdrFbo)
