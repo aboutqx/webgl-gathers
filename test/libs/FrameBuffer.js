@@ -17,14 +17,13 @@ const checkMultiRender = function () {
 		extDrawBuffer = gl.getExtension('WEBGL_draw_buffers');
 		return !!extDrawBuffer;
 	}
-	
-	hasCheckedMultiRenderSupport = true;
+	hasCheckedMultiRenderSupport =true
 };
 
 class FrameBuffer {
 
 	constructor(mWidth, mHeight, mParameters = {}, mNumTargets = 1) {
-		webglDepthTexture = gl.getExtension('WEBGL_depth_texture');
+		webglDepthTexture = !window.useWebgl2 && gl.getExtension('WEBGL_depth_texture');
 
 		this.width            = mWidth;
 		this.height           = mHeight;
@@ -51,10 +50,10 @@ class FrameBuffer {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
 
 		if(window.useWebgl2) {
-			// this.renderBufferDepth = gl.createRenderbuffer();
-			// gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBufferDepth);
-			// gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
-			// gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBufferDepth);
+			let depthRenderBuffer = gl.createRenderbuffer();
+			gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderBuffer);
+			gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, this.width, this.height);
+			gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderBuffer);
 
 			const buffers = [];
 			for (let i = 0; i < this._numTargets; i++) {
@@ -64,7 +63,7 @@ class FrameBuffer {
 
 			gl.drawBuffers(buffers);
 
-			gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.glDepthTexture.texture, 0);
+			//gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.glDepthTexture.texture, 0);
 
 		} else {
 			for (let i = 0; i < this._numTargets; i++) {
@@ -87,10 +86,10 @@ class FrameBuffer {
 		
 
 		//	CHECKING FBO
-		const FBOstatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-		if(FBOstatus != gl.FRAMEBUFFER_COMPLETE) {
-			console.error('GL_FRAMEBUFFER_COMPLETE failed, CANNOT use Framebuffer', WebglNumber[FBOstatus]);
-		}
+		// const FBOstatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+		// if(FBOstatus != gl.FRAMEBUFFER_COMPLETE) {
+		// 	console.error('GL_FRAMEBUFFER_COMPLETE failed, CANNOT use Framebuffer', WebglNumber[FBOstatus]);
+		// }
 
 		//	UNBIND
 
@@ -101,7 +100,7 @@ class FrameBuffer {
 		
 		//	CLEAR FRAMEBUFFER 
 
-		this.clear();
+		//this.clear();
 	}
 
 	_checkMaxNumRenderTarget() {
@@ -120,19 +119,17 @@ class FrameBuffer {
 		}
 
 		
-		if(window.useWebgl2) { 
-			this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT16, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, true);
-		} else {
-			this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, { minFilter:gl.LINEAR });
-		}
+		// if(window.useWebgl2) { 
+		// 	this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT16, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, true);
+		// } else {
+		// 	this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, { minFilter:gl.LINEAR });
+		// }
 	}
 
 	_createTexture(mInternalformat, mTexelType, mFormat, mParameters = {}) {
 		const parameters = Object.assign({}, this._parameters);
-		if(!mFormat) {	mFormat = mInternalformat; }
-		
-		parameters.internalFormat = mInternalformat || gl.RGBA;
-		parameters.format = mFormat;
+		parameters.internalFormat = mInternalformat || parameters.internalFormat;
+		parameters.format = mFormat || parameters.format || gl.RGBA;
 		parameters.type = mTexelType || parameters.type || gl.UNSIGNED_BYTE;
 		for(const s in mParameters) {
 			parameters[s] = mParameters[s];

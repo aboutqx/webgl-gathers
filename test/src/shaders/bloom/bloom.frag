@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 
@@ -14,9 +14,10 @@ struct Light {
     vec3 Color;
 };
 
-uniform Light lights[4];
+uniform Light lights[5];
 uniform vec3 baseColor;
 uniform vec3 uCameraPos;
+uniform float uAlpha;
 
 void main()
 {           
@@ -26,7 +27,7 @@ void main()
     // lighting
     vec3 lighting = vec3(0.0);
     vec3 viewDir = normalize(uCameraPos - FragPos);
-    for(int i = 0; i < 4; i++)
+    for(int i = 0; i < 5; i++)
     {
         // diffuse
         vec3 lightDir = normalize(lights[i].Position - FragPos);
@@ -42,8 +43,8 @@ void main()
     // check whether result is higher than some threshold, if so, output as bloom threshold color
     float brightness = dot(result, vec3(0.2126, 0.7152, 0.0722));
     if(brightness > 1.0)
-        BrightColor = vec4(result, 1.0);
+        BrightColor = vec4(result, uAlpha);
     else
         BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
-    FragColor = vec4(result, 1.0);
+    FragColor = vec4(result, uAlpha);
 }

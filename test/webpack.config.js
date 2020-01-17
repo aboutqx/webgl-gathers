@@ -67,7 +67,7 @@ const entry = {
 const output = {
   filename: 'bundle.js',
   path: getOutput(),
-  publicPath: !isProd ? `http://127.0.01:8081/` : '' // global ajax get file path
+  publicPath: !isProd ? `http://127.0.0.1:8081/` : '' // global ajax get file path
 }
 console.log(getOutput())
 const devtool = isProd ? 'none' : 'inline-source-map';
@@ -77,7 +77,7 @@ const config = {
   devtool,
   mode: isProd ? 'production' : 'development',
   devServer: {
-    host: '127.0.0.1',
+    host: '0.0.0.0',
     contentBase: './src',
     hot: true,
     disableHostCheck: true,

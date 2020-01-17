@@ -18,6 +18,7 @@ class GLTexture {
 		this._isTextureReady = true;
 
 		this._params = getTextureParameters(mParam, mSource, this._width, this._height);
+		//this.showParameters()
 		this._checkMipmap();
 		this._checkWrapping();
 

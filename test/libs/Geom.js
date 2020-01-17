@@ -343,7 +343,7 @@ Geom.cube = function cube(w, h, d, drawType = 4) {
 	mesh.bufferTexCoord(coords);
 	mesh.bufferIndex(indices);
 	mesh.bufferNormal(normals);
-
+	//mesh.computeNormals(normals)
 	return mesh;
 };
 
