@@ -4,6 +4,7 @@ import {
 } from 'libs/GlTools'
 import Texture from 'libs/GLTexture2'
 import Object3D from 'physics/Object3D'
+import { vec3 } from 'gl-matrix'
 const STATIC_DRAW = 35044;
 
 const getBuffer = function (attr) {
@@ -275,7 +276,104 @@ export default class Mesh  extends Object3D {
 			this.iBuffer.numItems = this._numItems;
 		}
   }
-  
+  computeNormals(normals, usingFaceNormals = false) {
+
+		this.generateFaces(normals);
+
+		if(usingFaceNormals) {
+			this._computeFaceNormals();
+		} else {
+			this._computeVertexNormals();
+		}
+	}
+
+	//	PRIVATE METHODS
+
+	_computeFaceNormals() {
+
+		let faceIndex;
+		let face;
+		const normals = [];
+
+		for(let i = 0; i < this._indices.length; i += 3) {
+			faceIndex = i / 3;
+			face = this._faces[faceIndex];
+			const N = face.normal;
+
+			normals[face.indices[0]] = N;
+			normals[face.indices[1]] = N;
+			normals[face.indices[2]] = N;
+		}
+
+		this.bufferNormal(normals);
+	}
+
+
+	_computeVertexNormals() {
+		//	loop through all vertices
+		let face;
+		const sumNormal = vec3.create();
+		const normals = [];
+		const { vertices } = this;
+
+		for(let i = 0; i < 1; i++) {
+
+			vec3.set(sumNormal, 0, 0, 0);
+
+			for(let j = 0; j < this._faces.length; j++) {
+				face = this._faces[j];
+				console.log(face.indices)
+				//	if vertex exist in the face, add the normal to sum normal
+				if(face.indices.indexOf(i) >= 0) {
+
+					sumNormal[0] += face.normals[0];
+					sumNormal[1] += face.normals[1];
+					sumNormal[2] += face.normals[2];
+
+				}
+
+			}
+
+			vec3.normalize(sumNormal, sumNormal);
+			normals.push([sumNormal[0], sumNormal[1], sumNormal[2]]);
+		}
+		this.bufferNormal(normals);
+
+	}
+
+
+	generateFaces(normals) {
+		let ia, ib, ic;
+		let a, b, c;
+		let na, nb, nc;
+		const vba = vec3.create(), vca = vec3.create(), vNormal = vec3.create();
+		const { vertices } = this;
+
+		for(let i = 0; i < this._indices.length; i += 3) {
+
+			ia = this._indices[i];
+			ib = this._indices[i + 1];
+			ic = this._indices[i + 2];
+
+			a = vertices[ia];
+			b = vertices[ib];
+			c = vertices[ic];
+
+     		na = normals[ia];
+			nb = normals[ib];
+			nc = normals[ic];
+
+			const face = {
+				indices:[ia, ib, ic],
+				vertices:[a, b, c],
+				normals: [na, nb, nc]
+			};
+
+			this._faces.push(face);
+		}
+
+	}
+
   getAttribute(mName) {	return this._attributes.find((a) => a.name === mName);	}
 	getSource(mName) {
 		const attr = this.getAttribute(mName);

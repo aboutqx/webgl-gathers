@@ -27,15 +27,12 @@ export default class Bloom extends Pipeline {
     this.finalPrg = this.compile(CustomShaders.bigTriangleVert, finalFs)
   }
   attrib() {
-    this.statue = getAssets.statue
+    this.statue = Geom.cube(1)
     this.quad = Geom.bigTriangle()
   }
   prepare(){
     this.camera.radius = 3.5
     let fbo = new FrameBuffer(canvas.width, canvas.height, { internalFormat: gl.RGBA16F, type:gl.FLOAT }, 2)
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.frameBuffer)
-    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1])
 
     this.hdrFbo = fbo.frameBuffer
     this.textures = fbo.textures
@@ -43,39 +40,65 @@ export default class Bloom extends Pipeline {
     let { pingpongFBO, pingpongColorbuffers } = pingpongFrameBuffer(canvas.width, canvas.height)
     this.pingpongFBO = pingpongFBO
     this.pingpongColorbuffers = pingpongColorbuffers
+    gl.disable(gl.DEPTH_TEST)
+    gl.enable(gl.BLEND)
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    
 
   }
-
+  _setGUI() {
+    this.addGUIParams({
+      texOffsetScale: 1,
+      blurPassCount: 20,
+      lightScale: 1,
+      uAlpha: .5
+    })
+    this.gui.add(this.params, 'texOffsetScale', 0, 4).step(.02)
+    this.gui.add(this.params, 'blurPassCount', 1, 40).step(1)
+    this.gui.add(this.params, 'lightScale', .1, 10).step(.1)
+    this.gui.add(this.params, 'uAlpha', 0, 1.0).step(.1)
+  }
   uniform() {
-
     let mMatrix = mat4.identity(mat4.create())
 
     let invMatrix = mat4.identity(mat4.create())
     mat4.invert(invMatrix, mMatrix)
   }
+  renderScene(){
+    let a =[10, 10, 10]
+    let b = a.map(x => x* this.params.lightScale)
+    this.prg.use()
+    this.prg.style({
+      'lights[0].Position' : [1.5, 0, 0],
+      'lights[0].Color': b,
+      'lights[1].Position' : [-1.5, 0, 0],
+      'lights[1].Color': b,
+      'lights[2].Position' : [0, 1.5, -2],
+      'lights[2].Color': b,
+      'lights[3].Position' : [0, 0, 2.],
+      'lights[3].Color': [10,20,10],
+      'lights[4].Position' : [0, -1.5, 0.],
+      'lights[4].Color': [100,20,10],
+      baseColor:[0., 0.3, 0.3],
+      uAlpha: this.params.uAlpha
+    })
+
+    GlTools.draw(this.statue)
+  }
   render() {
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.hdrFbo)
-    GlTools.clear(0,0,0)
-
-    this.prg.use()
-    this.prg.style({
-      'lights[0].Position' : [.5, 0, 0],
-      'lights[0].Color': [10, 10, 10],
-      'lights[1].Position' : [-.5, 0, 0],
-      'lights[1].Color': [10, 10, 10],
-      'lights[2].Position' : [0, 1, 0],
-      'lights[2].Color': [10, 10, 10],
-      baseColor:[0.3, 0.3, 0]
-    })
+      GlTools.clear(0,0,0)
+      gl.cullFace(gl.FRONT)
+      this.renderScene()
+      gl.cullFace(gl.BACK)
+      this.renderScene()
     
-    GlTools.draw(this.statue)
-    
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
 
     this.blurPrg.use()
-    let horizontal = true, first_iteration = true, amount = 10
+    let horizontal = true, first_iteration = true, amount = this.params.blurPassCount
     for(let i =0; i< amount; i++){
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.pingpongFBO[Number(horizontal)])
       if(first_iteration) {
@@ -84,7 +107,8 @@ export default class Bloom extends Pipeline {
       else  gl.bindTexture(gl.TEXTURE_2D, this.pingpongColorbuffers[Number(!horizontal)])
       this.blurPrg.uniform('image', 'uniform1i', 0)
       this.blurPrg.style({
-        horizontal
+        horizontal,
+        texOffsetScale: this.params.texOffsetScale
       })
 
       GlTools.draw(this.quad)
@@ -132,30 +156,3 @@ function pingpongFrameBuffer(width, height){
   }
 }
 
-function frameBufferMrt(width, height ,count){
-  let frameBuffer = gl.createFramebuffer();
-  gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-  let textures = [];
-  for(let i = 0; i < count; ++i){
-      textures[i] = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, textures[i]);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, width, height, 0, gl.RGBA, gl.FLOAT, null);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.TEXTURE_2D, textures[i], 0);
-  }
-  let depthRenderBuffer = gl.createRenderbuffer();
-  gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderBuffer);
-  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, width, height);
-  gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderBuffer);
-  gl.bindTexture(gl.TEXTURE_2D, null);
-  gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  return {
-      frameBuffer,
-      depthRenderBuffer,
-      textures
-  };
-}
