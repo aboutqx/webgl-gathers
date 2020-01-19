@@ -342,8 +342,8 @@ Geom.cube = function cube(w, h, d, drawType = 4) {
 	mesh.bufferVertex(positions);
 	mesh.bufferTexCoord(coords);
 	mesh.bufferIndex(indices);
-	mesh.bufferNormal(normals);
-	//mesh.computeNormals(normals)
+	//mesh.bufferNormal(normals);
+	mesh.computeNormals(normals)
 	return mesh;
 };
 

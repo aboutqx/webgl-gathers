@@ -117,7 +117,7 @@ class GLShader {
 		if(!hasUniform) {
 			isNumber = uniformType === 'uniform1i' || uniformType === 'uniform1f';
 			this.shaderProgram[mName] = gl.getUniformLocation(this.shaderProgram, mName);
-			//if(!this.shaderProgram[mName]) console.log('null', mName)
+			//console.log(this.shaderProgram[mName], mName)
 			if(isNumber) {
 				this.parameters.push({ name : mName, type: uniformType, value: mValue, uniformLoc: this.shaderProgram[mName], isNumber });	
 			} else {

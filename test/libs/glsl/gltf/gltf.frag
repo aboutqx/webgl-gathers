@@ -129,7 +129,7 @@ vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
 	float mipCount = 7.0; // resolution of 512x512
 	float lod = (pbrInputs.perceptualRoughness * mipCount);
 	// retrieve a scale and bias to F0. See [1], Figure 3
-	vec3 brdf = SRGBtoLINEAR(texture(uBRDFMap, vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness))).rgb;
+	vec2 brdf = SRGBtoLINEAR(texture(uBRDFMap, vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness))).rg;
 	vec3 diffuseLight = SRGBtoLINEAR(texture(uIrradianceMap, n)).rgb;
 
 	vec3 specularLight = SRGBtoLINEAR(texture(uRadianceMap, reflection, lod)).rgb;
@@ -206,7 +206,7 @@ void main() {
 	
 	// For typical incident reflectance range (between 4% to 100%) set the grazing reflectance to 100% for typical fresnel effect.
 	// For very low reflectance range on highly diffuse objects (below 4%), incrementally reduce grazing reflecance to 0%.
-	float reflectance90         = clamp(reflectance * 25.0, 0.0, 1.0);
+	float reflectance90         = clamp(reflectance * 50.0, 0.0, 1.0);
 	vec3 specularEnvironmentR0  = specularColor.rgb;
 	vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
 	
@@ -276,6 +276,6 @@ void main() {
 	
 	// output the fragment color
 	FragColor        = vec4(pow(color,vec3(1.0/uGamma)), baseColor.a);
-	//FragColor        = vec4(vec3(emissive), 1.0);
+	//FragColor        = vec4(vec3(baseColor), 1.0);
 
 }

@@ -1,22 +1,18 @@
 import Pipeline from '../PipeLine'
-import Mesh from 'libs/Mesh'
+import Geom from 'libs/Geom'
 import vs from 'shaders/color/colors.vert'
 import fs from 'shaders/color/colors.frag'
 import lampFs from 'shaders/color/lamp.frag'
 
 import {
   mat4,
-  vec3
 }from 'gl-matrix'
 import {
   gl,
-  canvas,
-  toRadian
+  GlTools
 }from 'libs/GlTools'
 
-let vMatrix
-let pMatrix = mat4.identity(mat4.create())
-const lightColor = [0.33, 0.42, 0.18]
+const lightColor = [0.13, 0.42, 0.18]
 export default class Color extends Pipeline {
   count = 0
   constructor() {
@@ -28,57 +24,10 @@ export default class Color extends Pipeline {
     this.lampPrg = this.compile(vs, lampFs)
   }
   attrib() {
-    let CubeData = [
-      0.5,-0.5, -0.5,
-      0.5, -0.5, -0.5,
-      0.5, 0.5, -0.5,
-      0.5, 0.5, -0.5,
-      -0.5, 0.5, -0.5,
-      -0.5, -0.5, -0.5,
+ 
+    this.cube = Geom.cube(1)
 
-      -0.5, -0.5, 0.5,
-      0.5, -0.5, 0.5,
-      0.5, 0.5, 0.5,
-      0.5, 0.5, 0.5,
-      -0.5, 0.5, 0.5,
-      -0.5, -0.5, 0.5,
-
-      -0.5, 0.5, 0.5,
-      -0.5, 0.5, -0.5,
-      -0.5, -0.5, -0.5,
-      -0.5, -0.5, -0.5,
-      -0.5, -0.5, 0.5,
-      -0.5, 0.5, 0.5,
-
-      0.5, 0.5, 0.5,
-      0.5, 0.5, -0.5,
-      0.5, -0.5, -0.5,
-      0.5, -0.5, -0.5,
-      0.5, -0.5, 0.5,
-      0.5, 0.5, 0.5,
-
-      -0.5, -0.5, -0.5,
-      0.5, -0.5, -0.5,
-      0.5, -0.5, 0.5,
-      0.5, -0.5, 0.5,
-      -0.5, -0.5, 0.5,
-      -0.5, -0.5, -0.5,
-
-      -0.5, 0.5, -0.5,
-      0.5, 0.5, -0.5,
-      0.5, 0.5, 0.5,
-      0.5, 0.5, 0.5,
-      -0.5, 0.5, 0.5,
-      -0.5, 0.5, -0.5]
-    let cube = new Mesh()
-    cube.bufferData(CubeData, ['position'], [3])
-    this.cube = cube
-
-    this.lampVao = gl.createVertexArray()
-    gl.bindVertexArray(this.lampVao)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.cube._buffers[0].buffer.buffer)
-    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 3 * 4, 0) // float size is 4
-    gl.enableVertexAttribArray(0)
+    this.lamp = Geom.cube(.5)
   }
   prepare() {
     gl.enable(gl.DEPTH_TEST)
@@ -90,27 +39,13 @@ export default class Color extends Pipeline {
   }
   uniform() {
 
-    // let eyeDirection = []
-    // let camUpDirection = []
-
-    // vec3.transformQuat(eyeDirection, [0.0, 0.0, 3.0], this.rotateQ)
-    // vec3.transformQuat(camUpDirection, [0.0, 1.0, 0.0], this.rotateQ)
-    // this.eyeDirection = eyeDirection
-
-    // mat4.lookAt(vMatrix, [0.0, 0.0, 3.0], [0, 0, 0], [0.0, 1.0, 0.0])
-
-    vMatrix = this.camera.viewMatrix
-// console.log( vMatrix)
-    mat4.perspective(pMatrix, toRadian(60), canvas.clientWidth / canvas.clientHeight, .1, 100)
-
-
     let mMatrix = mat4.identity(mat4.create())
 
     this.prg.use()
     this.prg.style({
       mMatrix,
-      vMatrix,
-      pMatrix,
+      vMatrix: this.camera.viewMatrix,
+      pMatrix: this.camera.projMatrix,
       objectColor: [1., .5, .31],
       lightColor
     })
@@ -118,10 +53,7 @@ export default class Color extends Pipeline {
   render() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-
-    this.cube.bind(this.prg, ['position'])
-    this.cube.draw()
-
+    GlTools.draw(this.cube)
 
     let mMatrix = mat4.identity(mat4.create())
     mat4.translate(mMatrix, mMatrix, [1, .1, 1])
@@ -130,11 +62,10 @@ export default class Color extends Pipeline {
     this.lampPrg.use()
     this.lampPrg.style({
       mMatrix,
-      vMatrix,
-      pMatrix,
+      vMatrix: this.camera.viewMatrix,
+      pMatrix: this.camera.projMatrix,
       lightColor
     })
-    gl.bindVertexArray(this.lampVao);
-    gl.drawArrays(gl.TRIANGLES, 0, 36);
+    GlTools.draw(this.cube)
   }
 }

@@ -33,7 +33,7 @@ export default class GLTF extends Pipeline {
 
     this.skyMap = getAssets.outputskybox
 
-    this.env = 'studio3'
+    this.env = 'studio9'
     this.textureIrr = getAssets[`${this.env}_irradiance`];
     this.textureRad = getAssets[`${this.env}_radiance`];
     this.textureBrdf = getAssets['brdfLUT']
