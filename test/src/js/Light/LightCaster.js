@@ -1,5 +1,5 @@
 import Pipeline from '../PipeLine'
-import Mesh from 'libs/Mesh'
+import Geom from 'libs/Geom'
 import vs from 'shaders/light_caster/directionalLight.vert'
 import fs from 'shaders/light_caster/directionalLight.frag'
 import pointFs from 'shaders/light_caster/pointLight.frag'
@@ -8,8 +8,7 @@ import lampFs from 'shaders/light_caster/lamp.frag'
 import lampVs from 'shaders/light_caster/lamp.vert'
 import Texture from 'libs/glTexture'
 import {
-  mat4,
-  vec3
+  mat4
 } from 'gl-matrix'
 import {
   gl,
@@ -46,59 +45,10 @@ export default class LightCaster extends Pipeline {
     this.lampPrg = this.compile(lampVs, lampFs)
   }
   attrib() {
-    let CubeData = [
-      // positions          // normals           // texture coords
-      -0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 0.0, 0.0,
-      0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 1.0, 0.0,
-      0.5, 0.5, -0.5, 0.0, 0.0, -1.0, 1.0, 1.0,
-      0.5, 0.5, -0.5, 0.0, 0.0, -1.0, 1.0, 1.0,
-      -0.5, 0.5, -0.5, 0.0, 0.0, -1.0, 0.0, 1.0,
-      -0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 0.0, 0.0,
 
-      -0.5, -0.5, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0,
-      0.5, -0.5, 0.5, 0.0, 0.0, 1.0, 1.0, 0.0,
-      0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 1.0, 1.0,
-      0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 1.0, 1.0,
-      -0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 0.0, 1.0,
-      -0.5, -0.5, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0,
+    this.cube = Geom.cube(1)
 
-      -0.5, 0.5, 0.5, -1.0, 0.0, 0.0, 1.0, 0.0,
-      -0.5, 0.5, -0.5, -1.0, 0.0, 0.0, 1.0, 1.0,
-      -0.5, -0.5, -0.5, -1.0, 0.0, 0.0, 0.0, 1.0,
-      -0.5, -0.5, -0.5, -1.0, 0.0, 0.0, 0.0, 1.0,
-      -0.5, -0.5, 0.5, -1.0, 0.0, 0.0, 0.0, 0.0,
-      -0.5, 0.5, 0.5, -1.0, 0.0, 0.0, 1.0, 0.0,
-
-      0.5, 0.5, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0,
-      0.5, 0.5, -0.5, 1.0, 0.0, 0.0, 1.0, 1.0,
-      0.5, -0.5, -0.5, 1.0, 0.0, 0.0, 0.0, 1.0,
-      0.5, -0.5, -0.5, 1.0, 0.0, 0.0, 0.0, 1.0,
-      0.5, -0.5, 0.5, 1.0, 0.0, 0.0, 0.0, 0.0,
-      0.5, 0.5, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0,
-
-      -0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 0.0, 1.0,
-      0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 1.0, 1.0,
-      0.5, -0.5, 0.5, 0.0, -1.0, 0.0, 1.0, 0.0,
-      0.5, -0.5, 0.5, 0.0, -1.0, 0.0, 1.0, 0.0,
-      -0.5, -0.5, 0.5, 0.0, -1.0, 0.0, 0.0, 0.0,
-      -0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 0.0, 1.0,
-
-      -0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 0.0, 1.0,
-      0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 1.0, 1.0,
-      0.5, 0.5, 0.5, 0.0, 1.0, 0.0, 1.0, 0.0,
-      0.5, 0.5, 0.5, 0.0, 1.0, 0.0, 1.0, 0.0,
-      -0.5, 0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 0.0,
-      -0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 0.0, 1.0
-    ]
-    let cube = new Mesh()
-    cube.bufferData(CubeData, ['position', 'normal', 'texCoord'], [3, 3, 2])
-    this.cube = cube
-
-    this.lampVao = gl.createVertexArray()
-    gl.bindVertexArray(this.lampVao)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.cube._buffers[0].buffer.buffer)
-    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 8 * 4, 0) // float size is 4
-    gl.enableVertexAttribArray(0)
+    this.lamp = Geom.s
   }
   prepare() {
     gl.enable(gl.DEPTH_TEST)
