@@ -12,7 +12,7 @@ import {
   GlTools
 }from 'libs/GlTools'
 
-const lightColor = [0.13, 0.42, 0.18]
+const lightColor = [0.83, 0.82, 0.88]
 export default class Color extends Pipeline {
   count = 0
   constructor() {
@@ -25,9 +25,9 @@ export default class Color extends Pipeline {
   }
   attrib() {
  
-    this.cube = Geom.cube(1)
+    this.cube = Geom.cube(.5)
 
-    this.lamp = Geom.cube(.5)
+    this.lamp = Geom.sphere(.05, 60)
   }
   prepare() {
     gl.enable(gl.DEPTH_TEST)
@@ -46,7 +46,7 @@ export default class Color extends Pipeline {
       mMatrix,
       vMatrix: this.camera.viewMatrix,
       pMatrix: this.camera.projMatrix,
-      objectColor: [1., .5, .31],
+      objectColor: [0.1, .1, .1],
       lightColor
     })
   }
@@ -66,6 +66,6 @@ export default class Color extends Pipeline {
       pMatrix: this.camera.projMatrix,
       lightColor
     })
-    GlTools.draw(this.cube)
+    GlTools.draw(this.lamp)
   }
 }
