@@ -7,6 +7,11 @@ import Object3D from 'physics/Object3D'
 import { vec3 } from 'gl-matrix'
 const STATIC_DRAW = 35044;
 
+const allEqual = (array1, array2) => {
+	if(array1.join(',')=== array2.join(',')){
+		return true
+	} else return false
+}
 const getBuffer = function (attr) {
 	let buffer;
 	
@@ -94,11 +99,7 @@ export default class Mesh  extends Object3D {
 
     
     //	flatten buffer data		
-    for(let i = 0; i < mData.length; i++) {
-      for(let j = 0; j < mData[i].length; j++) {
-        bufferData.push(mData[i][j]);
-      }
-    }
+    bufferData = mData.flat(1)
 
 
     const dataArray = new Float32Array(bufferData);
@@ -278,12 +279,11 @@ export default class Mesh  extends Object3D {
   }
   computeNormals(normals, usingFaceNormals = false) {
 
-		this.generateFaces(normals);
-
 		if(usingFaceNormals) {
-			this._computeFaceNormals();
+			this.generateFaces(normals);
+			//this._computeFaceNormals();
 		} else {
-			this._computeVertexNormals();
+			this._computeVertexNormals(normals);
 		}
 	}
 
@@ -309,35 +309,36 @@ export default class Mesh  extends Object3D {
 	}
 
 
-	_computeVertexNormals() {
+	_computeVertexNormals(normals) {
 		//	loop through all vertices
 		let face;
 		const sumNormal = vec3.create();
-		const normals = [];
+		const averageNormals = [];
 		const { vertices } = this;
-
-		for(let i = 0; i < 1; i++) {
+		// vertices with the same position they have the same average normal,each is averaged from adjacent 3 faces normals
+		// so we need to know 3 adjacent faces for each vertices, although vertices may have the same position
+		//since the indices is not reused , we can't find theses 3 faces there
+		//we can simplely loop vertices, for each if them in the faces, wo get face normals
+		//then we have 3 faces normals for each vertices. finally average them unweighted  
+		
+		for(let i = 0; i < vertices.length; i++) {
 
 			vec3.set(sumNormal, 0, 0, 0);
 
-			for(let j = 0; j < this._faces.length; j++) {
-				face = this._faces[j];
-				console.log(face.indices)
-				//	if vertex exist in the face, add the normal to sum normal
-				if(face.indices.indexOf(i) >= 0) {
+			for(let j = 0; j < vertices.length; j++) {
+				if(allEqual(vertices[i], vertices[j])) {
 
-					sumNormal[0] += face.normals[0];
-					sumNormal[1] += face.normals[1];
-					sumNormal[2] += face.normals[2];
-
+					sumNormal[0] += normals[j][0];
+					sumNormal[1] += normals[j][1];
+					sumNormal[2] += normals[j][2];
 				}
 
 			}
 
 			vec3.normalize(sumNormal, sumNormal);
-			normals.push([sumNormal[0], sumNormal[1], sumNormal[2]]);
+			averageNormals.push([sumNormal[0], sumNormal[1], sumNormal[2]]);
 		}
-		this.bufferNormal(normals);
+		this.bufferNormal(averageNormals);
 
 	}
 
