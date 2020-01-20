@@ -103,11 +103,13 @@ export default class Shadow extends Pipeline {
 
   _renderScene(shader) {
     this.mMatrix = mat4.identity(mat4.create())
+    mat4.translate(this.mMatrix, this.mMatrix, [0, -2, 0])
     shader.style({
       mMatrix: this.mMatrix
     })
     GlTools.draw(this.plane)
 
+    this.mMatrix = mat4.identity(mat4.create())
     mat4.translate(this.mMatrix, this.mMatrix, [-1.2, 0, 5])
     shader.style({
       mMatrix: this.mMatrix

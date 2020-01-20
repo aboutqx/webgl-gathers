@@ -1,4 +1,5 @@
 #version 300 es
+// normal map
 precision mediump float;
 
 layout (location = 0) in vec3 position;
@@ -32,7 +33,7 @@ void main() {
   T = normalize(T - dot(T, N) * N);
   vec3 B = cross(N, T);
 
-   mat3 TBN = transpose(mat3(T, B, N));
+  mat3 TBN = transpose(mat3(T, B, N));
   TangentLightPos = TBN * lightPos;
   TangentViewPos  = TBN * viewPos;
   TangentFragPos  = TBN * FragPos;
