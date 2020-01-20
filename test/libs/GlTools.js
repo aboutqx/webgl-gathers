@@ -41,6 +41,7 @@ class GlTool{
   useShader(shader) {
     this.shader = shader
     this.shaderProgram = this.shader.shaderProgram
+    this.shaderName = this.shader.name
   }
 
   drawMesh(mMesh, modelMatrix) {
@@ -48,7 +49,7 @@ class GlTool{
     if(mMesh.material) mMesh.material.update()
 
     mMesh.bind(this.shaderProgram);
-
+    //console.log(this.shader.name, mMesh)
     if(this.shader){
       //	DEFAULT UNIFORMS
       if(this.camera !== undefined) {

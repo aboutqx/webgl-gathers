@@ -1,4 +1,5 @@
 #version 300 es
+//shadow
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 texCoord;
@@ -6,7 +7,7 @@ layout (location = 2) in vec2 texCoord;
 
 out vec3 FragPos;
 out  vec3 Normal;
-out  vec2 TexCoords;
+out  vec2 TexCoord;
 out vec4 FragPosLightSpace;
 
 
@@ -19,6 +20,6 @@ void main(){
   gl_Position = pMatrix * vMatrix * mMatrix * vec4(position, 1.);
   FragPos = vec3(mMatrix * vec4(position, 1.));
   Normal = transpose(inverse(mat3(mMatrix))) * normal;
-  TexCoords = texCoord;
+  TexCoord = texCoord;
   FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.); // 从lightPos视角看的坐标
 }

@@ -1,5 +1,4 @@
 import Pipeline from '../PipeLine'
-import Mesh from 'libs/Mesh'
 import vs from 'shaders/material/material.vert'
 import fs from 'shaders/material/material.frag'
 import lampFs from 'shaders/material/lamp.frag'

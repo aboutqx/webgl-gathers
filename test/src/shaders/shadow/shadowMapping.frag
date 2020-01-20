@@ -1,10 +1,10 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 out vec4 FragColor;
 
 in vec3 FragPos;
 in vec3 Normal;
-in vec2 TexCoords;
+in vec2 TexCoord;
 in vec4 FragPosLightSpace;
 
 
@@ -42,7 +42,7 @@ float ShadowCalculation(vec4 fragPosLightSpace, float bias){
 }
 
 void main(){
-    vec3 color = texture(diffuseTexture, TexCoords).rgb;
+    vec3 color = texture(diffuseTexture, TexCoord).rgb;
     vec3 normal = normalize(Normal);
     vec3 lightColor = vec3(2.0);
     // Ambient
