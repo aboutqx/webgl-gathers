@@ -142,22 +142,22 @@ export default class Mesh  extends Object3D {
     //所有data在一个arrybuffer里（现在不支持了）
     this.generateBuffers(mShaderProgram);
 
-		if(this.hasVAO) {
-			gl.bindVertexArray(this.vao);
-		} else {
-			this.attributes.forEach((attribute)=> {
-				gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
-				const attrPosition = attribute.attrPosition;
-				gl.vertexAttribPointer(attrPosition, attribute.itemSize, gl.FLOAT, false, 0, 0);
+	if(this.hasVAO) {
+		gl.bindVertexArray(this.vao);
+	} else {
+		this.attributes.forEach((attribute)=> {
+			gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
+			const attrPosition = attribute.attrPosition;
+			gl.vertexAttribPointer(attrPosition, attribute.itemSize, gl.FLOAT, false, 0, 0);
 
-				if(attribute.isInstanced) {
-					gl.vertexAttribDivisor(attrPosition, 1);
-				}
+			if(attribute.isInstanced) {
+				gl.vertexAttribDivisor(attrPosition, 1);
+			}
 
-			});
+		});
 
-			//	BIND INDEX BUFFER
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.iBuffer);	
+		//	BIND INDEX BUFFER
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.iBuffer);	
     }
 
     if (this.textures) {
@@ -207,9 +207,10 @@ export default class Mesh  extends Object3D {
 					const buffer = getBuffer(attrObj);
 					gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 					gl.bufferData(gl.ARRAY_BUFFER, attrObj.dataArray, attrObj.drawType);
+					
+					const attrPosition = getAttribLoc(gl, mShaderProgram, attrObj.name)
 
-          const attrPosition = getAttribLoc(gl, mShaderProgram, attrObj.name)
-          if(attrPosition < 0) return
+					if(attrPosition < 0) { console.log(attrPosition, attrObj.name, GlTools.shaderName); return }
 					gl.enableVertexAttribArray(attrPosition); 
 					gl.vertexAttribPointer(attrPosition, attrObj.itemSize, gl.FLOAT, false, 0, 0);
 					attrObj.attrPosition = attrPosition;
@@ -320,7 +321,7 @@ export default class Mesh  extends Object3D {
 		//since the indices is not reused , we can't find theses 3 faces there
 		//we can simplely loop vertices, for each if them in the faces, wo get face normals
 		//then we have 3 faces normals for each vertices. finally average them unweighted  
-		
+		let count = 0
 		for(let i = 0; i < vertices.length; i++) {
 
 			vec3.set(sumNormal, 0, 0, 0);
@@ -331,12 +332,14 @@ export default class Mesh  extends Object3D {
 					sumNormal[0] += normals[j][0];
 					sumNormal[1] += normals[j][1];
 					sumNormal[2] += normals[j][2];
+					count++
 				}
 
 			}
-
+			vec3.divide(sumNormal, sumNormal, vec3.fromValues(count, count, count))
 			vec3.normalize(sumNormal, sumNormal);
 			averageNormals.push([sumNormal[0], sumNormal[1], sumNormal[2]]);
+			count = 0
 		}
 		this.bufferNormal(averageNormals);
 

@@ -1,25 +1,23 @@
 import Pipeline from '../PipeLine'
 import {
-  gl
+  gl, GlTools, toRadian, canvas
 } from 'libs/GlTools'
-import Texture from 'libs/glTexture'
 import vs from 'shaders/shadow/depth.vert'
 import fs from 'shaders/shadow/depth.frag'
-import quadVs from 'shaders/deferred_shading/finalQuad.vert'
 import depthQuadFs from 'shaders/shadow/depthQuad.frag'
 import shadowMappingVs from 'shaders/shadow/shadowMapping.vert'
 import shadowMappingFs from 'shaders/shadow/shadowMapping.frag'
 import {
   mat4
 } from 'gl-matrix'
-import { QuadData, CubeData } from '../Torus'
-import Mesh from 'libs/Mesh'
+import Geom from 'libs/Geom'
+import CustomShaders from 'libs/shaders/CustomShaders'
 
 const shadowWidth = 1024
 const shadowHeight = 1024
 const lightPos = [0, 4, -1]
 let vMatrix = mat4.identity(mat4.create())
-let pMatrix = mat4.identity(mat4.create())
+
 export default class Shadow extends Pipeline {
   count = 0
   constructor() {
@@ -28,30 +26,16 @@ export default class Shadow extends Pipeline {
   init() {
 
     this.prg = this.compile(vs, fs)
-    this.depthQuadPrg = this.compile(quadVs, depthQuadFs)
+    this.depthQuadPrg = this.compile(CustomShaders.bigTriangleVert, depthQuadFs)
     this.shadowPrg = this.compile(shadowMappingVs, shadowMappingFs)
     // flip texture
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
   }
   attrib() {
-    let planeData = [
-      // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-      30., -1.01, 30., 1.0, 0.0,
-      -30., -1.01, 30., 0.0, 0.0,
-      -30., -1.01, -30., 0.0, 1.0,
 
-      30., -1.01, 30., 1.0, 0.0,
-      -30., -1.01, -30., 0.0, 1.0,
-      30., -1.01, -30., 1.0, 1.0
-    ]
-    this.plane = new Mesh()
-    this.plane.bufferData(planeData, ['position', 'texCoord'], [3, 2])
-
-    this.cube = new Mesh()
-    this.cube.bufferData(CubeData, ['position', 'normal', 'texCoord'], [3, 3, 2])
-
-    this.quad = new Mesh()
-    this.quad.bufferData(QuadData, ['position', 'texCoord'], [3, 2])
+    this.plane = Geom.plane(30, 30 ,1, 'xz')
+    this.cube = Geom.cube(1)
+    this.quad = Geom.bigTriangle()
   }
 
   prepare() {
@@ -68,14 +52,14 @@ export default class Shadow extends Pipeline {
     mat4.multiply(this.tmpMatrix, lightProjection, lightView)
 
     gl.enable(gl.DEPTH_TEST);
-    gl.depthFunc(gl.LESS);
+    //gl.cullFace(gl.FRONT_AND_BACK)
     gl.clearColor(0.3, 0.3, .3, 1.0)
 
 
     this.depthBuffer = depthTextureFbo(shadowWidth, shadowHeight)
     this.camera.radius = 11
 
-    this.wood = new Texture(gl).fromImage(getAssets.wood)
+    this.wood = getAssets.wood
     this.wood.bind()
     this.wood.repeat()
   }
@@ -86,63 +70,56 @@ export default class Shadow extends Pipeline {
   render() {
     gl.viewport(0, 0, shadowWidth, shadowHeight)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.depthBuffer.frameBuffer)
-      gl.clear(gl.DEPTH_BUFFER_BIT)
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
       this.prg.use()
       this.prg.style({
         lightSpaceMatrix: this.tmpMatrix
       })
-      this._renderScene(this.prg, ['position'])
+      this._renderScene(this.prg)
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.viewport(0, 0, canvas.width, canvas.height)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    gl.activeTexture(gl.TEXTURE0)
+    gl.activeTexture(gl.TEXTURE1)
     gl.bindTexture(gl.TEXTURE_2D, this.depthBuffer.depthTexture)
     // for debug
     // this.depthQuadPrg.use()
-    // this.depthQuadPrg.style({
-    //   depthMap: 0
-    // })
-    // this.quad.bind(this.depthQuadPrg, ['position', 'texCoord'])
-    // this.quad.draw(gl.TRIANGLE_STRIP)
+    // this.depthQuadPrg.uniform('depthMap', 'uniform1i', 0)
+    // GlTools.draw(this.quad)
 
-    this.wood.bind(1)
     this.shadowPrg.use()
+    this.shadowPrg.uniform('shadowMap', 'uniform1i', 1)
     this.shadowPrg.style({
-      shadowMap: 0,
-      diffuseTexture: 1,
+      diffuseTexture: this.wood,
       lightPos,
       viewPos: this.camera.cameraPos,
       mMatrix: this.mMatrix,
-      pMatrix,
+      pMatrix: this.camera.projMatrix,
       vMatrix,
       lightSpaceMatrix: this.tmpMatrix,
     })
     this._renderScene(this.shadowPrg)
   }
 
-  _renderScene(shader, arg) {
+  _renderScene(shader) {
     this.mMatrix = mat4.identity(mat4.create())
     shader.style({
       mMatrix: this.mMatrix
     })
-    this.plane.bind(shader, arg)
-    this.plane.draw()
+    GlTools.draw(this.plane)
 
     mat4.translate(this.mMatrix, this.mMatrix, [-1.2, 0, 5])
     shader.style({
       mMatrix: this.mMatrix
     })
-    this.cube.bind(shader, arg)
-    this.cube.draw()
+    GlTools.draw(this.cube)
 
     this.mMatrix = mat4.identity(mat4.create())
     mat4.translate(this.mMatrix, this.mMatrix, [2, 2, 4])
     shader.style({
       mMatrix: this.mMatrix
     })
-    this.cube.bind(shader, arg)
-    this.cube.draw()
+    GlTools.draw(this.cube)
 
     this.mMatrix = mat4.identity(mat4.create())
     mat4.translate(this.mMatrix, this.mMatrix, [-2.2, .4, 1])
@@ -150,8 +127,7 @@ export default class Shadow extends Pipeline {
     shader.style({
       mMatrix: this.mMatrix
     })
-    this.cube.bind(shader, arg)
-    this.cube.draw()
+    GlTools.draw(this.cube)
   }
 }
 function depthTextureFbo (width, height) {

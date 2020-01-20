@@ -54,8 +54,9 @@ const uniformMapping = {
 
 class GLShader {
 	constructor(strVertexShader = defaultVertexShader, strFragmentShader = defaultFragmentShader, mVaryings) {
-
-
+		this._name = strVertexShader.split('\n')[2] || strVertexShader.split('\r\n')[2]
+		this._name = this.name.replace('//','')
+		
 		this.parameters      = [];
 		this._uniformTextures = [];
 		this._varyings 		 = mVaryings;
@@ -245,6 +246,9 @@ class GLShader {
 
 	}
 
+	get name() {
+		return this._name
+	}
 }
 
 GLShader.getUniformType = function (mValue) {

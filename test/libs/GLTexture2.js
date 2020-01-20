@@ -185,7 +185,10 @@ class GLTexture {
 	_isSourceHtmlElement() {
 		return this._sourceType === 'image' || this._sourceType === 'video' || this._sourceType === 'canvas';
 	}
-
+	repeat () {
+		this.wrapS = gl.REPEAT
+		this.wrapT = gl.REPEAT
+	}
 
 	get minFilter() {	return this._params.minFilter;	}
 
