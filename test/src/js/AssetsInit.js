@@ -45,6 +45,9 @@ export default function AssetsInit(assets, files){
                 const mesh = ObjLoader.parse(file);
                 result[name] = mesh
                 break;
+            default:
+                result[name] = file
+                break
         }
     }
     for(let s in hdrCubemaps) {

@@ -3,7 +3,7 @@ import mapAssets from './Assets'
 import AssetsInit from './AssetsInit'
 
 let assets = {
-  wood: './assets/wood.png',
+  wood: './assets/wood.jpg',
   splash: './assets/flower.png'
 }
 let name = location.search.replace('?', '')

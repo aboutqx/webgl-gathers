@@ -99,8 +99,12 @@ export default class Mesh  extends Object3D {
 
     
     //	flatten buffer data		
-    bufferData = mData.flat(1)
-
+	for (let i = 0; i < mData.length; i++) {
+		for (let j = 0; j < mData[i].length; j++) {
+		  bufferData.push(mData[i][j]);
+		}
+	}
+console.log(bufferData)
 
     const dataArray = new Float32Array(bufferData);
     const attribute = this.getAttribute(mName);
@@ -181,7 +185,7 @@ export default class Mesh  extends Object3D {
         }
         let tmp = {}
         tmp[key + number] = i
-        mProgram.style(tmp)
+        GlTools.shader.style(tmp)
         gl.bindTexture(gl.TEXTURE_2D, this.textures[key])
         i++
       }

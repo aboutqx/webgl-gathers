@@ -9,13 +9,9 @@ import {
 } from 'gl-matrix'
 import {
   gl,
-  canvas,
-  toRadian,
   GlTools
 } from 'libs/GlTools'
 
-let vMatrix = mat4.identity(mat4.create())
-let pMatrix = mat4.identity(mat4.create())
 
 // http://ogldev.atspace.co.uk/www/tutorial26/tutorial26.html
 // Gramm-Schmid 正交可将从fragment里被光栅化，不再正交与normal的tangent重新正交化
@@ -101,15 +97,38 @@ const caculateTBN = (N) => {
   vec3.normalize(bitangent2, bitangent2)
 
   const quadVertices = [
-    // positions            // normal         // texcoords  // tangent                          // bitangent
-    leftTop[0], leftTop[1], leftTop[2], nm[0], nm[1], nm[2], uv1[0], uv1[1], tangent1[0], tangent1[1], tangent1[2], bitangent1[0], bitangent1[1], bitangent1[2],
-    leftBottom[0], leftBottom[1], leftBottom[2], nm[0], nm[1], nm[2], uv2[0], uv2[1], tangent1[0], tangent1[1], tangent1[2], bitangent1[0], bitangent1[1], bitangent1[2],
-    rightBootm[0], rightBootm[1], rightBootm[2], nm[0], nm[1], nm[2], uv3[0], uv3[1], tangent1[0], tangent1[1], tangent1[2], bitangent1[0], bitangent1[1], bitangent1[2],
-
-    leftTop[0], leftTop[1], leftTop[2], nm[0], nm[1], nm[2], uv1[0], uv1[1], tangent2[0], tangent2[1], tangent2[2], bitangent2[0], bitangent2[1], bitangent2[2],
-    rightBootm[0], rightBootm[1], rightBootm[2], nm[0], nm[1], nm[2], uv3[0], uv3[1], tangent2[0], tangent2[1], tangent2[2], bitangent2[0], bitangent2[1], bitangent2[2],
-    rightTop[0], rightTop[1], rightTop[2], nm[0], nm[1], nm[2], uv4[0], uv4[1], tangent2[0], tangent2[1], tangent2[2], bitangent2[0], bitangent2[1], bitangent2[2]
+    [
+      [leftTop[0], leftTop[1], leftTop[2]],
+      [leftBottom[0], leftBottom[1], leftBottom[2]],
+      [rightBootm[0], rightBootm[1], rightBootm[2]], 
+      [leftTop[0], leftTop[1], leftTop[2]],
+      [rightBootm[0], rightBootm[1], rightBootm[2]],
+      [rightTop[0], rightTop[1], rightTop[2]], 
+    ],
+    Array.from({ length: 6 }).fill(nm),
+    [
+      [uv1[0], uv1[1]],
+      [uv2[0], uv2[1]],
+      [uv3[0], uv3[1]],
+      [uv1[0], uv1[1]],
+      [uv3[0], uv3[1]],
+      [uv4[0], uv4[1]],
+    ],
+    [
+      [tangent1[0], tangent1[1], tangent1[2]],
+      [tangent1[0], tangent1[1], tangent1[2]],
+      [tangent1[0], tangent1[1], tangent1[2]],
+      [tangent2[0], tangent2[1], tangent2[2]],
+      [tangent2[0], tangent2[1], tangent2[2]],
+      [tangent2[0], tangent2[1], tangent2[2]],
+    ],
+    [
+      Array.from({ length: 3 }).fill(bitangent1),
+      Array.from({ length: 3 }).fill(bitangent2),
+    ]
   ]
+  
+  console.log( quadVertices)
   return quadVertices
 }
 const lightPos = [0, 3 ,0]
@@ -125,8 +144,12 @@ export default class NormalMap extends Pipeline {
   attrib() {
     const quadVertices = caculateTBN()
     this.quad = new Mesh()
-    this.quad.bufferFlattenData(quadVertices, ['position', 'normal', 'texCoord', 'tangent', 'bitangent'], [3,3,2,3,3])
-
+    this.quad.bufferVertex(quadVertices[0])
+    this.quad.bufferNormal(quadVertices[1])
+    this.quad.bufferTexCoord(quadVertices[2])
+    this.quad.bufferData(quadVertices[3], 'tangent', 3)
+    this.quad.bufferData(quadVertices[4], 'bitangent', 3)
+    this.quad.bufferIndex([0,1,2,3,4,5])
   }
   prepare() {
     this.camera.offset = [0, 2, 0]
@@ -135,35 +158,26 @@ export default class NormalMap extends Pipeline {
     gl.clearColor(0.3, 0.3, .3, 1.0)
     gl.clearDepth(1.0)
 
-    const brickwall = getAssets.brickwall
-    const brickwallNormal = getAssets.brickwallNormal
-    brickwall.bind(0)
-    brickwallNormal.bind(1)
   }
   uniform() {
-
-    vMatrix = this.camera.viewMatrix
-    mat4.perspective(pMatrix, toRadian(60), canvas.clientWidth / canvas.clientHeight, .1, 100)
-
 
     let mMatrix = mat4.identity(mat4.create())
     mat4.scale(mMatrix, mMatrix, [1.8, 1.8, 1.8])
     this.prg.use()
     this.prg.style({
       mMatrix,
-      vMatrix,
-      pMatrix,
+      vMatrix: this.camera.viewMatrix,
+      pMatrix: this.camera.projMatrix,
       viewPos: this.camera.cameraPos,
       lightPos,
-      diffuseMap: 0,
-      normalMap: 1
+      diffuseMap: getAssets.brickwall,
+      normalMap: getAssets.brickwallNormal
     })
   }
   render() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
     
     this.prg.use()
-    this.quad.bind()
     GlTools.draw(this.quad)
   }
 }

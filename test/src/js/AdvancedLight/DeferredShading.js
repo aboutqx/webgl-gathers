@@ -2,7 +2,8 @@ import Pipeline from '../PipeLine'
 import {
   gl,
   canvas,
-  toRadian
+  toRadian,
+  GlTools
 } from 'libs/GlTools'
 import vs from 'shaders/deferred_shading/finalQuad.vert'
 import fs from 'shaders/deferred_shading/finalQuad.frag'
@@ -20,7 +21,7 @@ import {
   mat4
 } from 'gl-matrix'
 import Mesh from 'libs/Mesh'
-import OBJLoader from 'libs/loaders/ObjLoader'
+import OBJLoader from 'libs/loaders/ObjLoader2'
 import MTLLoader from 'libs/loaders/MTLLoader'
 const offset = 10.
 const objectPositions = [
@@ -125,10 +126,9 @@ export default class DeferredShading extends Pipeline {
           this.gBufferPrg.style({
             mMatrix
           })
-          for (let i = 0; i < this.nanosuit.length; i++) {
-            this.nanosuit[i].bind(this.gBufferPrg, ['position', 'normal', 'texCoord'])
-            this.nanosuit[i].draw()
-          }
+
+          GlTools.draw(this.nanosuit)
+          
         }
       }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
@@ -158,15 +158,16 @@ export default class DeferredShading extends Pipeline {
       viewPos: this.camera.cameraPos
     }, true)
     for(let i = 0; i< lightPositions.length; i++) {
-      gl.uniform3fv(gl.getUniformLocation(this.prg.program,[`lights[${i}].Position`]), lightPositions[i])
-      gl.uniform3fv(gl.getUniformLocation(this.prg.program, [`lights[${i}].Color`]), lightColors[i])
-
-      gl.uniform1f(gl.getUniformLocation(this.prg.program, [`lights[${i}].Linear`]), .1)
-      gl.uniform1f(gl.getUniformLocation(this.prg.program, [`lights[${i}].Quadratic`]), .12)
+      this.prg.style({
+        [`lights[${i}].Position`]: lightPositions[i],
+        [`lights[${i}].Color`]: lightColors[i],
+        [`lights[${i}].Linear`]: .1,
+        [`lights[${i}].Quadratic`]: .12
+      })
 
     }
-    this.quad.bind(this.prg, ['position', 'texCoord'])
-    this.quad.draw(gl.TRIANGLE_STRIP)
+
+    GlTools.draw(this.quad)
 
     // copy depth
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.mrt.frameBuffer);
@@ -192,8 +193,7 @@ export default class DeferredShading extends Pipeline {
         lightColor: lightColors[i]
 
       })
-      this.cube.bind(['position'])
-      this.cube.draw()
+      GlTools.draw(this.cube)
     }
   }
 }

@@ -44,7 +44,7 @@ float ShadowCalculation(vec4 fragPosLightSpace, float bias){
 void main(){
     vec3 color = texture(diffuseTexture, TexCoord).rgb;
     vec3 normal = normalize(Normal);
-    vec3 lightColor = vec3(2.0);
+    vec3 lightColor = vec3(1.);
     // Ambient
     vec3 ambient = 0.15 * color;
     // Diffuse
@@ -63,5 +63,5 @@ void main(){
     float shadow = ShadowCalculation(FragPosLightSpace, bias);
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
 
-    FragColor = vec4(lighting, 1.0);
+    FragColor = vec4(vec3(shadow), 1.0);
 }
