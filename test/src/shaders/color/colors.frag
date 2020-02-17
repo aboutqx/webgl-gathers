@@ -12,4 +12,5 @@ void main()
 {   
     vec3 normal = normalize(Normal);
     FragColor = vec4(clamp(normal, vec3(0.), vec3(1.)), 1.0);
+
 }

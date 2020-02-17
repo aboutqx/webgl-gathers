@@ -104,7 +104,6 @@ export default class Mesh  extends Object3D {
 		  bufferData.push(mData[i][j]);
 		}
 	}
-console.log(bufferData)
 
     const dataArray = new Float32Array(bufferData);
     const attribute = this.getAttribute(mName);

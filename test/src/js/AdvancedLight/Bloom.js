@@ -14,6 +14,7 @@ import {
 import Geom from 'libs/Geom'
 import CustomShaders from 'libs/shaders/CustomShaders'
 import FrameBuffer from 'libs/FrameBuffer'
+import FboPingPong from 'libs/FboPingPong'
 
 export default class Bloom extends Pipeline {
   count = 0
@@ -34,12 +35,12 @@ export default class Bloom extends Pipeline {
     this.camera.radius = 3.5
     let fbo = new FrameBuffer(canvas.width, canvas.height, { internalFormat: gl.RGBA16F, type:gl.FLOAT }, 2)
 
-    this.hdrFbo = fbo.frameBuffer
+    this.hdrFb = fbo.frameBuffer
     this.textures = fbo.textures
 
-    let { pingpongFBO, pingpongColorbuffers } = pingpongFrameBuffer(canvas.width, canvas.height)
-    this.pingpongFBO = pingpongFBO
-    this.pingpongColorbuffers = pingpongColorbuffers
+    this.pingpongFbo = new FboPingPong(canvas.width, canvas.height, { internalFormat: gl.RGBA16F, type:gl.FLOAT })
+    
+
     gl.disable(gl.DEPTH_TEST)
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -66,7 +67,7 @@ export default class Bloom extends Pipeline {
   }
   
   renderScene(){
-    let a =[10, 10, 10]
+    let a =[10, 20, 10]
     let b = a.map(x => x* this.params.lightScale)
     this.prg.use()
     this.prg.style({
@@ -79,7 +80,7 @@ export default class Bloom extends Pipeline {
       'lights[3].Position' : [0, 0, 2.],
       'lights[3].Color': [10,20,10],
       'lights[4].Position' : [0, -1.5, 0.],
-      'lights[4].Color': [100,20,10],
+      'lights[4].Color': [10,20,10],
       baseColor:[0., 0.3, 0.3],
       uAlpha: this.params.uAlpha
     })
@@ -89,7 +90,7 @@ export default class Bloom extends Pipeline {
 
   render() {
     
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.hdrFbo)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.hdrFb)
       GlTools.clear(0,0,0)
       gl.cullFace(gl.FRONT)
       this.renderScene()
@@ -102,11 +103,11 @@ export default class Bloom extends Pipeline {
     this.blurPrg.use()
     let horizontal = true, first_iteration = true, amount = this.params.blurPassCount
     for(let i =0; i< amount; i++){
-      gl.bindFramebuffer(gl.FRAMEBUFFER, this.pingpongFBO[Number(horizontal)])
+      this.pingpongFbo.write.bind()
       if(first_iteration) {
         this.textures[1].bind()
       }
-      else  gl.bindTexture(gl.TEXTURE_2D, this.pingpongColorbuffers[Number(!horizontal)])
+      else  this.pingpongFbo.read.textures[0].bind()
       this.blurPrg.uniform('image', 'uniform1i', 0)
       this.blurPrg.style({
         horizontal,
@@ -115,6 +116,7 @@ export default class Bloom extends Pipeline {
 
       GlTools.draw(this.quad)
       horizontal = !horizontal;
+      this.pingpongFbo.swap()
       if (first_iteration) first_iteration = false;
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
@@ -122,8 +124,7 @@ export default class Bloom extends Pipeline {
     GlTools.clear(0,0,0)
     this.finalPrg.use()
     this.textures[0].bind(0)
-    gl.activeTexture(gl.TEXTURE1)
-    gl.bindTexture(gl.TEXTURE_2D, this.pingpongColorbuffers[1])
+    this.pingpongFbo.read.textures[0].bind(1)
     this.finalPrg.uniform('scene', 'uniform1i', 0)
     this.finalPrg.uniform('bloomBlur', 'uniform1i', 1)
     this.finalPrg.style({
@@ -136,25 +137,4 @@ export default class Bloom extends Pipeline {
   }
 }
 
-function pingpongFrameBuffer(width, height){
-  const pingpongFBO = []
-  const pingpongColorbuffers = []
-  for(let i=0; i< 2; i++){
-    pingpongFBO[i] = gl.createFramebuffer()
-    pingpongColorbuffers[i] = gl.createTexture()
-    gl.bindFramebuffer(gl.FRAMEBUFFER, pingpongFBO[i])
-    gl.bindTexture(gl.TEXTURE_2D, pingpongColorbuffers[i]);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, width, height, 0, gl.RGBA, gl.FLOAT, null);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, pingpongColorbuffers[i], 0);
-  }
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-  return {
-    pingpongFBO,
-    pingpongColorbuffers
-  }
-}
 

@@ -13,17 +13,14 @@ import ssaoBlurFs from 'shaders/ssao/ssao_blur.frag'
 import ssaoLightingFs from 'shaders/ssao/ssao_lighting.frag'
 
 import {
-  QuadData
-} from '../Torus'
-import {
   mat4, vec3
 } from 'gl-matrix'
-import Mesh from 'libs/Mesh'
 import OBJLoader from 'libs/loaders/ObjLoader'
 import MTLLoader from 'libs/loaders/MTLLoader'
 import Fbo from 'libs/glFbo'
 import Texture from 'libs/glTexture'
 import Geom from 'libs/Geom'
+import { GlTools } from '../../../libs/GlTools'
 
 const lightPositions = [0 ,-1, 0]
 const lightColors = [.2, .2, .7]
@@ -70,10 +67,7 @@ export default class SSAO extends Pipeline {
 
     this.cube = Geom.cube(2)
 
-    let quad = new Mesh()
-
-    quad.bufferData(QuadData, ['position', 'texCoord'], [3, 2])
-    this.quad = quad
+    this.quad = Geom.quad(3, 2)
 
     const materials = await new MTLLoader('nanosuit.mtl', './assets/models/nanosuit').parse(getAssets.nanosuitMTL)
     this.nanosuit = new OBJLoader().parseObj(getAssets.nanosuit, materials)
@@ -132,10 +126,7 @@ export default class SSAO extends Pipeline {
           mMatrix,
           invertedNormals: 0
         })
-        for (let i = 0; i < this.nanosuit.length; i++) {
-          this.nanosuit[i].bind(this.gBufferPrg, ['position', 'normal', 'texCoord'])
-          this.nanosuit[i].draw()
-        }
+        GlTools.draw(this.nanosuit)
       }
 
       let mMatrix = mat4.identity(mat4.create())
@@ -144,8 +135,7 @@ export default class SSAO extends Pipeline {
         mMatrix,
         invertedNormals: 1
       })
-      this.cube.bind(this.gBufferPrg, ['position', 'normal', 'texCoord'])
-      this.cube.draw()
+      GlTools.draw(this.quad)
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
     this.ssaoFbo.bind()
@@ -163,8 +153,7 @@ export default class SSAO extends Pipeline {
         samples: ssaoKernel,
         pMatrix: this.pMatrix
       })
-      this.quad.bind(this.ssaoPrg, ['position', 'texCoord'])
-      this.quad.draw(gl.TRIANGLE_STRIP)
+      GlTools.draw(this.quad)
     this.ssaoFbo.unbind()
 
     this.blurFbo.bind()
@@ -173,8 +162,7 @@ export default class SSAO extends Pipeline {
       this.blurPrg.style({
         ssaoInput: 0
       })
-      this.quad.bind(this.blurPrg, ['position', 'texCoord'])
-      this.quad.draw(gl.TRIANGLE_STRIP)
+      GlTools.draw(this.quad)
     this.blurFbo.unbind()
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
@@ -198,8 +186,7 @@ export default class SSAO extends Pipeline {
       'lights.Quadratic': .032
     })
 
-    this.quad.bind(this.prg, ['position', 'texCoord'])
-    this.quad.draw(gl.TRIANGLE_STRIP)
+    GlTools.draw(this.quad)
 
 
   }

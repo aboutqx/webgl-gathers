@@ -6,7 +6,6 @@ import { gl, GlTools } from './GlTools';
 import GLTexture from './GLTexture2';
 import GLCubeTexture from './GLCubeTexture';
 
-const glslify = require('glslify');
 const isSame = (array1, array2) => {
 	if(array1.length !== array2.length) {
 		return false;
