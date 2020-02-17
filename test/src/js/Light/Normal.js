@@ -13,7 +13,7 @@ import {
 }from 'libs/GlTools'
 
 const lightColor = [0.83, 0.82, 0.88]
-export default class Color extends Pipeline {
+export default class Normal extends Pipeline {
   count = 0
   constructor() {
     super()

@@ -17,7 +17,7 @@ const importLists = {
   normalmap: 'AdvancedLight/NormalMap',
   pbrflow: 'Pbr/PbrFlow',
   lightcaster: 'Light/LightCaster',
-  color: 'Light/Color',
+  normal: 'Light/Normal',
   material: 'Light/Material',
   pbrmodel: 'Pbr/PbrModel',
   envMap: 'AdvancedLight/EnvironmentMap',
