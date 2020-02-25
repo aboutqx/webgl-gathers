@@ -15,7 +15,7 @@ import {
 import Fbo from 'libs/glFbo'
 import Mesh from 'libs/Mesh'
 
-export default class Mirror extends Pipeline {
+export default class DepthOfField extends Pipeline {
   count = 0
   ortMatrix = mat4.identity(mat4.create())
   constructor() {
