@@ -21,6 +21,7 @@ export default class Bloom extends Pipeline {
   constructor() {
     super()
     gl.getExtension("EXT_color_buffer_float")
+    gl.getExtension('OES_texture_float_linear') 
   }
   init() {
     this.prg = this.compile(vs, fs)
@@ -33,19 +34,16 @@ export default class Bloom extends Pipeline {
   }
   prepare(){
     this.camera.radius = 3.5
-    let fbo = new FrameBuffer(canvas.width, canvas.height, { internalFormat: gl.RGBA16F, type:gl.FLOAT }, 2)
+    let fbo = new FrameBuffer(canvas.width, canvas.height, { internalFormat: gl.RGBA16F, type:gl.HALF_FLOAT,minFilter:gl.LINEAR,maxFilter:gl.LINEAR }, 2)
 
     this.hdrFb = fbo.frameBuffer
     this.textures = fbo.textures
 
-    this.pingpongFbo = new FboPingPong(canvas.width, canvas.height, { internalFormat: gl.RGBA16F, type:gl.FLOAT })
+    this.pingpongFbo = new FboPingPong(canvas.width, canvas.height, { internalFormat: gl.RGBA16F, type:gl.HALF_FLOAT,minFilter:gl.LINEAR,maxFilter:gl.LINEAR })
     
-
-    gl.disable(gl.DEPTH_TEST)
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
     
-
   }
   _setGUI() {
     this.addGUIParams({

@@ -5,24 +5,25 @@ import MouseMove from './MouseMove'
 
 const importLists = {
   reflection: 'Light/Reflection',
-  mask: 'OpenGL/Mask',
-  shadow: 'AdvancedLight/Shadow',
-  deferredshading: 'AdvancedLight/DeferredShading',
-  mrt: 'OpenGL/Mrt',
-  mirror: 'OpenGL/Mirror',
-  pbr: 'Pbr/Pbr',
-  ibldiffuse: 'Pbr/IblDiffuse',
-  iblfinal: 'Pbr/iblFinal',
-  ssao: 'AdvancedLight/SSAO',
-  normalmap: 'AdvancedLight/NormalMap',
-  pbrflow: 'Pbr/PbrFlow',
   lightcaster: 'Light/LightCaster',
   normal: 'Light/Normal',
   material: 'Light/Material',
+  shadow: 'Light/Shadow',
+  deferredshading: 'OpenGL/DeferredShading',
+  mask: 'OpenGL/Mask',
+  mrt: 'OpenGL/Mrt',
+  ssao: 'OpenGL/SSAO',
+  normalmap: 'Texturing/NormalMap',
+  envMap: 'Texturing/EnvironmentMap',
+  billboard: 'ImageBasedEffects/Billboard',
+  bloom: 'ImageBasedEffects/Bloom',
+  pbr: 'Pbr/Pbr',
+  ibldiffuse: 'Pbr/IblDiffuse',
+  iblfinal: 'Pbr/iblFinal',
+  pbrflow: 'Pbr/PbrFlow',
   pbrmodel: 'Pbr/PbrModel',
-  envMap: 'AdvancedLight/EnvironmentMap',
-  gltf: 'Pbr/gltf',
-  bloom: 'AdvancedLight/Bloom'
+  gltf: 'Model/gltf',
+  
 }
 
 function addList(){
