@@ -16,7 +16,12 @@ struct Light {
     vec3 diffuse;
     vec3 specular;
 
+    float constant;
+    float linear;
+    float quadratic;
+
     float cutOff;
+    float outerCutOff;
 };
 
 in vec3 FragPos;
@@ -31,30 +36,40 @@ void main()
 {
   vec3 result;
   vec3 lightDir = normalize(light.position - FragPos);
-  float theta = dot(lightDir, normalize(-light.direction));
-  if(theta > light.cutOff)
-  {
-    // ambient
-    vec3 ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;
 
-    // diffuse
-    vec3 norm = normalize(Normal);
 
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = light.diffuse * diff * texture(material.diffuse, TexCoords).rgb;
+  // ambient
+  vec3 ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;
 
-    // specular
-    vec3 viewDir = normalize(camPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * texture(material.specular, TexCoords).rgb;
+  // diffuse
+  vec3 norm = normalize(Normal);
 
-    result = ambient + diffuse + specular;
-  }
-  else {
-    // 否则，使用环境光，让场景在聚光之外时不至于完全黑暗
-    result = light.ambient * vec3(texture(material.diffuse, TexCoords));
-  }
+  float diff = max(dot(norm, lightDir), 0.0);
+  vec3 diffuse = light.diffuse * diff * texture(material.diffuse, TexCoords).rgb;
+
+  // specular
+  vec3 viewDir = normalize(camPos - FragPos);
+  vec3 reflectDir = reflect(-lightDir, norm);
+  float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+  vec3 specular = light.specular * spec * texture(material.specular, TexCoords).rgb;
+
+  // spotlight (soft edges)
+  float theta = dot(lightDir, normalize(-light.direction)); 
+  float epsilon = (light.cutOff - light.outerCutOff);
+  float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+  diffuse  *= intensity;
+  specular *= intensity;
+
+  // attenuation
+  float distance    = length(light.position - FragPos);
+  float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+
+  ambient  *= attenuation;
+  diffuse   *= attenuation;
+  specular *= attenuation;
+
+  result = ambient + diffuse + specular;
+
 
   FragColor = vec4(result, 1.0);
 }
