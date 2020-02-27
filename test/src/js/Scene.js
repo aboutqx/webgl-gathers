@@ -13,8 +13,10 @@ const importLists = {
   mask: 'OpenGL/Mask',
   mrt: 'OpenGL/Mrt',
   ssao: 'OpenGL/SSAO',
-  normalmap: 'Texturing/NormalMap',
-  envMap: 'Texturing/EnvironmentMap',
+  normalMapping: 'Texturing/NormalMapping',
+  heightMapping: 'Texturing/HeightMapping',
+  reliefMapping: 'Texturing/ReliefMapping', // can alse provide self-shadowing.
+  envMapping: 'Texturing/EnvironmentMapping',
   billboard: 'ImageBasedEffects/Billboard',
   bloom: 'ImageBasedEffects/Bloom',
   pbr: 'Pbr/Pbr',

@@ -65,6 +65,16 @@ const Assets = {
     brickwall: { url: './assets/brickwall.jpg' },
     brickwallNormal: { url: './assets/brickwall_normal.jpg' }
   },
+  bricks2: {
+    bricks2: { url: './assets/bricks2.jpg'},
+    bricks2Normal: { url: './assets/bricks2_normal.jpg'},
+    bricks2Disp: { url: './assets/bricks2_disp.jpg'},
+  },
+  toyBox: {
+    toyBox: { url: './assets/toy_box.png'},
+    toyBoxNormal: { url: './assets/toy_box_normal.png'},
+    toyBoxDisp: { url: './assets/toy_box_disp.png'},
+  },
   skybox:{
     outputskyboxPosX: { url: './assets/skybox/output_skybox_posx.hdr', type: 'binary' },
     outputskyboxPosY: { url: './assets/skybox/output_skybox_posy.hdr', type: 'binary' },
@@ -120,7 +130,9 @@ const Assets = {
 const mapAssets = {
   reflection: { ...Assets.statue, ...Assets.venus },
   lightcaster: { ...Assets.materialMaps },
-  normalmap: { ...Assets.brickwall },
+  normalMapping: { ...Assets.brickwall },
+  heightMapping: { ...Assets.bricks2 },
+  reliefMapping: { ...Assets.toyBox },
   pbr: { ...Assets.ballMaps },
   pbrflow: { ...Assets.hdrSkybox, ...Assets.iblMaps, ...Assets.ballMaps },
   pbrmodel: { ...Assets.hdrSkybox, ...Assets.iblMaps,...Assets.orb },
@@ -128,7 +140,7 @@ const mapAssets = {
   iblfinal: { ...Assets.hdrSkybox },
   deferredshading: { ...Assets.nanosuit },
   ssao: { ...Assets.nanosuit },
-  envMap: { ...Assets.skybox, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue },
+  envMapping: { ...Assets.skybox, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue },
   gltf: { ...Assets.skybox, ...Assets.gltf },
   bloom: { ...Assets.statue }
 }

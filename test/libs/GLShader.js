@@ -168,7 +168,7 @@ class GLShader {
 
 	uniformObject(mUniformObj) {
 		for(const uniformName in mUniformObj) {
-			
+			if (mUniformObj[uniformName] === undefined) { console.error('uniform: ', mUniformName, 'undefined') }
 			if (mUniformObj[uniformName] instanceof GLTexture || mUniformObj[uniformName] instanceof GLCubeTexture) {
 				const texture = mUniformObj[uniformName];
 
