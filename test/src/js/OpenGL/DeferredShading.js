@@ -74,7 +74,7 @@ export default class DeferredShading extends Pipeline {
 
   }
   async attrib() {
-    this.cube = Geom.cube(1)
+    this.cube = Geom.sphere(.3, 40)
 
     let quad = new Mesh()
     quad.bufferData(QuadData, ['position', 'texCoord'], [3, 2])

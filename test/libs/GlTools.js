@@ -46,7 +46,7 @@ class GlTool{
 
   drawMesh(mMesh, modelMatrix) {
 
-    if(mMesh.material) mMesh.material.update()
+    if(mMesh.material && mMesh.material.update) mMesh.material.update()
 
     mMesh.bind(this.shaderProgram);
     //console.log(this.shader.name, mMesh)
