@@ -77,7 +77,7 @@ const config = {
   devtool,
   mode: isProd ? 'production' : 'development',
   devServer: {
-    host: '0.0.0.0',
+    host: `${serverIp}`,
     contentBase: './src',
     hot: true,
     disableHostCheck: true,

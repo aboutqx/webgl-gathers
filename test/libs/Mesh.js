@@ -213,7 +213,7 @@ export default class Mesh  extends Object3D {
 					
 					const attrPosition = getAttribLoc(gl, mShaderProgram, attrObj.name)
 
-					if(attrPosition < 0) { console.log(attrPosition, attrObj.name, GlTools.shaderName); return }
+					if(attrPosition < 0) { console.log('attribute pos:',attrPosition, attrObj.name, 'shaderName:', GlTools.shaderName); return }
 					gl.enableVertexAttribArray(attrPosition); 
 					gl.vertexAttribPointer(attrPosition, attrObj.itemSize, gl.FLOAT, false, 0, 0);
 					attrObj.attrPosition = attrPosition;

@@ -1,8 +1,7 @@
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
-import vs from 'shaders/color/colors.vert'
-import fs from 'shaders/color/colors.frag'
-import lampFs from 'shaders/color/lamp.frag'
+import vs from 'shaders/normal/colors.vert'
+import fs from 'shaders/normal/colors.frag'
 
 import {
   mat4,
@@ -21,13 +20,10 @@ export default class Normal extends Pipeline {
   }
   init() {
     this.prg = this.compile(vs, fs)
-    this.lampPrg = this.compile(vs, lampFs)
   }
   attrib() {
  
     this.cube = Geom.cube(.5)
-
-    this.lamp = Geom.sphere(.05, 60)
   }
   prepare() {
     gl.enable(gl.DEPTH_TEST)
@@ -46,8 +42,7 @@ export default class Normal extends Pipeline {
       mMatrix,
       vMatrix: this.camera.viewMatrix,
       pMatrix: this.camera.projMatrix,
-      objectColor: [0.1, .1, .1],
-      lightColor
+      objectColor: [0.1, .1, .1]
     })
   }
   render() {
@@ -59,13 +54,5 @@ export default class Normal extends Pipeline {
     mat4.translate(mMatrix, mMatrix, [1, .1, 1])
     mat4.scale(mMatrix , mMatrix , [.2, .2, .2])
 
-    this.lampPrg.use()
-    this.lampPrg.style({
-      mMatrix,
-      vMatrix: this.camera.viewMatrix,
-      pMatrix: this.camera.projMatrix,
-      lightColor
-    })
-    GlTools.draw(this.lamp)
   }
 }

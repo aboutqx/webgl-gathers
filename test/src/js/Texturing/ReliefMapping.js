@@ -1,15 +1,16 @@
 import Pipeline from '../PipeLine'
 import Mesh from 'libs/Mesh'
 
-import vs from 'shaders/normal_map/normal_map.vert'
-import fs from 'shaders/normal_map/normal_map.frag'
+import vs from 'shaders/bumpmap/normal_map.vert'
+import fs from 'shaders/bumpmap/relief_map.frag'
 
 import {
   mat4, vec3, vec2
 } from 'gl-matrix'
 import {
   gl,
-  GlTools
+  GlTools,
+  toRadian
 } from 'libs/GlTools'
 
 
@@ -98,29 +99,17 @@ const caculateTBN = (N) => {
 
   const quadVertices = [
     [
-      [leftTop[0], leftTop[1], leftTop[2]],
-      [leftBottom[0], leftBottom[1], leftBottom[2]],
-      [rightBootm[0], rightBootm[1], rightBootm[2]], 
-      [leftTop[0], leftTop[1], leftTop[2]],
-      [rightBootm[0], rightBootm[1], rightBootm[2]],
-      [rightTop[0], rightTop[1], rightTop[2]], 
+      leftTop,leftBottom,rightBootm, 
+      leftTop,rightBootm,rightTop, 
     ],
     Array.from({ length: 6 }).fill(nm),
     [
-      [uv1[0], uv1[1]],
-      [uv2[0], uv2[1]],
-      [uv3[0], uv3[1]],
-      [uv1[0], uv1[1]],
-      [uv3[0], uv3[1]],
-      [uv4[0], uv4[1]],
+      uv1,uv2,uv3,
+      uv1,uv3,uv4,
     ],
     [
-      [tangent1[0], tangent1[1], tangent1[2]],
-      [tangent1[0], tangent1[1], tangent1[2]],
-      [tangent1[0], tangent1[1], tangent1[2]],
-      [tangent2[0], tangent2[1], tangent2[2]],
-      [tangent2[0], tangent2[1], tangent2[2]],
-      [tangent2[0], tangent2[1], tangent2[2]],
+      tangent1,tangent1,tangent1,
+      tangent2,tangent2,tangent2,
     ],
     [
       Array.from({ length: 3 }).fill(bitangent1),
@@ -131,8 +120,9 @@ const caculateTBN = (N) => {
   console.log( quadVertices)
   return quadVertices
 }
-const lightPos = [0, 3 ,0]
-export default class NormalMap extends Pipeline {
+const lightPos = [0, 0 ,3]
+// Parallax Occlusion Mapping
+export default class ReliefMapping extends Pipeline {
   count = 0
   constructor() {
     super()
@@ -152,7 +142,7 @@ export default class NormalMap extends Pipeline {
     this.quad.bufferIndex([0,1,2,3,4,5])
   }
   prepare() {
-    this.camera.offset = [0, 2, 0]
+    this.camera.target = [0, 0, 0]
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LEQUAL)
     gl.clearColor(0.3, 0.3, .3, 1.0)
@@ -162,7 +152,8 @@ export default class NormalMap extends Pipeline {
   uniform() {
 
     let mMatrix = mat4.identity(mat4.create())
-    mat4.scale(mMatrix, mMatrix, [1.8, 1.8, 1.8])
+    mat4.rotateX(mMatrix, mMatrix, toRadian(90))
+    mat4.scale(mMatrix, mMatrix, [1.2, 1.2, 1.2])
     this.prg.use()
     this.prg.style({
       mMatrix,
@@ -170,8 +161,10 @@ export default class NormalMap extends Pipeline {
       pMatrix: this.camera.projMatrix,
       viewPos: this.camera.cameraPos,
       lightPos,
-      diffuseMap: getAssets.brickwall,
-      normalMap: getAssets.brickwallNormal
+      diffuseMap: getAssets.toyBox,
+      normalMap: getAssets.toyBoxNormal,
+      heightMap: getAssets.toyBoxDisp,
+      heightScale: .1
     })
   }
   render() {
