@@ -67,6 +67,8 @@ export default class Shadow extends Pipeline {
     vMatrix = this.camera.viewMatrix
 
   }
+
+
   render() {
     gl.viewport(0, 0, shadowWidth, shadowHeight)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.depthBuffer.frameBuffer)
@@ -83,9 +85,7 @@ export default class Shadow extends Pipeline {
     gl.activeTexture(gl.TEXTURE1)
     gl.bindTexture(gl.TEXTURE_2D, this.depthBuffer.depthTexture)
     // for debug
-    // this.depthQuadPrg.use()
-    // this.depthQuadPrg.uniform('depthMap', 'uniform1i', 0)
-    // GlTools.draw(this.quad)
+    //this.frameBufferGUI.textureList = [{ texture: this.depthBuffer.depthTexture }]
 
     this.shadowPrg.use()
     this.shadowPrg.uniform('shadowMap', 'uniform1i', 1)

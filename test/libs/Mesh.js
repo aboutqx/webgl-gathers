@@ -400,14 +400,6 @@ export default class Mesh  extends Object3D {
     this.material = material
   }
 
-  get positionBuffer() {
-    let i = has(this._buffers, 'name', 'position')
-    if(i === -1) {
-      console.warn('no vertex buffer set')
-    } else {
-      return this._buffers[i].buffer
-    }
-  }
   	//	GETTER AND SETTERS
 
 	get vertices() {	return this.getSource('position');	}
