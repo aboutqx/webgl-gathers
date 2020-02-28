@@ -1,7 +1,8 @@
 import Program from 'libs/GLShader'
 import Camera from 'libs/cameras/Camera'
-import { quat, mat4 } from 'gl-matrix';
+import { quat, mat4 } from 'gl-matrix'
 import { gl, GlTools } from 'libs/GlTools'
+import FrameBufferGUI from 'libs/helpers/FrameBufferGUI'
 import * as dat from 'dat.gui'
 
 
@@ -26,6 +27,7 @@ export default class Pipeline {
     this._setGUI()
 
     this._animate = this.animate.bind(this)
+    this.frameBufferGUI = new FrameBufferGUI()
     
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LEQUAL)
@@ -55,6 +57,7 @@ export default class Pipeline {
     this.camera.updateMatrix()
     this.uniform()
     this.render()
+    this.frameBufferGUI.draw()
   }
   render() {
 
