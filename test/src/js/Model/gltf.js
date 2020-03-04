@@ -1,12 +1,7 @@
 import Pipeline from '../PipeLine'
-import Geom from 'libs/Geom'
-import CustomShaders from 'libs/shaders/CustomShaders'
+import BatchSkyBox from 'libs/helpers/BatchSkyBox'
 import GLTFLoader from 'libs/loaders/GLTFLoader'
 import { GlTools } from 'libs/GlTools'
-
-import {
-  mat4
-} from 'gl-matrix'
 import {
   gl,
   canvas,
@@ -20,18 +15,14 @@ export default class GLTF extends Pipeline {
 
   }
   init() {
-    this.skyboxPrg = this.compile(CustomShaders.skyboxVert, CustomShaders.skyboxFrag)
-
+    this.skybox = new BatchSkyBox(40, getAssets.outputskybox)
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);	
   }
   attrib() {
-    this.skybox = Geom.skybox(40)
 
   }
   prepare() {
-
-    this.skyMap = getAssets.outputskybox
 
     this.env = 'studio9'
     this.textureIrr = getAssets[`${this.env}_irradiance`];
@@ -64,28 +55,12 @@ export default class GLTF extends Pipeline {
   }
   uniform() {
 
-    mat4.perspective(this.pMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 100)
-
-    mat4.multiply(this.tmpMatrix, this.pMatrix, this.vMatrix)
-
-    let mMatrix = mat4.identity(mat4.create())
-    mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
-
-    this.skyboxPrg.use()
-    this.skyboxPrg.style({
-      mvpMatrix: this.mvpMatrix,
-      uGamma: 2.2,
-      uExposure: 5.,
-      tex: this.skyMap
-    })
   }
   render() {
 
-    gl.clearColor(0.3, 0.3, .3, 1.0)
-    gl.clear(gl.COLOR_BUFFER_BIT)
+    GlTools.clear()
 
-    this.skyboxPrg.use()
-    GlTools.draw(this.skybox)
+    this.skybox.render()
 
     if(this.gltfPrg){
       this.gltfPrg.use()

@@ -3,7 +3,9 @@
 precision highp float;
 in vec3 position;
 in vec2 texCoord;
-uniform   mat4 mvpMatrix;
+uniform mat4 mMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
 out   vec2 TexCoords;
 out vec3 vertex;
 
@@ -11,6 +13,6 @@ out vec3 vertex;
 void main(void){
     TexCoords = texCoord;
     vertex = position;
-    vec4 pos = mvpMatrix * vec4(position, 1.0);
+    vec4 pos = uProjectionMatrix * uViewMatrix * mMatrix * vec4(position, 1.0);
     gl_Position = pos.xyww;
 }

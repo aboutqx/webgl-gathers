@@ -9,6 +9,7 @@ import basec2dVert from '../glsl/basic2d.vert'
 
 export default class FrameBufferGUI {
     _position = [0, 0]
+    _tanslate = [[.85 , -.85, 0], [.55 , -.85, 0]]
     _size = [.3, .3]
     _texturelist = []
 
@@ -26,13 +27,13 @@ export default class FrameBufferGUI {
         if(this._texturelist.length == 0) return
 
         gl.disable(gl.DEPTH_TEST)
-        this._texturelist.forEach(v => {
+        this._texturelist.forEach((v, i) => {
             this.texturePrg.use()
 
             v.size = v.size || this._size
             v.position = v.position || this._position
             let mMatrix = mat4.identity(mat4.create())
-            mat4.translate(mMatrix, mMatrix, [.85 , -.85, 0])
+            mat4.translate(mMatrix, mMatrix, this._translate[i])
             mat4.scale(mMatrix, mMatrix, [v.size[0], v.size[1], 1])
 
             gl.activeTexture(gl.TEXTURE0)
