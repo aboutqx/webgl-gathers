@@ -58,10 +58,7 @@ export default class Bloom extends Pipeline {
     this.gui.add(this.params, 'uAlpha', 0, 1.0).step(.1)
   }
   uniform() {
-    let mMatrix = mat4.identity(mat4.create())
 
-    let invMatrix = mat4.identity(mat4.create())
-    mat4.invert(invMatrix, mMatrix)
   }
   
   renderScene(){
@@ -99,15 +96,11 @@ export default class Bloom extends Pipeline {
 
 
     this.blurPrg.use()
-    let horizontal = true, first_iteration = true, amount = this.params.blurPassCount
+    let horizontal = true, amount = this.params.blurPassCount
     for(let i =0; i< amount; i++){
       this.pingpongFbo.write.bind()
-      if(first_iteration) {
-        this.textures[1].bind()
-      }
-      else  this.pingpongFbo.read.textures[0].bind()
-      this.blurPrg.uniform('image', 'uniform1i', 0)
       this.blurPrg.style({
+        image: i == 0 ? this.textures[1] : this.pingpongFbo.read.textures[0],
         horizontal,
         texOffsetScale: this.params.texOffsetScale
       })
@@ -115,17 +108,14 @@ export default class Bloom extends Pipeline {
       GlTools.draw(this.quad)
       horizontal = !horizontal;
       this.pingpongFbo.swap()
-      if (first_iteration) first_iteration = false;
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
     GlTools.clear(0,0,0)
     this.finalPrg.use()
-    this.textures[0].bind(0)
-    this.pingpongFbo.read.textures[0].bind(1)
-    this.finalPrg.uniform('scene', 'uniform1i', 0)
-    this.finalPrg.uniform('bloomBlur', 'uniform1i', 1)
     this.finalPrg.style({
+      scene: this.textures[0],
+      bloomBlur: this.pingpongFbo.read.textures[0],
       bloom: true,
       exposure: .1
     })

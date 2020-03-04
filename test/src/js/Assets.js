@@ -123,8 +123,10 @@ const Assets = {
     studio9_radiance:{"url":"assets/img/studio9_radiance.dds","type":"binary"},
     vatican_irradiance:{"url":"assets/img/vatican_irradiance.dds","type":"binary"},
     vatican_radiance:{"url":"assets/img/vatican_radiance.dds","type":"binary"}
+  },
+  water: {
+    terrain: { url:'./assets/water/terrain.jpg' }
   }
-
 
 }
 const mapAssets = {
@@ -142,6 +144,7 @@ const mapAssets = {
   ssao: { ...Assets.nanosuit },
   envMapping: { ...Assets.skybox, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue },
   gltf: { ...Assets.skybox, ...Assets.gltf },
-  bloom: { ...Assets.statue }
+  bloom: { ...Assets.statue },
+  water: { ...Assets.water }
 }
 export default mapAssets

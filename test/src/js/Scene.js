@@ -25,7 +25,7 @@ const importLists = {
   pbrflow: 'Pbr/PbrFlow',
   pbrmodel: 'Pbr/PbrModel',
   gltf: 'Model/gltf',
-  
+  water: 'NaturalEffects/Water'
 }
 
 function addList(){
