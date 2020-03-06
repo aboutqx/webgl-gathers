@@ -18,6 +18,7 @@ export default class Pipeline {
   gui = new dat.GUI({
     width: 300
   })
+
   constructor() {
     this.vMatrix = this.camera.viewMatrix
     GlTools.setCamera(this.camera)
@@ -29,11 +30,9 @@ export default class Pipeline {
     this._animate = this.animate.bind(this)
     this.frameBufferGUI = new FrameBufferGUI()
     
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LEQUAL)
-    gl.enable(gl.CULL_FACE)
-
+    GlTools.customGlState()
   }
+  
   init() {
     
   }

@@ -4,7 +4,7 @@ import AssetsInit from './AssetsInit'
 
 let assets = {
   wood: './assets/wood.jpg',
-  splash: './assets/flower.png'
+  flower: './assets/flower.png'
 }
 let name = location.search.replace('?', '')
 

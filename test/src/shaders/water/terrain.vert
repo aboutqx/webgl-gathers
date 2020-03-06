@@ -26,8 +26,8 @@ float rand (vec2 st) {
 
 void main(void) {
     vec3 Position;
-    if(abs(position.x) > 15.)
-        Position = vec3(position.x, rand(position.xz) * 5., position.z);
+    if(distance(position, vec3(0,0,0)) > (40. + rand(position.xz) * 10.))
+        Position = vec3(position.x, rand(position.xz) * 8., position.z);
     else 
         Position = vec3(position.x, -.1, position.z);
     gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(Position, 1.0);

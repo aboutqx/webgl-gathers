@@ -54,7 +54,7 @@ export default class Mask extends Pipeline {
     this.cubeFrame.bufferTexCoord(cubeAABB.texCoord)
     this.cubeFrame.bufferIndex(cubeAABB.index)
 */
-    this.texture = getAssets.splash
+    this.texture = getAssets.flower
     this.texture.bind()
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
@@ -103,7 +103,7 @@ export default class Mask extends Pipeline {
 
     let pMatrix = mat4.clone(this.camera.projMatrix)
     let vMatrix = mat4.clone(this.camera.viewMatrix)
-    this.intersect.setRay(this.mousePos.x, this.mousePos.y, pMatrix, vMatrix, this.camera.cameraPos)
+    this.intersect.setRay(this.mousePos.x, this.mousePos.y, pMatrix, vMatrix, this.camera.position)
 
   }
   render() {

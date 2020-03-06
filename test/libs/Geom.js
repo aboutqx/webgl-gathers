@@ -92,7 +92,6 @@ Geom.plane = function plane(width, height, numSegments, axis = 'xy', drawType = 
 	mesh.bufferTexCoord(coords);
 	mesh.bufferIndex(indices);
 	mesh.bufferNormal(normals);
-
 	return mesh;
 };
 

@@ -82,7 +82,7 @@ export default class EnvMap extends Pipeline {
       vMatrix: this.vMatrix,
       pMatrix: this.pMatrix,
       skybox: 0,
-      cameraPos: this.camera.cameraPos
+      cameraPos: this.camera.position
     })
     for(let i =0;i<this.venus.length;i++){
       GlTools.draw(this.venus[i], true)
@@ -97,7 +97,7 @@ export default class EnvMap extends Pipeline {
       vMatrix: this.vMatrix,
       pMatrix: this.pMatrix,
       skybox: 0,
-      cameraPos: this.camera.cameraPos
+      cameraPos: this.camera.position
     })
     for(let i =0;i<this.venus.length;i++){
       GlTools.draw(this.venus[i], true)
@@ -112,7 +112,7 @@ export default class EnvMap extends Pipeline {
       vMatrix: this.vMatrix,
       pMatrix: this.pMatrix,
       skybox: 0,
-      cameraPos: this.camera.cameraPos,
+      cameraPos: this.camera.position,
       etaRatio: [.65, .67,.69],
       fresnelPower: .8,
       fresnelBias: .1,

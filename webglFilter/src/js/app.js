@@ -4,8 +4,7 @@ import Filter from './Filter'
 import '../scss/main.scss'
 import Emitter from './Emitter'
 import * as Util from 'libs/forDom.js'
-// import React from 'react'
-// import styled from 'styled-components'
+
 
 const urlPre = './textures/'
 const assets = {

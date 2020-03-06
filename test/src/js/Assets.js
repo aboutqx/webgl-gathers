@@ -83,6 +83,14 @@ const Assets = {
     outputskyboxNegY: { url: './assets/skybox/output_skybox_negy.hdr', type: 'binary' },
     outputskyboxNegZ: { url: './assets/skybox/output_skybox_negz.hdr', type: 'binary' },
   },
+  skyboxLake:{
+    lakePosX: { url: './assets/skybox/output_skybox_posx.hdr' },
+    lakePosY: { url: './assets/skybox/output_skybox_posy.hdr' },
+    lakePosZ: { url: './assets/skybox/output_skybox_posz.hdr' },
+    lakeNegX: { url: './assets/skybox/output_skybox_negx.hdr' },
+    lakeNegY: { url: './assets/skybox/output_skybox_negy.hdr' },
+    lakeNegZ: { url: './assets/skybox/output_skybox_negz.hdr' },
+  },
   venus: {
     venus: { url:'./assets/models/venus.obj', type: 'text'}
   },
@@ -125,7 +133,8 @@ const Assets = {
     vatican_radiance:{"url":"assets/img/vatican_radiance.dds","type":"binary"}
   },
   water: {
-    terrain: { url:'./assets/water/terrain.jpg' }
+    terrain: { url:'./assets/water/terrain.jpg' },
+    flower: { url: './assets/flower.png' }
   }
 
 }
@@ -145,6 +154,6 @@ const mapAssets = {
   envMapping: { ...Assets.skybox, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue },
   gltf: { ...Assets.skybox, ...Assets.gltf },
   bloom: { ...Assets.statue },
-  water: { ...Assets.water }
+  water: { ...Assets.water, ...Assets.skybox, }
 }
 export default mapAssets

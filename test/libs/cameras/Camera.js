@@ -21,7 +21,7 @@ const getMouse = function (mEvent, mTarget, finger2) {
 const MIN_DIFF = 0.0001;
 
 export default class Camrea {
-  cameraPos
+  position
   up
   cameraFront = [0, 0, -1]
   _mouse = {}
@@ -43,10 +43,10 @@ export default class Camrea {
   _targetRadius = 5
   _updateWheel = false
   constructor (position = [0,0,0], up = [0, 1, 0]) {
-    this.cameraPos = position
+    this.position = position
     this.up = up
     this.projMatrix = mat4.create()
-    mat4.perspective(this.projMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 100)
+    mat4.perspective(this.projMatrix, toRadian(45), canvas.clientWidth / canvas.clientHeight, .1, 1000)
     this._addEvents()
   }
 
@@ -89,7 +89,7 @@ export default class Camrea {
     this._mousedown = false
   }
 
-  updateMatrix (){
+  updateMatrix (mMatrix){
     this._rx += (this._targetRx - this._rx) * 0.1 //ease out
     if (Math.abs(this._targetRx - this._rx) < MIN_DIFF) {
       this._rx = this._targetRx
@@ -107,14 +107,19 @@ export default class Camrea {
       }
     }
 
-    this.cameraPos[1] = Math.sin(this._ry) * this.radius
+    this.position[1] = Math.sin(this._ry) * this.radius
     let tr = Math.abs(Math.cos(this._ry) * this.radius) // 防止y突然从1变成-1，x，z的象限变化
-    this.cameraPos[0] = Math.cos(this._rx + Math.PI * 0.5) * tr
-    this.cameraPos[2] = Math.sin(this._rx + Math.PI * 0.5) * tr
+    this.position[0] = Math.cos(this._rx + Math.PI * 0.5) * tr
+    this.position[2] = Math.sin(this._rx + Math.PI * 0.5) * tr
 
-    //mat4.lookAt(mat4.create(), this.cameraPos, this.cameraPos + this.cameraFront, this.up)
-    this.cameraPos = [this.cameraPos[0] + this.offset[0], this.cameraPos[1] + this.offset[1], this.cameraPos[2] + this.offset[2]]
-    mat4.lookAt(this._viewMatrix, this.cameraPos, this.target, this.up)
+    this.up[1] = 1
+    this.position = [this.position[0] + this.offset[0], this.position[1] + this.offset[1], this.position[2] + this.offset[2]]
+    if(mMatrix) {
+      this.position = [this.position[0], -this.position[1], this.position[2]]
+      this.up[1] = -1
+    }
+
+    mat4.lookAt(this._viewMatrix, this.position, this.target, this.up)
   }
 
   _onWheel(mEvent) {

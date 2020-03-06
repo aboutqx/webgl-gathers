@@ -155,7 +155,7 @@ export default class DeferredShading extends Pipeline {
       gPosition: 0,
       gNormal: 1,
       gAlbedoSpec: 2,
-      viewPos: this.camera.cameraPos
+      viewPos: this.camera.position
     }, true)
     for(let i = 0; i< lightPositions.length; i++) {
       this.prg.style({

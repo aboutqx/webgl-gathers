@@ -20,8 +20,7 @@ export default class Bloom extends Pipeline {
   count = 0
   constructor() {
     super()
-    gl.getExtension("EXT_color_buffer_float")
-    gl.getExtension('OES_texture_float_linear') 
+    GlTools.applyHdrExtension()
   }
   init() {
     this.prg = this.compile(vs, fs)
@@ -61,7 +60,7 @@ export default class Bloom extends Pipeline {
 
   }
   
-  renderScene(){
+  _renderScene(){
     let a =[10, 20, 10]
     let b = a.map(x => x* this.params.lightScale)
     this.prg.use()
@@ -88,9 +87,9 @@ export default class Bloom extends Pipeline {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.hdrFb)
       GlTools.clear(0,0,0)
       gl.cullFace(gl.FRONT)
-      this.renderScene()
+      this._renderScene()
       gl.cullFace(gl.BACK)
-      this.renderScene()
+      this._renderScene()
     
      gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 

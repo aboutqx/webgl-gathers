@@ -102,7 +102,7 @@ export default class LightCaster extends Pipeline {
       this.prg.style({
         vMatrix,
         pMatrix,
-        camPos: this.camera.cameraPos,
+        camPos: this.camera.position,
         'material.shininess': 30,
         'material.diffuse': this.diffuseTexture,
         'material.specular': this.specularTexture,
@@ -128,7 +128,7 @@ export default class LightCaster extends Pipeline {
       this.pointPrg.style({
         vMatrix,
         pMatrix,
-        camPos: this.camera.cameraPos,
+        camPos: this.camera.position,
         'material.shininess': 30,
         'material.diffuse': this.diffuseTexture,
         'material.specular': this.specularTexture,
@@ -157,7 +157,7 @@ export default class LightCaster extends Pipeline {
       this.spotPrg.style({
         vMatrix,
         pMatrix,
-        camPos: this.camera.cameraPos,
+        camPos: this.camera.position,
         'material.shininess': 30,
         'material.diffuse': this.diffuseTexture,
         'material.specular': this.specularTexture,
@@ -165,8 +165,8 @@ export default class LightCaster extends Pipeline {
         'light.ambient': [.1, .1, .1],
         'light.diffuse': [1.5, 1.5, 15],
         'light.specular': [.8, .8, .8],
-        'light.position': this.camera.cameraPos,
-        'light.direction': [-this.camera.cameraPos[0], -this.camera.cameraPos[1], -this.camera.cameraPos[2]],
+        'light.position': this.camera.position,
+        'light.direction': [-this.camera.position[0], -this.camera.position[1], -this.camera.position[2]],
         'light.cutOff': Math.cos(toRadian(12.5)),
         'light.outerCutOff': Math.cos(toRadian(15.5)),
 

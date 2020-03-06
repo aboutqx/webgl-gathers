@@ -179,7 +179,7 @@ export default class SSAO extends Pipeline {
       gNormal: 1,
       gAlbedoSpec: 2,
       ssao: 3,
-      viewPos: this.camera.cameraPos,
+      viewPos: this.camera.position,
       'lights.Position': lightPositions,
       'lights.Color': lightColors,
       'lights.Linear': .09,
