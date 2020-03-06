@@ -29,8 +29,8 @@ export default class GLTF extends Pipeline {
     this.textureRad = getAssets[`${this.env}_radiance`];
     this.textureBrdf = getAssets['brdfLUT']
 
-    const gltfList = ['chinatown_lion', 'BoomBox', 'FlightHelmet', 'horse_statuette', 'swan_sculpture', 'triton_on_a_frieze']
-    const index = 1
+    const gltfList = ['hebe','chinatown_lion', 'BoomBox', 'FlightHelmet', 'horse_statuette', 'swan_sculpture', 'triton_on_a_frieze']
+    const index = 0
     const url = `assets/gltf/${gltfList[index]}/scene.gltf`
     GLTFLoader.load(url)
     .then((gltfInfo)=> {
@@ -68,9 +68,9 @@ export default class GLTF extends Pipeline {
 
     if(this.scenes) {
 			this.scenes.forEach( scene => {
-        scene.scaleX = 100
-        scene.scaleY = 100
-        scene.scaleZ = 100
+        scene.scaleX = .01
+        scene.scaleY = .01
+        scene.scaleZ = .01
 				GlTools.draw(scene)
 			});	
 		}

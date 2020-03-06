@@ -51,7 +51,7 @@ export default class Color extends Pipeline {
       mMatrix,
       vMatrix: this.camera.viewMatrix,
       pMatrix: this.camera.projMatrix,
-      camPos: this.camera.cameraPos,
+      camPos: this.camera.position,
       'light.position': ligthPos,
       'material.ambient': [1, .5, .31],
       'material.diffuse': [.0, .0, .0],

@@ -92,7 +92,7 @@ export default class Shadow extends Pipeline {
     this.shadowPrg.style({
       diffuseTexture: this.wood,
       lightPos,
-      viewPos: this.camera.cameraPos,
+      viewPos: this.camera.position,
       mMatrix: this.mMatrix,
       pMatrix: this.camera.projMatrix,
       vMatrix,

@@ -4311,7 +4311,7 @@ class DeferredShading extends _PipeLine__WEBPACK_IMPORTED_MODULE_2__["default"] 
       gPosition: 0,
       gNormal: 1,
       gAlbedoSpec: 2,
-      viewPos: this.camera.cameraPos
+      viewPos: this.camera.position
     }, true);
 
     for (let i = 0; i < lightPositions.length; i++) {
@@ -4510,7 +4510,7 @@ class EnvMap extends _PipeLine__WEBPACK_IMPORTED_MODULE_1__["default"] {
       vMatrix: this.vMatrix,
       pMatrix: this.pMatrix,
       skybox: 0,
-      cameraPos: this.camera.cameraPos
+      cameraPos: this.camera.position
     });
 
     for (let i = 0; i < this.venus.length; i++) {
@@ -4526,7 +4526,7 @@ class EnvMap extends _PipeLine__WEBPACK_IMPORTED_MODULE_1__["default"] {
       vMatrix: this.vMatrix,
       pMatrix: this.pMatrix,
       skybox: 0,
-      cameraPos: this.camera.cameraPos
+      cameraPos: this.camera.position
     });
 
     for (let i = 0; i < this.venus.length; i++) {
@@ -4542,7 +4542,7 @@ class EnvMap extends _PipeLine__WEBPACK_IMPORTED_MODULE_1__["default"] {
       vMatrix: this.vMatrix,
       pMatrix: this.pMatrix,
       skybox: 0,
-      cameraPos: this.camera.cameraPos,
+      cameraPos: this.camera.position,
       etaRatio: [.65, .67, .69],
       fresnelPower: .8,
       fresnelBias: .1,
@@ -4687,7 +4687,7 @@ class NormalMap extends _PipeLine__WEBPACK_IMPORTED_MODULE_1__["default"] {
       mMatrix,
       vMatrix,
       pMatrix,
-      viewPos: this.camera.cameraPos,
+      viewPos: this.camera.position,
       lightPos,
       diffuseMap: 0,
       normalMap: 1
@@ -4923,7 +4923,7 @@ class SSAO extends _PipeLine__WEBPACK_IMPORTED_MODULE_2__["default"] {
       gNormal: 1,
       gAlbedoSpec: 2,
       ssao: 3,
-      viewPos: this.camera.cameraPos,
+      viewPos: this.camera.position,
       'lights.Position': lightPositions,
       'lights.Color': lightColors,
       'lights.Linear': .09,
@@ -5497,7 +5497,7 @@ class Shadow extends _PipeLine__WEBPACK_IMPORTED_MODULE_1__["default"] {
       shadowMap: 0,
       diffuseTexture: 1,
       lightPos,
-      viewPos: this.camera.cameraPos,
+      viewPos: this.camera.position,
       mMatrix: this.mMatrix,
       pMatrix,
       vMatrix,
@@ -5760,7 +5760,7 @@ class LightCaster extends _PipeLine__WEBPACK_IMPORTED_MODULE_1__["default"] {
       this.prg.style({
         vMatrix,
         pMatrix,
-        camPos: this.camera.cameraPos,
+        camPos: this.camera.position,
         'material.shininess': 30,
         'material.diffuse': 0,
         'material.specular': 1,
@@ -5788,7 +5788,7 @@ class LightCaster extends _PipeLine__WEBPACK_IMPORTED_MODULE_1__["default"] {
       this.pointPrg.style({
         vMatrix,
         pMatrix,
-        camPos: this.camera.cameraPos,
+        camPos: this.camera.position,
         'material.shininess': 30,
         'material.diffuse': 0,
         'material.specular': 1,
@@ -5817,7 +5817,7 @@ class LightCaster extends _PipeLine__WEBPACK_IMPORTED_MODULE_1__["default"] {
       this.spotPrg.style({
         vMatrix,
         pMatrix,
-        camPos: this.camera.cameraPos,
+        camPos: this.camera.position,
         'material.shininess': 30,
         'material.diffuse': 0,
         'material.specular': 1,
@@ -5825,8 +5825,8 @@ class LightCaster extends _PipeLine__WEBPACK_IMPORTED_MODULE_1__["default"] {
         'light.ambient': [.1, .1, .1],
         'light.diffuse': [.5, .5, .5],
         'light.specular': [1., 1., 1.],
-        'light.position': this.camera.cameraPos,
-        'light.direction': [-this.camera.cameraPos[0], -this.camera.cameraPos[1], -this.camera.cameraPos[2]],
+        'light.position': this.camera.position,
+        'light.direction': [-this.camera.position[0], -this.camera.position[1], -this.camera.position[2]],
         'light.cutOff': Object(libs_GlTools__WEBPACK_IMPORTED_MODULE_11__[/* toRadian */ "d"])(12.5)
       });
       cubePosition.map((position, i) => {
@@ -5914,7 +5914,7 @@ class Color extends _PipeLine__WEBPACK_IMPORTED_MODULE_1__["default"] {
       mMatrix,
       vMatrix: this.camera.viewMatrix,
       pMatrix: this.camera.projMatrix,
-      camPos: this.camera.cameraPos,
+      camPos: this.camera.position,
       'light.position': ligthPos,
       'material.ambient': [1, .5, .31],
       'material.diffuse': [.0, .0, .0],
@@ -5994,7 +5994,7 @@ class Reflection extends _PipeLine__WEBPACK_IMPORTED_MODULE_1__["default"] {
       invMatrix,
       color: [this.params.color[0] / 255, this.params.color[1] / 255, this.params.color[2] / 255],
       lightDirection: [-0.5, 0.5, 0.5],
-      eyeDirection: this.camera.cameraPos,
+      eyeDirection: this.camera.position,
       ambientColor: [0.1, 0.1, 0.1, 1.0]
     });
   }
@@ -7620,7 +7620,7 @@ class PbrModel extends _PipeLine__WEBPACK_IMPORTED_MODULE_2__["default"] {
       lightPositions: [// use flatten array for gl.uniform3fv
       -10., 10., 10., 10., 10., 10., -10., -10., 10., 10., -10., 10.],
       lightColors: new Array(12).fill(300.),
-      camPos: this.camera.cameraPos,
+      camPos: this.camera.position,
       lambertDiffuse: this.params.lambertDiffuse
     };
 
@@ -9057,7 +9057,7 @@ class Mask_Mask extends PipeLine["default"] {
   uniform() {
     let pMatrix = gl_matrix["b" /* mat4 */].clone(this.camera.projMatrix);
     let vMatrix = gl_matrix["b" /* mat4 */].clone(this.camera.viewMatrix);
-    this.intersect.setRay(this.mousePos.x, this.mousePos.y, pMatrix, vMatrix, this.camera.cameraPos);
+    this.intersect.setRay(this.mousePos.x, this.mousePos.y, pMatrix, vMatrix, this.camera.position);
   }
 
   render() {
@@ -9653,7 +9653,7 @@ class Camera_Camrea {
 
     Object(defineProperty["a" /* default */])(this, "_updateWheel", false);
 
-    this.cameraPos = position;
+    this.position = position;
     this.up = up;
     this.projMatrix = gl_matrix["b" /* mat4 */].create();
     gl_matrix["b" /* mat4 */].perspective(this.projMatrix, Object(GlTools["d" /* toRadian */])(45), GlTools["b" /* canvas */].clientWidth / GlTools["b" /* canvas */].clientHeight, .1, 100);
@@ -9718,14 +9718,14 @@ class Camera_Camrea {
       }
     }
 
-    this.cameraPos[1] = Math.sin(this._ry) * this.radius;
+    this.position[1] = Math.sin(this._ry) * this.radius;
     let tr = Math.abs(Math.cos(this._ry) * this.radius); // 防止y突然从1变成-1，x，z的象限变化
 
-    this.cameraPos[0] = Math.cos(this._rx + Math.PI * 0.5) * tr;
-    this.cameraPos[2] = Math.sin(this._rx + Math.PI * 0.5) * tr; //mat4.lookAt(mat4.create(), this.cameraPos, this.cameraPos + this.cameraFront, this.up)
+    this.position[0] = Math.cos(this._rx + Math.PI * 0.5) * tr;
+    this.position[2] = Math.sin(this._rx + Math.PI * 0.5) * tr; //mat4.lookAt(mat4.create(), this.position, this.position + this.cameraFront, this.up)
 
-    this.cameraPos = [this.cameraPos[0] + this.offset[0], this.cameraPos[1] + this.offset[1], this.cameraPos[2] + this.offset[2]];
-    gl_matrix["b" /* mat4 */].lookAt(this._viewMatrix, this.cameraPos, this.target, this.up);
+    this.position = [this.position[0] + this.offset[0], this.position[1] + this.offset[1], this.position[2] + this.offset[2]];
+    gl_matrix["b" /* mat4 */].lookAt(this._viewMatrix, this.position, this.target, this.up);
   }
 
   _onWheel(mEvent) {

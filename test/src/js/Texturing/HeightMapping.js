@@ -159,7 +159,7 @@ export default class HeightMapping extends Pipeline {
       mMatrix,
       vMatrix: this.camera.viewMatrix,
       pMatrix: this.camera.projMatrix,
-      viewPos: this.camera.cameraPos,
+      viewPos: this.camera.position,
       lightPos,
       diffuseMap: getAssets.bricks2,
       normalMap: getAssets.bricks2Normal,

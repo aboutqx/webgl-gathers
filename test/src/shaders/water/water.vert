@@ -14,10 +14,11 @@ uniform mat4 uProjectionMatrix;
 
 out vec2 vTextureCoord;
 out vec3 vNormal;
+out vec4 clipSpace;
 
 void main(void) {
-
-    gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(position, 1.0);
+    clipSpace = uProjectionMatrix * uViewMatrix * mMatrix * vec4(position, 1.0);
+    gl_Position = clipSpace;
     vTextureCoord = texCoord;
     vNormal = normal;
 }

@@ -34,6 +34,18 @@ class GlTool{
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
   }
 
+  customGlState(){
+    gl.enable(gl.DEPTH_TEST)
+    gl.depthFunc(gl.LEQUAL)
+    gl.enable(gl.CULL_FACE)
+
+  }
+
+  applyHdrExtension(){
+    gl.getExtension("EXT_color_buffer_float")
+    gl.getExtension('OES_texture_float_linear') 
+  }
+
   setCamera(camera){
     this.camera = camera
   }
@@ -57,7 +69,7 @@ class GlTool{
         this.shader.uniform('uViewMatrix', 'mat4', this.camera.viewMatrix);
       }
       
-      this.shader.uniform('uCameraPos', 'vec3', this.camera.cameraPos);
+      this.shader.uniform('uCameraPos', 'vec3', this.camera.position);
       if(!modelMatrix) this.shader.uniform('uModelMatrix', 'mat4', mMesh.matrix);
       this.shader.uniform('uNormalMatrix', 'mat3', this._normalMatrix);
       this.shader.uniform('uModelViewMatrixInverse', 'mat3', this._inverseModelViewMatrix);

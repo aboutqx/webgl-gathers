@@ -239,7 +239,7 @@ export default class PbrModel extends Pipeline {
         10., -10., 10.,
       ],
       lightColors: new Array(12).fill(300.),
-      camPos: this.camera.cameraPos,
+      camPos: this.camera.position,
       lambertDiffuse: this.params.lambertDiffuse
     }
 

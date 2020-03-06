@@ -156,7 +156,7 @@ export default class NormalMap extends Pipeline {
       mMatrix,
       vMatrix: this.camera.viewMatrix,
       pMatrix: this.camera.projMatrix,
-      viewPos: this.camera.cameraPos,
+      viewPos: this.camera.position,
       lightPos,
       diffuseMap: getAssets.brickwall,
       normalMap: getAssets.brickwallNormal
