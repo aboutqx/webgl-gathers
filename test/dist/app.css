@@ -7681,7 +7681,7 @@ class PbrModel extends _PipeLine__WEBPACK_IMPORTED_MODULE_2__["default"] {
     //   environmentMap: 0,
     //   vMatrix: this.vMatrix,
     //   pMatrix: this.pMatrix,
-    //   mMatrix: mat4.identity(mat4.create()),
+    //   mMatrix: mat4.create(),
     // })
     // this.cube.bind(this.skyboxPrg, ['position'])
     // this.cube.draw()
@@ -9082,7 +9082,7 @@ class Mask_Mask extends PipeLine["default"] {
       this.renderOutline(mMatrix, this._drawTorus);
     } else this.renderDefault(mMatrix, this._drawTorus);
     /*draw boundingVolume
-        mMatrix = mat4.identity(mat4.create())
+        mMatrix = mat4.create()
         mat4.translate(mMatrix, mMatrix, [1.5, 0, 0])
         this.prg.use()
         mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
@@ -9094,7 +9094,7 @@ class Mask_Mask extends PipeLine["default"] {
         this.torusFrame.bind(this.prg, ['position', 'texCoord'])
         this.torusFrame.draw(3)
     
-        mMatrix = mat4.identity(mat4.create())
+        mMatrix = mat4.create()
         mat4.scale(mMatrix, mMatrix, [.6, .6, .6])
         mat4.translate(mMatrix, mMatrix, [-2.05, 0, 0])
         mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)

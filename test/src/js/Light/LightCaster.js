@@ -16,8 +16,8 @@ import {
 } from 'libs/GlTools'
 import { GlTools } from '../../../libs/GlTools'
 
-let vMatrix = mat4.identity(mat4.create())
-let pMatrix = mat4.identity(mat4.create())
+let vMatrix = mat4.create()
+let pMatrix = mat4.create()
 const lightColor = [0.33, 0.42, 0.18]
 const ligthPos = [0, 0, 1].map(v => v * 50)
 const cubePosition = [
@@ -187,7 +187,7 @@ export default class LightCaster extends Pipeline {
     }
 
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     mat4.scale(mMatrix, mMatrix, [.5, .5, .5]) //先缩放再位移，防止先位移缩放改变了位移值
     mat4.translate(mMatrix, mMatrix, ligthPos)
     this.lampPrg.use()

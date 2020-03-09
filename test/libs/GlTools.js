@@ -61,7 +61,7 @@ class GlTool{
     if(mMesh.material && mMesh.material.update) mMesh.material.update()
 
     mMesh.bind(this.shaderProgram);
-    //console.log(this.shader.name, mMesh)
+    // console.log(this.shader.name, mMesh)
     if(this.shader){
       //	DEFAULT UNIFORMS
       if(this.camera !== undefined) {
@@ -74,17 +74,17 @@ class GlTool{
       this.shader.uniform('uNormalMatrix', 'mat3', this._normalMatrix);
       this.shader.uniform('uModelViewMatrixInverse', 'mat3', this._inverseModelViewMatrix);
     }
-   
 
     const drawType = mMesh.drawType;
+    const IndexType = mMesh.indices.constructor === Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT
 
     if(mMesh.isInstanced) {
-      gl.drawElementsInstanced(mMesh.drawType, mMesh.iBuffer.numItems, gl.UNSIGNED_SHORT, 0, mMesh.numInstance);
+      gl.drawElementsInstanced(mMesh.drawType, mMesh.iBuffer.numItems, IndexType, 0, mMesh.numInstance);
     } else {
       if(drawType === gl.POINTS) {
         gl.drawArrays(drawType, 0, mMesh.vertexSize);	
       } else {
-        gl.drawElements(drawType, mMesh.iBuffer.numItems, gl.UNSIGNED_SHORT, 0);	
+        gl.drawElements(drawType, mMesh.iBuffer.numItems, IndexType, 0);	
       }	
     }
     mMesh.unbind();

@@ -32,7 +32,7 @@ export default class FrameBufferGUI {
 
             v.size = v.size || this._size
             v.position = v.position || this._position
-            let mMatrix = mat4.identity(mat4.create())
+            let mMatrix = mat4.create()
             mat4.translate(mMatrix, mMatrix, this._translate[i])
             mat4.scale(mMatrix, mMatrix, [v.size[0], v.size[1], 1])
 

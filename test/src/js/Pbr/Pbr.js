@@ -59,10 +59,10 @@ export default class Pbr extends Pipeline {
   }
   uniform() {
 
-    let vMatrix = mat4.identity(mat4.create())
-    let pMatrix = mat4.identity(mat4.create())
+    let vMatrix = mat4.create()
+    let pMatrix = mat4.create()
 
-    this.tmpMatrix = mat4.identity(mat4.create())
+    this.tmpMatrix = mat4.create()
 
     let eyeDirection = []
     let camUpDirection = []
@@ -128,7 +128,7 @@ export default class Pbr extends Pipeline {
     gl.clearDepth(1.0)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     let baseUniforms = {
       vpMatrix: this.tmpMatrix,
 

@@ -35,7 +35,7 @@ const SIZE_MAP = {
 const semanticAttributeMap = {
 	NORMAL: 'normal',
 	POSITION: 'position',
-	// 'TANGENT': 'aTangent',
+	'TANGENT': 'aTangent',
 	TEXCOORD_0: 'texCoord',
 	// TEXCOORD_1: 'aTextureCoord1',
 	WEIGHTS_0: 'aWeight',
@@ -73,8 +73,11 @@ const _parseNodes = (gltf) => new Promise((resolve, reject) => {
 
 	const getTree = (nodeIndex) => {
 		const node = nodes[nodeIndex];
-		const obj3D = node.mesh === undefined ? new Object3D() : gltf.output.meshes[node.mesh];
 
+
+		const obj3D = node.mesh === undefined ? new Object3D() : gltf.output.meshes[node.mesh];
+		obj3D.name  =  obj3D.name || node.name || ''
+		
 
 		if(node.scale) {
 			obj3D.scaleX = node.scale[0];
@@ -99,7 +102,11 @@ const _parseNodes = (gltf) => new Promise((resolve, reject) => {
 			});	
 		}
 		
-
+		// we have to set children first, so set matrix can update parentMatrix
+		if(node.matrix) {
+			obj3D.originalMatrix = node.matrix	
+		}	
+		
 		return obj3D;
 	};
 
@@ -121,8 +128,8 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 	const { meshes } = gltf;
 	
 
-	meshes.forEach( mesh => {
-		const { primitives } = mesh;
+	meshes.forEach( meshInfo => {
+		const { primitives } = meshInfo;
 
 		const geometryInfo = {};
 
@@ -133,6 +140,7 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 			semantics.forEach( semantic => {
 				const accessorIdx = primitiveInfo.attributes[semantic];
 				const attributeInfo = gltf.accessors[accessorIdx];
+
 				const attributeName = semanticAttributeMap[semantic];
 				if(!attributeName) {
 					return;
@@ -154,12 +162,16 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 				if(semantic === 'TEXCOORD_1') {
 					console.log(size, attributeArray);
 				}
+				if(semantic === 'POSITION') {
+					primitiveInfo.max = attributeInfo.max
+					primitiveInfo.min = attributeInfo.min
+				}
 
 				geometryInfo[attributeName] = {
 					value:attributeArray,
 					size,
 				};
-				// console.log('attribute', attributeName, geometry[attributeName]);
+				// console.log('attribute', attributeName, geometryInfo[attributeName]);
 			});
 
 			//	parse index
@@ -171,11 +183,15 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 				};
 			}
 
-			const mesh = new Mesh();
+			const mesh = new Mesh(primitiveInfo.mode, meshInfo.name);
+			const MaxSubMin = [primitiveInfo.max[0] - primitiveInfo.min[0], primitiveInfo.max[1] - primitiveInfo.min[1], primitiveInfo.max[2] - primitiveInfo.min[2]]
+			mesh.maxLength = Math.sqrt(MaxSubMin[0] * MaxSubMin[0] + MaxSubMin[1] * MaxSubMin[1] + MaxSubMin[2] * MaxSubMin[2])
+
 			for(const s in geometryInfo) {
 				const data = geometryInfo[s];
 				if(s !== 'indices') {
 					mesh.bufferFlattenData(data.value, s, data.size);
+					
 				} else {
 					mesh.bufferIndex(data.value);
 				}
@@ -238,7 +254,7 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 			gltf.output.meshes.push(mesh);
 		});
 	});
-
+	
 	resolve(gltf);
 });
 

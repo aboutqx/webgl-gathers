@@ -50,7 +50,7 @@ export default class EnvMap extends Pipeline {
 
     mat4.multiply(this.tmpMatrix, this.pMatrix, this.vMatrix)
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
 
     gl.activeTexture(gl.TEXTURE0)
@@ -73,7 +73,7 @@ export default class EnvMap extends Pipeline {
     this.prg.use()
     GlTools.draw(this.skybox)
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     mat4.translate(mMatrix, mMatrix, [-3,0, 0])
     mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
     this.specularPrg.use()
@@ -88,7 +88,7 @@ export default class EnvMap extends Pipeline {
       GlTools.draw(this.venus[i], true)
     }
 
-    mMatrix = mat4.identity(mat4.create())
+    mMatrix = mat4.create()
     mat4.translate(mMatrix, mMatrix, [3,0, 0])
     mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
     this.refractPrg.use()
@@ -103,7 +103,7 @@ export default class EnvMap extends Pipeline {
       GlTools.draw(this.venus[i], true)
     }
     
-    mMatrix = mat4.identity(mat4.create())
+    mMatrix = mat4.create()
     mat4.translate(mMatrix, mMatrix, [0,0, 0])
     mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
     this.refractPrg.use()

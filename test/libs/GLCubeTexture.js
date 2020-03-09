@@ -85,7 +85,7 @@ class GLCubeTexture {
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, this.minFilter);
       }
 
-      gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+      if(!mSource[index].shape) gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
     }
 
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);

@@ -151,7 +151,7 @@ export default class HeightMapping extends Pipeline {
   }
   uniform() {
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     mat4.rotateX(mMatrix, mMatrix, toRadian(90))
     mat4.scale(mMatrix, mMatrix, [1.8, 1.8, 1.8])
     this.prg.use()

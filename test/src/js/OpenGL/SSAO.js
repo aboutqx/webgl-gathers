@@ -101,7 +101,7 @@ export default class SSAO extends Pipeline {
   uniform() {
 
     this.vMatrix = this.camera.viewMatrix
-    this.pMatrix = mat4.identity(mat4.create())
+    this.pMatrix = mat4.create()
 
     mat4.perspective(this.pMatrix, toRadian(60), canvas.clientWidth / canvas.clientHeight, .1, 100)
   }
@@ -117,7 +117,7 @@ export default class SSAO extends Pipeline {
         pMatrix: this.pMatrix
       })
       if (this.nanosuit) { // loaded
-        let mMatrix = mat4.identity(mat4.create())
+        let mMatrix = mat4.create()
         mat4.translate(mMatrix, mMatrix, [-1.0, -3.3, 3.])
         mat4.scale(mMatrix, mMatrix, [.4, .4, .4])
         mat4.rotate(mMatrix, mMatrix, -Math.PI / 2 , [1, 0, 0])
@@ -129,7 +129,7 @@ export default class SSAO extends Pipeline {
         GlTools.draw(this.nanosuit)
       }
 
-      let mMatrix = mat4.identity(mat4.create())
+      let mMatrix = mat4.create()
       mat4.scale(mMatrix, mMatrix,[8, 4, 8])
       this.gBufferPrg.style({
         mMatrix,

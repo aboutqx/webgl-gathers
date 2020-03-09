@@ -44,7 +44,7 @@ export default class Color extends Pipeline {
   uniform() {
 
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
 
     this.prg.use()
     this.prg.style({
@@ -68,7 +68,7 @@ export default class Color extends Pipeline {
     GlTools.draw(this.cube)
 
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     mat4.translate(mMatrix, mMatrix, ligthPos)
     mat4.scale(mMatrix , mMatrix , [.2, .2, .2])
 

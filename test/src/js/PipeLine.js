@@ -10,9 +10,9 @@ export default class Pipeline {
   rotateQ = quat.create()
   mousePos = { x:0, y:0 }
   camera = new Camera()
-  pMatrix = mat4.identity(mat4.create())
-  mvpMatrix = mat4.identity(mat4.create())
-  tmpMatrix = mat4.identity(mat4.create())
+  pMatrix = mat4.create()
+  mvpMatrix = mat4.create()
+  tmpMatrix = mat4.create()
 
   _params = {}
   gui = new dat.GUI({

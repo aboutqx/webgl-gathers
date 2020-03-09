@@ -116,10 +116,10 @@ export default class IblDiffuse extends Pipeline {
     this.cubePrg.use()
     this.hdrTexture.bind(0)
 
-    let pMatrix = mat4.identity(mat4.create())
-    let mMatrix = mat4.identity(mat4.create())
-    let vMatrix = mat4.identity(mat4.create())
-    let vpMatrix = mat4.identity(mat4.create())
+    let pMatrix = mat4.create()
+    let mMatrix = mat4.create()
+    let vMatrix = mat4.create()
+    let vpMatrix = mat4.create()
 
     mat4.perspective(pMatrix, toRadian(90), 1., .1, 100)
     const CAMERA_SETTINGS = [
@@ -174,10 +174,10 @@ export default class IblDiffuse extends Pipeline {
   }
   uniform() {
 
-    let vMatrix = mat4.identity(mat4.create())
-    let pMatrix = mat4.identity(mat4.create())
+    let vMatrix = mat4.create()
+    let pMatrix = mat4.create()
 
-    this.tmpMatrix = mat4.identity(mat4.create())
+    this.tmpMatrix = mat4.create()
 
     let eyeDirection = []
     let camUpDirection = []
@@ -245,7 +245,7 @@ export default class IblDiffuse extends Pipeline {
     gl.clearDepth(1.0)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     let baseUniforms = {
       vpMatrix: this.tmpMatrix,
       mMatrix: mMatrix,

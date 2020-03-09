@@ -15,12 +15,14 @@ export default class GLTF extends Pipeline {
 
   }
   init() {
-    this.skybox = new BatchSkyBox(40, getAssets.outputskybox)
+    
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);	
   }
   attrib() {
-
+    
+    this.camera.radius = 28
+    this.camera.offset = [0, 10, 1]
   }
   prepare() {
 
@@ -29,8 +31,11 @@ export default class GLTF extends Pipeline {
     this.textureRad = getAssets[`${this.env}_radiance`];
     this.textureBrdf = getAssets['brdfLUT']
 
+    const skySize = 40
+    this.skybox = new BatchSkyBox(skySize, this.textureRad)
+
     const gltfList = ['hebe','chinatown_lion', 'BoomBox', 'FlightHelmet', 'horse_statuette', 'swan_sculpture', 'triton_on_a_frieze']
-    const index = 0
+    const index = 6
     const url = `assets/gltf/${gltfList[index]}/scene.gltf`
     GLTFLoader.load(url)
     .then((gltfInfo)=> {
@@ -45,12 +50,16 @@ export default class GLTF extends Pipeline {
         });
 
         this.gltfPrg = meshes[0].material.shader
+        this.meshes = meshes
+
+        const scale = skySize / meshes[0].maxLength * .3
+        this.scenes.forEach( scene => {
+          scene.scaleX = scene.scaleY = scene.scaleZ = scale
+        })
     })
     .catch(e => {
         console.log('Error loading gltf:', e);
-    });
-
-    this.camera.radius = 6
+    })
 
   }
   uniform() {
@@ -68,11 +77,8 @@ export default class GLTF extends Pipeline {
 
     if(this.scenes) {
 			this.scenes.forEach( scene => {
-        scene.scaleX = .01
-        scene.scaleY = .01
-        scene.scaleZ = .01
 				GlTools.draw(scene)
-			});	
+      });
 		}
     
   }

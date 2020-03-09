@@ -33,7 +33,7 @@ export default class Camrea {
   _preRy = 0
   _targetRx = 0
   _targetRy = 0
-  _viewMatrix = mat4.identity(mat4.create())
+  _viewMatrix = mat4.create()
   _width = canvas.width
   _height = canvas.height
   sensitivity = 1.
