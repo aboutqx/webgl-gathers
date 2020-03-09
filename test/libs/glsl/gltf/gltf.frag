@@ -1,4 +1,5 @@
 #version 300 es
+// gltf
 #define SHADER_NAME gltf_frag
 
 precision highp float;
