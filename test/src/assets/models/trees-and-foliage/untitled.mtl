@@ -1,0 +1,49 @@
+# Blender MTL File: 'None'
+# Material Count: 4
+
+newmtl ground
+Ns 179.999996
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd sourceimages\\environment\\painted\\t_grass_diffuse.png
+
+newmtl m_leaves
+Ns 179.999996
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd sourceimages\\foliage\\painted\\t_tree_diffuse.png
+map_d sourceimages\\foliage\\painted\\t_tree_alpha2.png
+
+newmtl m_plants
+Ns 179.999996
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd sourceimages\\foliage\\painted\\t_plants_diffuse.png
+map_d sourceimages\\foliage\\painted\\t_plants_alpha2.png
+
+newmtl m_tree
+Ns 179.999996
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd sourceimages\\foliage\\painted\\file5.png
+map_d sourceimages\\foliage\\painted\\t_tree_alpha2.png

@@ -3,7 +3,8 @@
 import { vec3, mat4, quat } from 'gl-matrix';
 
 class Object3D {
-
+	name = ''
+	_originalMatrix
 	constructor() {
 		this._needUpdate = true;
 
@@ -41,9 +42,10 @@ class Object3D {
 		vec3.set(this._rotation, this._rx, this._ry, this._rz);
 		vec3.set(this._position, this._x, this._y, this._z);
 
-		mat4.identity(this._matrixTranslation, this._matrixTranslation);
-		mat4.identity(this._matrixScale, this._matrixScale);
-		mat4.identity(this._matrixRotation, this._matrixRotation);
+		mat4.identity(this._matrixTranslation);
+		mat4.identity(this._matrixScale);
+		mat4.identity(this._matrixRotation);
+
 
 		mat4.rotateX(this._matrixRotation, this._matrixRotation, this._rx);
 		mat4.rotateY(this._matrixRotation, this._matrixRotation, this._ry);
@@ -51,6 +53,7 @@ class Object3D {
 
 
 		mat4.fromQuat(this._matrixQuaternion, this._quat);
+
 		mat4.mul(this._matrixRotation, this._matrixQuaternion, this._matrixRotation);
 
 		mat4.scale(this._matrixScale, this._matrixScale, this._scale);
@@ -59,6 +62,8 @@ class Object3D {
 		mat4.mul(this._matrix, this._matrixTranslation, this._matrixRotation);
 		mat4.mul(this._matrix, this._matrix, this._matrixScale);
 		mat4.mul(this._matrix, this._matrixParent, this._matrix);
+
+		if(this._originalMatrix) mat4.mul(this._matrix, this._matrix, this._originalMatrix)
 
 		this._children.forEach(child => {
 			child.updateParentMatrix(this._matrix);
@@ -69,6 +74,7 @@ class Object3D {
 
 	updateParentMatrix(mParentMatrix) {
 		mParentMatrix = mParentMatrix || mat4.create();
+
 		mat4.copy(this._matrixParent, mParentMatrix);
 		this._needUpdate = true;
 	}
@@ -94,6 +100,11 @@ class Object3D {
 	get matrix() {
 		this.updateMatrix();
 		return this._matrix;
+	}
+
+	set originalMatrix(value) {
+		this._originalMatrix = value
+		this.updateMatrix()
 	}
 
 	get x() {	return this._x;	}

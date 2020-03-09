@@ -17,7 +17,7 @@ import Mesh from 'libs/Mesh'
 
 export default class DepthOfField extends Pipeline {
   count = 0
-  ortMatrix = mat4.identity(mat4.create())
+  ortMatrix = mat4.create()
   constructor() {
     super()
 
@@ -82,10 +82,10 @@ export default class DepthOfField extends Pipeline {
   }
   uniform() {
 
-    let vMatrix = mat4.identity(mat4.create())
-    let pMatrix = mat4.identity(mat4.create())
+    let vMatrix = mat4.create()
+    let pMatrix = mat4.create()
 
-    this.tmpMatrix = mat4.identity(mat4.create())
+    this.tmpMatrix = mat4.create()
 
     let eyeDirection = []
     let camUpDirection = []
@@ -112,10 +112,10 @@ export default class DepthOfField extends Pipeline {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
     gl.cullFace(gl.FRONT)
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     mat4.rotate(mMatrix, mMatrix, 1 * 2 * Math.PI / 9, [0, 1, 0])
 
-    let invMatrix = mat4.identity(mat4.create())
+    let invMatrix = mat4.create()
     mat4.invert(invMatrix, mMatrix)
 
     this.prg.use()

@@ -113,7 +113,7 @@ export default class Mask extends Pipeline {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
     gl.stencilMask(0x00) //写入0
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     // translate 之后鼠标放在cube水平中心点很远的地方也能触发outline，这是个bug,原因是boundingbox计算有问题，初始minX，maxX这些值为0，0实际上已经是一个值了
     // 应该换成循环的第一个值为min和max，而不是0
     mat4.translate(mMatrix, mMatrix, [-2.5, 0, 0])
@@ -122,14 +122,14 @@ export default class Mask extends Pipeline {
       this.renderOutline(mMatrix, this._drawCube)
     } else this.renderDefault(mMatrix, this._drawCube)
 
-    mMatrix = mat4.identity(mat4.create())
+    mMatrix = mat4.create()
     mat4.translate(mMatrix, mMatrix, [2., 0, 0])
     if(this.intersect.castRay(transformPosition(this.torus.vertices, mMatrix))){
       this.renderOutline(mMatrix, this._drawTorus)
     } else this.renderDefault(mMatrix, this._drawTorus)
 
 /*draw boundingVolume
-    mMatrix = mat4.identity(mat4.create())
+    mMatrix = mat4.create()
     mat4.translate(mMatrix, mMatrix, [1.5, 0, 0])
     this.prg.use()
     mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
@@ -141,7 +141,7 @@ export default class Mask extends Pipeline {
     this.torusFrame.bind(this.prg, ['position', 'texCoord'])
     this.torusFrame.draw(3)
 
-    mMatrix = mat4.identity(mat4.create())
+    mMatrix = mat4.create()
     mat4.scale(mMatrix, mMatrix, [.6, .6, .6])
     mat4.translate(mMatrix, mMatrix, [-2.05, 0, 0])
     mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)

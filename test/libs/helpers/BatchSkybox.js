@@ -14,7 +14,7 @@ export default class batchSkybox {
     }
 
     render() {
-        let  mMatrix = mat4.identity(mat4.create())
+        let  mMatrix = mat4.create()
         this.skyboxPrg.use()
         this.skyboxPrg.style({
             mMatrix,

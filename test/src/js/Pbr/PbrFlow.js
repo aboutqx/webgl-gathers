@@ -114,10 +114,10 @@ export default class PbrFlow extends Pipeline {
     gl.depthFunc(gl.LEQUAL)
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
 
-    let pMatrix = mat4.identity(mat4.create())
-    let mMatrix = mat4.identity(mat4.create())
-    let vMatrix = mat4.identity(mat4.create())
-    let vpMatrix = mat4.identity(mat4.create())
+    let pMatrix = mat4.create()
+    let mMatrix = mat4.create()
+    let vMatrix = mat4.create()
+    let vpMatrix = mat4.create()
 
     mat4.perspective(pMatrix, toRadian(90), 1., .1, 100)
     const CAMERA_SETTINGS = [
@@ -208,8 +208,8 @@ export default class PbrFlow extends Pipeline {
   }
   uniform() {
 
-    this.vMatrix = mat4.identity(mat4.create())
-    this.pMatrix = mat4.identity(mat4.create())
+    this.vMatrix = mat4.create()
+    this.pMatrix = mat4.create()
     this.tmpMatrix = mat4.create()
 
     let eyeDirection = []
@@ -269,7 +269,7 @@ export default class PbrFlow extends Pipeline {
     gl.clearDepth(1.0)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     let baseUniforms = {
       vpMatrix: this.tmpMatrix,
       lightPositions: [ // use flatten array for gl.uniform3fv
@@ -367,7 +367,7 @@ export default class PbrFlow extends Pipeline {
       environmentMap: 0,
       vMatrix: this.vMatrix,
       pMatrix: this.pMatrix,
-      mMatrix: mat4.identity(mat4.create()),
+      mMatrix: mat4.create(),
     })
     this.cube.bind(this.skyboxPrg, ['position'])
     this.cube.draw()

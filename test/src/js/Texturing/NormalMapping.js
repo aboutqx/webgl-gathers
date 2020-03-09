@@ -149,7 +149,7 @@ export default class NormalMap extends Pipeline {
   }
   uniform() {
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     mat4.scale(mMatrix, mMatrix, [1.8, 1.8, 1.8])
     this.prg.use()
     this.prg.style({

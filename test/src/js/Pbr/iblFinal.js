@@ -111,10 +111,10 @@ export default class IblFinal extends Pipeline {
     gl.depthFunc(gl.LEQUAL)
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
 
-    let pMatrix = mat4.identity(mat4.create())
-    let mMatrix = mat4.identity(mat4.create())
-    let vMatrix = mat4.identity(mat4.create())
-    let vpMatrix = mat4.identity(mat4.create())
+    let pMatrix = mat4.create()
+    let mMatrix = mat4.create()
+    let vMatrix = mat4.create()
+    let vpMatrix = mat4.create()
 
     mat4.perspective(pMatrix, toRadian(90), 1., .1, 100)
     const CAMERA_SETTINGS = [
@@ -279,10 +279,10 @@ export default class IblFinal extends Pipeline {
   }
   uniform() {
 
-    let vMatrix = mat4.identity(mat4.create())
-    let pMatrix = mat4.identity(mat4.create())
+    let vMatrix = mat4.create()
+    let pMatrix = mat4.create()
 
-    this.tmpMatrix = mat4.identity(mat4.create())
+    this.tmpMatrix = mat4.create()
 
     let eyeDirection = []
     let camUpDirection = []
@@ -350,7 +350,7 @@ export default class IblFinal extends Pipeline {
     gl.clearDepth(1.0)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     let baseUniforms = {
       vpMatrix: this.tmpMatrix,
       mMatrix: mMatrix,

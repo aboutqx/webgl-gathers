@@ -151,7 +151,7 @@ export default class ReliefMapping extends Pipeline {
   }
   uniform() {
 
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     mat4.rotateX(mMatrix, mMatrix, toRadian(90))
     mat4.scale(mMatrix, mMatrix, [1.2, 1.2, 1.2])
     this.prg.use()

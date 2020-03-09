@@ -16,7 +16,7 @@ import CustomShaders from 'libs/shaders/CustomShaders'
 const shadowWidth = 1024
 const shadowHeight = 1024
 const lightPos = [0, 4, -1]
-let vMatrix = mat4.identity(mat4.create())
+let vMatrix = mat4.create()
 
 export default class Shadow extends Pipeline {
   count = 0
@@ -40,9 +40,9 @@ export default class Shadow extends Pipeline {
 
   prepare() {
     // gl.getExtension("WEBGL_depth_texture")
-    let lightView = mat4.identity(mat4.create())
-    let lightProjection = mat4.identity(mat4.create())
-    this.tmpMatrix = mat4.identity(mat4.create())
+    let lightView = mat4.create()
+    let lightProjection = mat4.create()
+    this.tmpMatrix = mat4.create()
 
     const nearPlane = .1
     const farPlane = 18.5
@@ -102,28 +102,28 @@ export default class Shadow extends Pipeline {
   }
 
   _renderScene(shader) {
-    this.mMatrix = mat4.identity(mat4.create())
+    this.mMatrix = mat4.create()
     mat4.translate(this.mMatrix, this.mMatrix, [0, -2, 0])
     shader.style({
       mMatrix: this.mMatrix
     })
     GlTools.draw(this.plane)
 
-    this.mMatrix = mat4.identity(mat4.create())
+    this.mMatrix = mat4.create()
     mat4.translate(this.mMatrix, this.mMatrix, [-1.2, 0, 5])
     shader.style({
       mMatrix: this.mMatrix
     })
     GlTools.draw(this.cube)
 
-    this.mMatrix = mat4.identity(mat4.create())
+    this.mMatrix = mat4.create()
     mat4.translate(this.mMatrix, this.mMatrix, [2, 2, 4])
     shader.style({
       mMatrix: this.mMatrix
     })
     GlTools.draw(this.cube)
 
-    this.mMatrix = mat4.identity(mat4.create())
+    this.mMatrix = mat4.create()
     mat4.translate(this.mMatrix, this.mMatrix, [-2.2, .4, 1])
     mat4.rotate(this.mMatrix, this.mMatrix, toRadian(30), [2, 2, 4])
     shader.style({

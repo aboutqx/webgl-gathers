@@ -47,7 +47,7 @@ export default class Color extends Pipeline {
     this.textures = fbo.textures
   }
   uniform() {
-    let mMatrix = mat4.identity(mat4.create())
+    let mMatrix = mat4.create()
     
     this.terrainPrg.use()
     this.terrainPrg.style({
@@ -55,7 +55,7 @@ export default class Color extends Pipeline {
       texture0: this.terrainTexture
     })
 
-    mMatrix = mat4.identity(mat4.create())
+    mMatrix = mat4.create()
     
     this.waterPrg.use()
     this.waterPrg.style({
