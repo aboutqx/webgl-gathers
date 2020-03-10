@@ -57,8 +57,13 @@ class GlTool{
   }
 
   drawMesh(mMesh, modelMatrix) {
-
-    if(mMesh.material && mMesh.material.update) mMesh.material.update()
+    const { material } = mMesh
+    if(material && material.update) {
+      material.update()
+      if(material.doubleSided) {
+        gl.disable(gl.CULL_FACE)
+      }
+    }
 
     mMesh.bind(this.shaderProgram);
     // console.log(this.shader.name, mMesh)
@@ -87,7 +92,9 @@ class GlTool{
         gl.drawElements(drawType, mMesh.iBuffer.numItems, IndexType, 0);	
       }	
     }
+
     mMesh.unbind();
+    gl.enable(gl.CULL_FACE)
   }
 
 

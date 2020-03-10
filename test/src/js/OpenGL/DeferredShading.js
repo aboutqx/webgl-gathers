@@ -21,7 +21,7 @@ import {
   mat4
 } from 'gl-matrix'
 import Mesh from 'libs/Mesh'
-import OBJLoader from 'libs/loaders/ObjLoader2'
+import OBJLoader from 'libs/loaders/ObjLoader'
 import MTLLoader from 'libs/loaders/MTLLoader'
 const offset = 10.
 const objectPositions = [
