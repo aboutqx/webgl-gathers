@@ -2,14 +2,13 @@
 precision highp float;
 in vec3 Normal;
 in vec3 Position;
+in vec2 vTexCoord;
 uniform vec3 cameraPos;
 uniform samplerCube skybox;
+uniform sampler2D aoMap;
 uniform float fresnelBias;
-
 uniform float fresnelScale;
-
 uniform float fresnelPower;
-
 uniform vec3 etaRatio;
 
 out vec4 FragColor;
@@ -48,6 +47,8 @@ void main()
 
     // Compute the final color
 
-    FragColor = mix(refractedColor, reflectedColor, vec4(reflectionFactor));
+    vec4 baseColor = mix(refractedColor, reflectedColor, vec4(reflectionFactor));
+    float ao = texture(aoMap, vTexCoord).r;
+    FragColor = vec4(baseColor + baseColor * .03 * ao);
 
 }  

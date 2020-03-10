@@ -89,7 +89,15 @@ export default class Camrea {
     this._mousedown = false
   }
 
-  updateMatrix (mMatrix){
+  flipY() {
+
+    this.position = [this.position[0], -this.position[1], this.position[2]]
+    this.up[1] = - this.up[1]
+
+    mat4.lookAt(this._viewMatrix, this.position, this.target, this.up)
+  }
+
+  updateMatrix (){
     this._rx += (this._targetRx - this._rx) * 0.1 //ease out
     if (Math.abs(this._targetRx - this._rx) < MIN_DIFF) {
       this._rx = this._targetRx
@@ -114,11 +122,7 @@ export default class Camrea {
 
     this.up[1] = 1
     this.position = [this.position[0] + this.offset[0], this.position[1] + this.offset[1], this.position[2] + this.offset[2]]
-    if(mMatrix) {
-      this.position = [this.position[0], -this.position[1], this.position[2]]
-      this.up[1] = -1
-    }
-
+    
     mat4.lookAt(this._viewMatrix, this.position, this.target, this.up)
   }
 

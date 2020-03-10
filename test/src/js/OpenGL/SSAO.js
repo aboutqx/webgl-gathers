@@ -22,6 +22,7 @@ import Texture from 'libs/glTexture'
 import Geom from 'libs/Geom'
 import { GlTools } from '../../../libs/GlTools'
 
+
 const lightPositions = [0 ,-1, 0]
 const lightColors = [.2, .2, .7]
 const kernelSize = 64
@@ -67,10 +68,12 @@ export default class SSAO extends Pipeline {
 
     this.cube = Geom.cube(2)
 
-    this.quad = Geom.quad(3, 2)
+    this.quad = Geom.plane(3, 2)
 
     const materials = await new MTLLoader('nanosuit.mtl', './assets/models/nanosuit').parse(getAssets.nanosuitMTL)
-    this.nanosuit = new OBJLoader().parseObj(getAssets.nanosuit, materials)
+    new OBJLoader().load('./assets/models/nanosuit/nanosuit.obj2', (o) => {
+      this.nanosuit = OBJLoader.parse(o ,materials)
+    })
 
   }
   prepare() {

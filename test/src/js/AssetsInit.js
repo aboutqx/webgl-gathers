@@ -12,32 +12,38 @@ export default function AssetsInit(assets, files){
     let hdrCubemaps = {}
     let result = {}
     let texture
+    let t, cubemapName, jpgCubemaps ={}
     for(let name in assets){
         let url = assets[name].url || assets[name]
         let file = files[name]
         const ext = getExtension(url)
         switch(ext) {
             case 'jpg':
-                // let t = url.split('_')[0].split('/') 
-                // let cubemapName =  t[t.length-1]  + (url.split('_').length >2 ? url.split('_')[1] : '')
-                // texture = HDRParser(file);
+                if(url.split('_').length <= 2) {
+                    texture = new GLTexture(file);
+                    result[name] = texture
+                    break; 
+                }
+                t = url.split('_')[0].split('/') 
+                cubemapName =  t[t.length-1]  + (url.split('_').length >2 ? url.split('_')[1] : '')
+                
     
-                // if(!hdrCubemaps[cubemapName]) {
-                //     hdrCubemaps[cubemapName] = [];
-                // }
+                if(!jpgCubemaps[cubemapName]) {
+                    jpgCubemaps[cubemapName] = [];
+                }
     
-                // hdrCubemaps[cubemapName].push(texture);
+                jpgCubemaps[cubemapName].push(file);
 
-                // result[name] = texture
-                // break;
+                result[name] = file
+                break;
             case 'png':
                 texture = new GLTexture(file);
                 result[name] = texture
                 break;
     
             case 'hdr':
-                let t = url.split('_')[0].split('/') 
-                let cubemapName =  t[t.length-1]  + (url.split('_').length >2 ? url.split('_')[1] : '')
+                t = url.split('_')[0].split('/') 
+                cubemapName =  t[t.length-1]  + (url.split('_').length >2 ? url.split('_')[1] : '')
                 texture = HDRParser(file);
     
                 if(!hdrCubemaps[cubemapName]) {
@@ -62,8 +68,19 @@ export default function AssetsInit(assets, files){
                 break
         }
     }
-    for(let s in hdrCubemaps) {
-		if(hdrCubemaps[s].length == 6) {
+    generateCubeMap(hdrCubemaps, result)
+    generateCubeMap(jpgCubemaps, result)
+    
+    
+    // console.debug('ASSETS:');
+    // console.table(result);	
+	
+    return result
+}
+
+const generateCubeMap = (v, result) => {
+    for(let s in v) {
+		if(v[s].length == 6) {
 
 			const ary = [
 				result[`${s}PosX`],
@@ -78,10 +95,4 @@ export default function AssetsInit(assets, files){
 			result[s] = texture
 		}
     }
-    
-    
-    console.debug('ASSETS:');
-    console.table(result);	
-	
-    return result
 }

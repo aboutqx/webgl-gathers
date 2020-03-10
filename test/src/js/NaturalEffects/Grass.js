@@ -19,12 +19,12 @@ export default class Reflection extends Pipeline {
     this.prg = this.compile(vs, fs)
   }
   attrib() {
-    this.statue = getAssets.statue
+    this.statue = getAssets.venus
 
   }
   prepare(){
-    this.camera.radius = 3.5
-    this.camera.target =[0, 0, 0]
+    this.camera.radius = 15.5
+    this.camera.target =[0, 5, 0]
   }
   _setGUI() {
     this.addGUIParams({
@@ -50,7 +50,7 @@ export default class Reflection extends Pipeline {
       lightDirection: [-0.5, 0.5, 0.5],
       eyeDirection: this.camera.position,
       ambientColor: [0.1, 0.1, 0.1],
-      aoMap: getAssets.statueAo,
+      aoMap: getAssets.venusAo,
       useAo: this.params.useAo
     })
   }
