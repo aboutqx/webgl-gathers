@@ -31,6 +31,10 @@ uniform sampler2D uEmissiveMap;
 uniform vec3 uEmissiveFactor;
 #endif
 
+#ifdef ALPHA_MASK
+uniform float uAlphaCutoff;
+#endif
+
 uniform vec3 uLightDirection;
 uniform vec3 uLightColor;
 uniform vec3 uCameraPos;
@@ -274,7 +278,11 @@ void main() {
 	color               = mix(color, baseColor.rgb, uScaleDiffBaseMR.y);
 	color               = mix(color, vec3(metallic), uScaleDiffBaseMR.z);
 	color               = mix(color, vec3(perceptualRoughness), uScaleDiffBaseMR.w);
-	
+
+#ifdef ALPHA_MASK
+	if(baseColor.a < uAlphaCutoff) discard;
+	else baseColor.a = 1.;
+#endif
 	// output the fragment color
 	FragColor        = vec4(pow(color,vec3(1.0/uGamma)), baseColor.a);
 	//FragColor        = vec4(vec3(baseColor), 1.0);

@@ -3,7 +3,8 @@
 import Shader from 'libs/shaders/Shader'
 export default class Material{
 
-    constructor(vs, fs, uniforms={}, defines={}) {
+    constructor(vs, fs, uniforms={}, defines={}, doubleSided = false) {
+		this.doubleSided = doubleSided
 		this._shader= Shader.get(vs, fs, defines);
 		this.uniforms = Object.assign({}, uniforms);
 	}

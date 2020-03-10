@@ -202,6 +202,8 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 			
 
 			const {
+				alphaCutoff,
+				doubleSided,
 				emissiveFactor,
 				emissiveTexture,
 				normalTexture,
@@ -215,6 +217,7 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 			} = pbrMetallicRoughness;
 
 			const uniforms = {
+				uAlphaCutoff: alphaCutoff || 0,
 				uEmissiveFactor:emissiveFactor || [0, 0, 0],
 				uBaseColor:pbrMetallicRoughness.baseColorFactor || [1, 1, 1, 1],
 				uRoughness:pbrMetallicRoughness.roughnessFactor || 1,
@@ -249,7 +252,7 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 				uniforms.uEmissiveMap = emissiveTexture.glTexture
 			}
 
-			const material = new Material(CustomShaders.gltfVert, CustomShaders.gltfFrag, uniforms, defines)
+			const material = new Material(CustomShaders.gltfVert, CustomShaders.gltfFrag, uniforms, defines, doubleSided)
 			mesh.setMaterial(material)
 			gltf.output.meshes.push(mesh);
 		});
@@ -343,7 +346,8 @@ const _parseMaterials = (gltfInfo) => new Promise((resolve, reject) => {
 
 	gltfInfo.output.materialInfo = materials.map(material => {
 		material.defines = {
-			USE_IBL:1
+			USE_IBL:1,
+			ALPHA_MASK:  material.alphaMode == 'MASK' ? 1 : 0
 		};
 
 		if(material.normalTexture) {

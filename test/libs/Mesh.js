@@ -62,7 +62,7 @@ export default class Mesh  extends Object3D {
     this._extVAO                 = !!gl.createVertexArray;
 		this._useVAO             	 = !!this._extVAO;
     this.drawType = mDrawingType
-    this.name = name
+	this.name = name
     if(material) {
       this.material = material
       this._setMaterial()
@@ -127,7 +127,7 @@ export default class Mesh  extends Object3D {
   bufferIndex(mArrayIndices, isDynamic = false) {
     this._drawType        = isDynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW;
 		if(mArrayIndices instanceof Array) {
-			this._indices	  = new Uint16Array(mArrayIndices);	
+			this._indices	  = mArrayIndices.length > 65535 ? new Uint32Array(mArrayIndices) : new Uint16Array(mArrayIndices)
 		} else {
 			this._indices = mArrayIndices;
 		}
