@@ -84,18 +84,20 @@ const Assets = {
     outputskyboxNegZ: { url: './assets/skybox/output_skybox_negz.hdr', type: 'binary' },
   },
   skyboxLake:{
-    lakePosX: { url: './assets/skybox/output_skybox_posx.hdr' },
-    lakePosY: { url: './assets/skybox/output_skybox_posy.hdr' },
-    lakePosZ: { url: './assets/skybox/output_skybox_posz.hdr' },
-    lakeNegX: { url: './assets/skybox/output_skybox_negx.hdr' },
-    lakeNegY: { url: './assets/skybox/output_skybox_negy.hdr' },
-    lakeNegZ: { url: './assets/skybox/output_skybox_negz.hdr' },
+    skyboxlakePosX: { url: './assets/skybox/skybox_lake_posx.jpg' },
+    skyboxlakePosY: { url: './assets/skybox/skybox_lake_posy.jpg' },
+    skyboxlakePosZ: { url: './assets/skybox/skybox_lake_posz.jpg' },
+    skyboxlakeNegX: { url: './assets/skybox/skybox_lake_negx.jpg' },
+    skyboxlakeNegY: { url: './assets/skybox/skybox_lake_negy.jpg' },
+    skyboxlakeNegZ: { url: './assets/skybox/skybox_lake_negz.jpg' },
   },
   venus: {
-    venus: { url:'./assets/models/venus.obj', type: 'text'}
+    venus: { url:'./assets/models/venus/venus.obj', type: 'text'},
+    venusAo: { url: './assets/models/venus/aomap.jpg' }
   },
   statue: {
-    statue: { url:'./assets/models/statue.obj', type: 'text'}
+    statue: { url:'./assets/models/statue/statue.obj', type: 'text'},
+    statueAo: { url: './assets/models/statue/statueAo.jpg' }
   },
   gltf:{
     albedo:{"url":"assets/img/albedo.jpg","type":"image"},
@@ -151,9 +153,10 @@ const mapAssets = {
   iblfinal: { ...Assets.hdrSkybox },
   deferredshading: { ...Assets.nanosuit },
   ssao: { ...Assets.nanosuit },
-  envMapping: { ...Assets.skybox, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue },
+  envMapping: { ...Assets.skyboxLake, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue },
   gltf: { ...Assets.skybox, ...Assets.gltf },
   bloom: { ...Assets.statue },
-  water: { ...Assets.water, ...Assets.skybox, }
+  water: { ...Assets.water, ...Assets.skybox, },
+  grass: { ...Assets.statue, ...Assets.venus }
 }
 export default mapAssets

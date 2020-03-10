@@ -81,7 +81,10 @@ export default class DeferredShading extends Pipeline {
     this.quad = quad
 
     const materials = await new MTLLoader('nanosuit.mtl', './assets/models/nanosuit').parse(getAssets.nanosuitMTL)
-    this.nanosuit = new OBJLoader().parseObj(getAssets.nanosuit, materials)
+    new OBJLoader().load('./assets/models/nanosuit/nanosuit.obj2', (o) => {
+      this.nanosuit = OBJLoader.parse(o ,materials)
+    })
+    
 
   }
   prepare() {

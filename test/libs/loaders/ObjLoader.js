@@ -1,7 +1,7 @@
 // ObjLoader.js
 // from https: //github.com/yiwenl/alfrid
 'use strict';
-
+import xhr from './xhr';
 import Mesh from '../Mesh';
 
 class ObjLoader {
@@ -9,9 +9,14 @@ class ObjLoader {
   objectList = []
   meshes = []
   materialLibraries = []
-  load(url, callback, drawType = 4) {
+  load(url, resolve, reject, drawType = 4) {
     this._drawType = drawType;
-    super.load(url, callback);
+    xhr(url).then((o)=>{
+
+			resolve(o)
+		}, (e)=> {
+			reject(e);
+		});
   }
 
   _onLoaded() {
@@ -322,9 +327,9 @@ class ObjLoader {
 }
 
 
-ObjLoader.parse = function (objStr) {
+ObjLoader.parse = function (objStr, mtl) {
   const loader = new ObjLoader();
-  return loader.parseObj(objStr);
+  return loader.parseObj(objStr, mtl);
 };
 function has(arr, key, value) { // array child object has key-value
   if (!arr || !arr.length) return -1

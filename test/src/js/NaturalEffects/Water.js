@@ -79,13 +79,13 @@ export default class Color extends Pipeline {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.hdrFb)
     GlTools.clear(0,0,0)
 
-    this.camera.updateMatrix('flipY')
+    this.camera.flipY()
     this._renderScene()
   
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
 
-    this.camera.updateMatrix()
+    this.camera.flipY()
     this.frameBufferGUI.textureList = [{ texture: this.textures[0], flipY:true }]
     this._renderScene()
     this.waterPrg.use()
