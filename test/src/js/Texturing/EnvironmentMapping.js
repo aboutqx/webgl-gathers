@@ -48,7 +48,7 @@ export default class EnvMap extends Pipeline {
   render() {
 
     GlTools.clear()
-    this.skybox.render()
+    this.skybox.draw()
 
     let mMatrix = mat4.create()
     mat4.translate(mMatrix, mMatrix, [-6,0, 0])

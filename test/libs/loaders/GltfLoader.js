@@ -5,7 +5,7 @@ import loadImages from './loadImages';
 import Material from '../Material';
 import Mesh from '../Mesh';
 
-import CustomShaders from 'libs/shaders/CustomShaders'
+import { gltfVert, gltfFrag } from 'libs/shaders/CustomShaders'
 
 
 import GLTexture from '../GLTexture2';
@@ -252,7 +252,7 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 				uniforms.uEmissiveMap = emissiveTexture.glTexture
 			}
 
-			const material = new Material(CustomShaders.gltfVert, CustomShaders.gltfFrag, uniforms, defines, doubleSided)
+			const material = new Material(gltfVert, gltfFrag, uniforms, defines, doubleSided)
 			mesh.setMaterial(material)
 			gltf.output.meshes.push(mesh);
 		});

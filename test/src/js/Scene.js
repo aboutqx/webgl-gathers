@@ -6,7 +6,7 @@ import MouseMove from './MouseMove'
 const importLists = {
   reflection: 'Light/Reflection',
   lightcaster: 'Light/LightCaster',
-  normal: 'Light/Normal',
+  instance: 'OpenGL/Instance',
   material: 'Light/Material',
   shadow: 'Light/Shadow',
   deferredshading: 'OpenGL/DeferredShading',
