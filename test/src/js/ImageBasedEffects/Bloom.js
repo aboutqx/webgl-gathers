@@ -12,7 +12,7 @@ import {
   canvas
 } from 'libs/GlTools'
 import Geom from 'libs/Geom'
-import CustomShaders from 'libs/shaders/CustomShaders'
+import { bigTriangleVert } from 'libs/shaders/CustomShaders'
 import FrameBuffer from 'libs/FrameBuffer'
 import FboPingPong from 'libs/FboPingPong'
 
@@ -24,8 +24,8 @@ export default class Bloom extends Pipeline {
   }
   init() {
     this.prg = this.compile(vs, fs)
-    this.blurPrg = this.compile(CustomShaders.bigTriangleVert, blurFs)
-    this.finalPrg = this.compile(CustomShaders.bigTriangleVert, finalFs)
+    this.blurPrg = this.compile(bigTriangleVert, blurFs)
+    this.finalPrg = this.compile(bigTriangleVert, finalFs)
   }
   attrib() {
     this.statue = Geom.cube(1)

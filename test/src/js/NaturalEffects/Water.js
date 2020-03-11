@@ -65,7 +65,7 @@ export default class Color extends Pipeline {
   }
 
   _renderScene(){
-    this.skybox.render()
+    this.skybox.draw()
 
     this.terrainPrg.use()
     GlTools.draw(this.terrainPlane)

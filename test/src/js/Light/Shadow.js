@@ -11,7 +11,7 @@ import {
   mat4
 } from 'gl-matrix'
 import Geom from 'libs/Geom'
-import CustomShaders from 'libs/shaders/CustomShaders'
+import { bigTriangleVert } from 'libs/shaders/CustomShaders'
 
 const shadowWidth = 1024
 const shadowHeight = 1024
@@ -26,7 +26,7 @@ export default class Shadow extends Pipeline {
   init() {
 
     this.prg = this.compile(vs, fs)
-    this.depthQuadPrg = this.compile(CustomShaders.bigTriangleVert, depthQuadFs)
+    this.depthQuadPrg = this.compile(bigTriangleVert, depthQuadFs)
     this.shadowPrg = this.compile(shadowMappingVs, shadowMappingFs)
     // flip texture
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)

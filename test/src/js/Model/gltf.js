@@ -71,7 +71,7 @@ export default class GLTF extends Pipeline {
 
     GlTools.clear()
 
-    this.skybox.render()
+    this.skybox.draw()
 
     if(this.gltfPrg){
       this.gltfPrg.use()

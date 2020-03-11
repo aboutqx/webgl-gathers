@@ -1,27 +1,30 @@
-import CustomShaders from 'libs/shaders/CustomShaders'
+import { skyboxVert, skyboxFrag } from 'libs/shaders/CustomShaders'
 import Program from 'libs/GLShader'
 import Geom from 'libs/Geom'
 import {
     mat4
 } from 'gl-matrix'
-import { GlTools } from 'libs/GlTools'
+import Batch from './Batch'
 // batch create skybox
-export default class batchSkybox {
+export default class BatchSkybox extends Batch{
+    
     constructor(size, skymap) {
-        this.skyboxPrg = new Program(CustomShaders.skyboxVert, CustomShaders.skyboxFrag)
-        this.skybox = Geom.skybox(size)
+        const shader = new Program(skyboxVert, skyboxFrag)
+        const mesh = Geom.skybox(size)
+        
+        super(mesh, shader)
         this.skyMap = skymap
     }
 
-    render() {
+    draw() {
         let  mMatrix = mat4.create()
-        this.skyboxPrg.use()
-        this.skyboxPrg.style({
+        this.shader.use()
+        this.shader.style({
             mMatrix,
             uGamma: 2.2,
             uExposure: 5.,
             tex: this.skyMap
           })
-        GlTools.draw(this.skybox)
+        super.draw()
     }
 }
