@@ -6,7 +6,6 @@ import {
 } from 'libs/GlTools'
 import vs from 'shaders/pbr_model/pbr_ibl.vert'
 import fs from 'shaders/pbr_model/pbr_ibl.frag'
-import mapVs from 'shaders/pbr_model/pbr_map.vert'
 import mapFs from 'shaders/pbr_model/pbr_map.frag'
 import cubeVs from 'shaders/ibl_final/cubemap.vert'
 import cubeFs from 'shaders/ibl_final/equirectangular_to_cubemap.frag'
@@ -25,7 +24,6 @@ import {
 } from 'gl-matrix'
 import Mesh from 'libs/Mesh'
 import Texture from 'libs/glTexture'
-import HDRParser from 'libs/loaders/HDRParser'
 import GLCubeTexture from 'libs/GLCubeTexture'
 import OBJLoader from 'libs/loaders/ObjLoader'
 
@@ -48,7 +46,7 @@ export default class PbrModel extends Pipeline {
     // gl.getExtension('OES_texture_half_float_linear')
     // gl.getExtension('EXT_shader_texture_lod')
     this.prg = this.compile(vs, fs)
-    this.mapPrg = this.compile(mapVs, mapFs)
+    this.mapPrg = this.compile(vs, mapFs)
     this.cubePrg = this.compile(cubeVs, cubeFs)
     this.skyboxPrg = this.compile(skyboxVs, skyboxFs)
     this.brdfPrg = this.compile(simple2dVs, brdfFs)
@@ -91,7 +89,7 @@ export default class PbrModel extends Pipeline {
       [vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, -1), vec3.fromValues(0, -1, 0)]
     ]
 
-    let hdrInfo = HDRParser(getAssets.equirectangular)
+    let hdrInfo = getAssets.equirectangular
     console.log('hdrInfo', hdrInfo)
     this.hdrTexture = new Texture(gl)
     gl.bindTexture(gl.TEXTURE_2D, this.hdrTexture.id)
@@ -157,12 +155,12 @@ export default class PbrModel extends Pipeline {
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-    let irr_posx = HDRParser(getAssets.irradiancePosX)
-    let irr_negx = HDRParser(getAssets.irradianceNegX)
-    let irr_posy = HDRParser(getAssets.irradiancePosY)
-    let irr_negy = HDRParser(getAssets.irradianceNegY)
-    let irr_posz = HDRParser(getAssets.irradiancePosZ)
-    let irr_negz = HDRParser(getAssets.irradianceNegZ)
+    let irr_posx = getAssets.irradiancePosX
+    let irr_negx = getAssets.irradianceNegX
+    let irr_posy = getAssets.irradiancePosY
+    let irr_negy = getAssets.irradianceNegY
+    let irr_posz = getAssets.irradiancePosZ
+    let irr_negz = getAssets.irradianceNegZ
 
     this.irradianceMap = new GLCubeTexture([irr_posx, irr_negx, irr_posy, irr_negy, irr_posz, irr_negz])
     this.prefilterMap = GLCubeTexture.parseDDS(getAssets.radiance)

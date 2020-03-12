@@ -5,6 +5,7 @@
 import { gl, GlTools } from './GlTools';
 import GLTexture from './GLTexture2';
 import GLCubeTexture from './GLCubeTexture';
+import WebglNumbers from './utils/WebglNumber'
 
 const isSame = (array1, array2) => {
 	if(array1.length !== array2.length) {
@@ -50,6 +51,14 @@ const uniformMapping = {
 	mat3: 'uniformMatrix3fv',
 	mat4: 'uniformMatrix4fv'
 };
+
+const mapping = {
+	FLOAT_VEC2: 'uniform2fv',
+	FLOAT_VEC3: 'uniform3fv',
+	FLOAT_VEC4: 'uniform4fv',
+	FLOAT_MAT3: 'uniformMatrix3fv',
+	FLOAT_MAT4: 'uniformMatrix4fv'
+}
 
 class GLShader {
 	constructor(strVertexShader = defaultVertexShader, strFragmentShader = defaultFragmentShader, mVaryings) {
@@ -192,7 +201,7 @@ class GLShader {
 				texture.bind(textureIndex);
 			} else {
 				let uniformValue = mUniformObj[uniformName];
-				const uniformType = GLShader.getUniformType(uniformValue);
+				const uniformType = this.getUniformType(uniformValue, uniformName);
 				//console.log(uniformType, uniformName, uniformValue)
 				if(uniformValue.concat && uniformValue[0].concat) {
 					let tmp = [];
@@ -201,7 +210,7 @@ class GLShader {
 					}
 					uniformValue = tmp;
 				}
-				
+
 				this.uniform(uniformName, uniformType, uniformValue);
 			}
 			
@@ -248,31 +257,37 @@ class GLShader {
 	get name() {
 		return this._name
 	}
-}
 
-GLShader.getUniformType = function (mValue) {
-	const isArray = !!mValue.length
 
-	const getArrayUniformType = function (mValue) {
+	getUniformType(mValue, mUniformName) {
+		const isArray = !!mValue.length
+
+		if(!isArray) {
+			return 'float';
+		} else {
+			if (!mValue[0].concat) {
+				return this.getArrayUniformType(mValue, mUniformName);	
+			} else {
+				return this.getArrayUniformType(mValue[0], mUniformName);
+			}
+		}
+	};
+
+	getArrayUniformType (mValue, mUniformName) {
 		if(mValue.length === 9) {
 			return 'uniformMatrix3fv';
 		} else if(mValue.length === 16) {
 			return 'uniformMatrix4fv';
-		} else {
+		} else if(mValue.length <= 4) {
 			return `vec${mValue.length}`;	
+		} else {
+
+			const uniformIndices = gl.getUniformIndices(this.shaderProgram, [mUniformName]);
+			const uniformType = gl.getActiveUniforms(this.shaderProgram, uniformIndices, gl.UNIFORM_TYPE)[0]
+			return mapping[WebglNumbers[uniformType]]
 		}
 	};
 
-	if(!isArray) {
-		return 'float';
-	} else {
-		if (!mValue[0].concat) {
-			return getArrayUniformType(mValue);	
-		} else {
-			return getArrayUniformType(mValue[0]);
-		}
-	}
-};
-
+}
 
 export default GLShader;

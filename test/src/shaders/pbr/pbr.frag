@@ -1,4 +1,4 @@
-
+#version 300 es
 precision mediump float;
 
 // material parameters
@@ -10,11 +10,11 @@ uniform float ao;
 uniform bool lambertDiffuse;
 uniform vec3 lightPositions[4];
 uniform vec3 lightColors[4];
-uniform vec3 camPos;
+uniform vec3 uCameraPos;
 
-varying vec3 vNormal;
-varying vec3 WorldPos;
-
+in vec3 vNormal;
+in vec3 WorldPos;
+out vec4 FragColor;
 #define saturate(x) clamp(x, 0.0, 1.0)
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ vec3 getDiffuse( vec3 diffuseColor, float roughness4, float NoV, float NoL, floa
 
 void main(void){
     vec3 N = normalize(vNormal);
-    vec3 V = normalize(camPos - WorldPos);
+    vec3 V = normalize(uCameraPos - WorldPos);
 
     vec3 F0 = vec3(0.04);
     F0      = mix(F0, albedo, metallic);
@@ -132,6 +132,6 @@ void main(void){
     // gamma correct
     color = pow(color, vec3(1.0/2.2));
 
-    gl_FragColor = vec4(color, 1.0);
+    FragColor = vec4(color, 1.0);
 
 }

@@ -7,6 +7,7 @@ const importLists = {
   reflection: 'Light/Reflection',
   lightcaster: 'Light/LightCaster',
   instance: 'OpenGL/Instance',
+  gpgpu: 'OpenGL/Gpgpu',
   material: 'Light/Material',
   shadow: 'Light/Shadow',
   deferredshading: 'OpenGL/DeferredShading',

@@ -6,7 +6,6 @@ import {
 } from 'libs/GlTools'
 import vs from 'shaders/ibl_final/pbr_ibl.vert'
 import fs from 'shaders/ibl_final/pbr_ibl.frag'
-import mapVs from 'shaders/ibl_final/pbr_map.vert'
 import mapFs from 'shaders/ibl_final/pbr_map.frag'
 import cubeVs from 'shaders/ibl_final/cubemap.vert'
 import cubeFs from 'shaders/ibl_final/equirectangular_to_cubemap.frag'
@@ -50,7 +49,7 @@ export default class IblFinal extends Pipeline {
     // gl.getExtension('OES_texture_half_float_linear')
     // gl.getExtension('EXT_shader_texture_lod')
     this.prg = this.compile(vs, fs)
-    // this.mapPrg = this.compile(mapVs, mapFs)
+    // this.mapPrg = this.compile(vs, mapFs)
     this.cubePrg = this.compile(cubeVs, cubeFs)
     this.skyboxPrg = this.compile(skyboxVs, skyboxFs)
     this.prefilterPrg = this.compile(cubeVs, prefilterFs)

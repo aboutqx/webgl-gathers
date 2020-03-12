@@ -1,4 +1,4 @@
-#extension GL_OES_standard_derivatives : enable
+#version 300 es
 precision mediump float;
 // material map
 uniform sampler2D albedoMap;
@@ -10,12 +10,12 @@ uniform sampler2D aoMap;
 uniform bool lambertDiffuse;
 uniform vec3 lightPositions[4];
 uniform vec3 lightColors[4];
-uniform vec3 camPos;
+uniform vec3 uCameraPos;
 
-varying vec3 vNormal;
-varying vec3 WorldPos;
-varying vec2 TexCoords;
-
+in vec3 vNormal;
+in vec3 WorldPos;
+in vec2 TexCoords;
+out vec4 FragColor;
 #define saturate(x) clamp(x, 0.0, 1.0)
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ vec3 getDiffuse( vec3 diffuseColor, float roughness4, float NoV, float NoL, floa
 
 vec3 getNormalFromMap()
 {
-    vec3 tangentNormal = texture2D(normalMap, TexCoords).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
 
     vec3 Q1  = dFdx(WorldPos);
     vec3 Q2  = dFdy(WorldPos);
@@ -87,12 +87,12 @@ vec3 getNormalFromMap()
 }
 
 void main(void){
-    vec3 albedo     = pow(texture2D(albedoMap, TexCoords).rgb, vec3(2.2));
+    vec3 albedo     = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
     vec3 N     = getNormalFromMap();
-    float metallic  = texture2D(metallicMap, TexCoords).r;
-    float roughness = texture2D(roughnessMap, TexCoords).r;
-    float ao        = texture2D(aoMap, TexCoords).r;
-    vec3 V = normalize(camPos - WorldPos);
+    float metallic  = texture(metallicMap, TexCoords).r;
+    float roughness = texture(roughnessMap, TexCoords).r;
+    float ao        = texture(aoMap, TexCoords).r;
+    vec3 V = normalize(uCameraPos - WorldPos);
 
     vec3 F0 = vec3(0.04);
     F0      = mix(F0, albedo, metallic);
@@ -154,6 +154,6 @@ void main(void){
     // gamma correct
     color = pow(color, vec3(1.0/2.2));
 
-    gl_FragColor = vec4(color, 1.0);
+    FragColor = vec4(color, 1.);
 
 }

@@ -6,7 +6,6 @@ import {
 } from 'libs/GlTools'
 import vs from 'shaders/ibl_diffuse/pbr_ibl.vert'
 import fs from 'shaders/ibl_diffuse/pbr_ibl.frag'
-import mapVs from 'shaders/pbr/pbr_map.vert'
 import mapFs from 'shaders/pbr/pbr_map.frag'
 import cubeVs from 'shaders/ibl_diffuse/cubemap.vert'
 import cubeFs from 'shaders/ibl_diffuse/equirectangular_to_cubemap.frag'
@@ -45,7 +44,7 @@ export default class IblDiffuse extends Pipeline {
     // gl.getExtension('OES_texture_half_float')
     // gl.getExtension('OES_texture_half_float_linear')
     this.prg = this.compile(vs, fs)
-    this.mapPrg = this.compile(mapVs, mapFs)
+    this.mapPrg = this.compile(vs, mapFs)
     this.cubePrg = this.compile(cubeVs, cubeFs)
     this.skyboxPrg = this.compile(skyboxVs, skyboxFs)
     this.irradiancePrg = this.compile(cubeVs, irradianceFs)

@@ -9,7 +9,7 @@ const options = {
 }
 const name = location.search.replace('?', '').toLocaleLowerCase()
 let gl
-if (name !== 'mrt' && name !== 'mirror' && name !== 'pbr' && name !== 'ibl' ) {
+if (name !== 'mrt') {
   gl = canvas.getContext('webgl2', options)
   if (!gl) console.warn('webgl2 not supported!')
   console.log('webgl2 used.')

@@ -6,7 +6,6 @@ import {
 } from 'libs/GlTools'
 import vs from 'shaders/pbr_flow/pbr_ibl.vert'
 import fs from 'shaders/pbr_flow/pbr_ibl.frag'
-import mapVs from 'shaders/pbr_flow/pbr_map.vert'
 import mapFs from 'shaders/pbr_flow/pbr_map.frag'
 import cubeVs from 'shaders/ibl_final/cubemap.vert'
 import cubeFs from 'shaders/ibl_final/equirectangular_to_cubemap.frag'
@@ -55,7 +54,7 @@ export default class PbrFlow extends Pipeline {
     // gl.getExtension('OES_texture_half_float_linear')
     // gl.getExtension('EXT_shader_texture_lod')
     this.prg = this.compile(vs, fs)
-    this.mapPrg = this.compile(mapVs, mapFs)
+    this.mapPrg = this.compile(vs, mapFs)
     this.cubePrg = this.compile(cubeVs, cubeFs)
     this.skyboxPrg = this.compile(skyboxVs, skyboxFs)
     this.brdfPrg = this.compile(simple2dVs, brdfFs)
@@ -196,12 +195,12 @@ export default class PbrFlow extends Pipeline {
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-    let irr_posx = HDRParser(getAssets.irradiancePosX);
-    let irr_negx = HDRParser(getAssets.irradianceNegX);
-    let irr_posy = HDRParser(getAssets.irradiancePosY);
-    let irr_negy = HDRParser(getAssets.irradianceNegY);
-    let irr_posz = HDRParser(getAssets.irradiancePosZ);
-    let irr_negz = HDRParser(getAssets.irradianceNegZ);
+    let irr_posx = getAssets.irradiancePosX
+    let irr_negx = getAssets.irradianceNegX
+    let irr_posy = getAssets.irradiancePosY
+    let irr_negy = getAssets.irradianceNegY
+    let irr_posz = getAssets.irradiancePosZ
+    let irr_negz = getAssets.irradianceNegZ
 
     this.irradianceMap = new GLCubeTexture([irr_posx, irr_negx, irr_posy, irr_negy, irr_posz, irr_negz])
     this.prefilterMap = GLCubeTexture.parseDDS(getAssets.radiance)
@@ -256,11 +255,11 @@ export default class PbrFlow extends Pipeline {
   setTexture() {
     let map = this.params.map
     if (map === 'none') return
-    this.texture0 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Albedo'])
-    this.texture1 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Roughness'])
-    this.texture2 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Metallic'])
-    this.texture3 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Ao'])
-    this.texture4 = new Texture(gl, gl.RGBA).fromImage(getAssets[map + 'Normal'])
+		this.texture0 = getAssets[map + 'Albedo']
+		this.texture1 = getAssets[map + 'Roughness']
+		this.texture2 = getAssets[map + 'Metallic']
+		this.texture3 = getAssets[map + 'Ao']
+		this.texture4 = getAssets[map + 'Normal']
   }
 
   render() {
@@ -317,11 +316,7 @@ export default class PbrFlow extends Pipeline {
     } else {
       this.mapPrg.use()
 
-      this.texture0.bind(0)
-      this.texture1.bind(1)
-      this.texture2.bind(2)
-      this.texture3.bind(3)
-      this.texture4.bind(4)
+
       gl.activeTexture(gl.TEXTURE5)
       gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.irradianceMap.texture)
       gl.activeTexture(gl.TEXTURE6)
@@ -332,11 +327,11 @@ export default class PbrFlow extends Pipeline {
       this.mapPrg.style({
         ...baseUniforms,
         mMatrix: mMatrix,
-        albedoMap: 0,
-        roughnessMap: 1,
-        metallicMap: 2,
-        aoMap: 3,
-        normalMap: 4,
+				albedoMap: this.texture0,
+				roughnessMap: this.texture1,
+				metallicMap: this.texture2,
+				aoMap: this.texture3,
+				normalMap: this.texture4,
         irradianceMap: 5,
         prefilterMap: 6,
         brdfLUT: 7

@@ -1,19 +1,22 @@
+#version 300 es
 precision mediump float;
 
-attribute vec3 position;
-attribute vec3 normal;
+in vec3 position;
+in vec3 normal;
+in vec2 texCoord;
 uniform   mat4 mMatrix;
-uniform   mat4 vpMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
 
-varying   vec3 vNormal;
-varying vec3 WorldPos;
-
+out   vec3 vNormal;
+out vec3 WorldPos;
+out vec2 TexCoords;
 void main(void){
 
 	vec4 pos       = mMatrix * vec4(position, 1.0);
-	gl_Position    = vpMatrix * pos;
+	gl_Position    = uProjectionMatrix * uViewMatrix * pos;
 
   vNormal = mat3(mMatrix) * normal;
   WorldPos = pos.xyz;
-
+  TexCoords = texCoord;
 }
