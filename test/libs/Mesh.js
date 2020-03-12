@@ -288,6 +288,22 @@ export default class Mesh extends Object3D {
 		this._bufferChanged = [];
 	}
 
+	bufferSubData(mName, mData, mOffset = 0){
+		const attr = this.getAttribute(mName)
+		if(!attr.buffer) return
+
+		let bufferData = []
+		for (let i = 0; i < mData.length; i++) {
+			for (let j = 0; j < mData[i].length; j++) {
+				bufferData.push(mData[i][j]);
+			}
+		}
+
+		const dataArray = new Float32Array(bufferData);
+		gl.bindBuffer(gl.ARRAY_BUFFER, attr.buffer);
+		gl.bufferSubData(gl.ARRAY_BUFFER, mOffset, dataArray);
+	}
+
 	unbind() {
 		if (this._useVAO) {
 			gl.bindVertexArray(null);
