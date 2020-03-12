@@ -12,9 +12,9 @@ import {
 import Geom from 'libs/Geom'
 
 
-const nrRows = 1
-const nrColumns = 1
-const spacing = 2.8
+const nrRows = 7
+const nrColumns = 7
+const spacing = 4.8
 
 export default class Pbr extends Pipeline {
 	count = 0
@@ -32,7 +32,7 @@ export default class Pbr extends Pipeline {
 
 	}
 	prepare() {
-		this.camera.radius = 32
+		this.camera.radius = 36
 
 	}
 	uniform() {
@@ -112,7 +112,7 @@ export default class Pbr extends Pipeline {
 				for (let col = 0; col < nrColumns; col++) {
 					mat4.translate(mMatrix, mat4.create(), [(col - (nrColumns / 2)) * spacing, (row - (nrRows / 2)) * spacing, 0.0])
 					//mat4.translate(mMatrix, mMatrix, [1, 0, 0])
-					mMatrix = mat4.create()
+					
 					this.prg.style({
 						roughness: clamp(col / nrColumns, 0.05, 1.),
 						mMatrix
@@ -122,7 +122,7 @@ export default class Pbr extends Pipeline {
 			}
 		} else {
 			this.mapPrg.use()
-			mMatrix = mat4.create()
+			mat4.scale(mMatrix, mMatrix, [3, 3, 3])
 			this.mapPrg.style({
 				...baseUniforms,
 				mMatrix,
