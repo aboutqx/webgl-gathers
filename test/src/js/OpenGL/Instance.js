@@ -23,7 +23,7 @@ export default class Instance extends Pipeline {
   }
   attrib() {
  
-    this.cube = Geom.sphere(.05, 100)
+    this.cube = Geom.sphere(.01, 100)
 
 
     this.cube.bufferInstance(this._caculateMatrix(), 'instanceMatrix')
@@ -34,7 +34,7 @@ export default class Instance extends Pipeline {
     let instanceMatrix = []
     let x, y, z
     for(let i = 0; i < num; i++) {
-      const scale = random(.1, 20)
+      const scale = random(.1, 10)
 
       let mMatrix = mat4.create()
       let displacement =  (Math.random() * 2 - 1 ) * 50
@@ -65,7 +65,7 @@ export default class Instance extends Pipeline {
     })
   }
   render() {
-    GlTools.clear()
+    GlTools.clear(0, 0, 0)
 
     this.curTime = performance.now()
     const interval = 100
