@@ -15,7 +15,7 @@ const importLists = {
   ssao: 'OpenGL/SSAO',
   normalMapping: 'Texturing/NormalMapping',
   heightMapping: 'Texturing/HeightMapping',
-  reliefMapping: 'Texturing/ReliefMapping', // can alse provide self-shadowing.
+  reliefMapping: 'Texturing/ReliefMapping', // can also provide self-shadowing.
   envMapping: 'Texturing/EnvironmentMapping',
   billboard: 'ImageBasedEffects/Billboard',
   bloom: 'ImageBasedEffects/Bloom',

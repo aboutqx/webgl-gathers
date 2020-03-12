@@ -7,9 +7,10 @@ import {
   mat4,
 }from 'gl-matrix'
 import {
-  gl,
   GlTools
 }from 'libs/GlTools'
+
+const random = function(min, max) { return min + Math.random() * (max - min);	}
 
 export default class Instance extends Pipeline {
   count = 0
@@ -22,13 +23,18 @@ export default class Instance extends Pipeline {
   }
   attrib() {
  
-    this.cube = Geom.cube(.01)
+    this.cube = Geom.sphere(.05, 100)
 
+
+    this.cube.bufferInstance(this._caculateMatrix(), 'instanceMatrix')
+  }
+
+  _caculateMatrix() {
     const num = 1000
     let instanceMatrix = []
     let x, y, z
     for(let i = 0; i < num; i++) {
-      const scale = Math.random() * 200
+      const scale = random(.1, 20)
 
       let mMatrix = mat4.create()
       let displacement =  (Math.random() * 2 - 1 ) * 50
@@ -41,15 +47,14 @@ export default class Instance extends Pipeline {
       mat4.scale(mMatrix, mMatrix, [scale, scale, scale])
       instanceMatrix.push(mMatrix)
     }
-    this.cube.bufferInstance(instanceMatrix, 'instanceMatrix')
+    return instanceMatrix
   }
+
   prepare() {
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LEQUAL)
-    gl.clearColor(0.3, 0.3, .3, 1.0)
-    gl.clearDepth(1.0)
 
     this.camera.radius = 100
+    this.curTime = 0 
+    this.lastTime = 0
   }
   uniform() {
 
@@ -60,7 +65,16 @@ export default class Instance extends Pipeline {
     })
   }
   render() {
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    GlTools.clear()
+
+    this.curTime = performance.now()
+    const interval = 100
+    if(this.curTime - this.lastTime > interval) {
+      const matrix = this._caculateMatrix()
+      this.cube.bufferSubData('instanceMatrix', matrix)
+      this.lastTime = performance.now()
+    }
+    
 
     GlTools.draw(this.cube)
 
