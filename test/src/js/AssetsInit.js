@@ -42,6 +42,11 @@ export default function AssetsInit(assets, files){
                 break;
     
             case 'hdr':
+                if(url.split('_').length <= 2) {
+                    texture = new GLTexture(file);
+                    result[name] = texture
+                    break; 
+                }
                 t = url.split('_')[0].split('/') 
                 cubemapName =  t[t.length-1]  + (url.split('_').length >2 ? url.split('_')[1] : '')
                 texture = HDRParser(file);

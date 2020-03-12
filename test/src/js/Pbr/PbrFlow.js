@@ -74,9 +74,8 @@ export default class PbrFlow extends Pipeline {
     sphere.bufferTexCoord(uv)
     this.sphere = sphere
 
-    let cube = new Mesh()
-    cube.bufferData(CubeData, ['position', 'normal', 'texCoord'], [3, 3, 2])
-    this.cube = cube
+
+    this.cube = Geom.cube(2)
 
     let planeVertices = [
       // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
