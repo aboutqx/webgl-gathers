@@ -30,7 +30,7 @@ import {
   vec3
 } from 'gl-matrix'
 import Mesh from 'libs/Mesh'
-import Texture from 'libs/glTexture'
+import Texture from 'libs/GLTexture'
 import HDRParser from 'libs/loaders/HDRParser'
 
 export default class IblFinal extends Pipeline {
