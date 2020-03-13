@@ -8,7 +8,7 @@ uniform sampler2D gNormal;
 uniform sampler2D texNoise;
 
 uniform vec3 samples[64];
-uniform mat4 pMatrix;
+uniform mat4 uProjectionMatrix;
 
 int kernelSize = 64;
 float radius = 0.5;
@@ -34,7 +34,7 @@ void main() {
         sample1 = fragPos + sample1 * radius;
 
         vec4 offset = vec4(sample1, 1.0);
-        offset = pMatrix * offset; // 观察->裁剪空间
+        offset = uProjectionMatrix * offset; // 观察->裁剪空间
         offset.xyz /= offset.w; // 透视划分
         offset.xyz = offset.xyz * 0.5 + 0.5; // 变换到0.0 - 1.0的值域
 

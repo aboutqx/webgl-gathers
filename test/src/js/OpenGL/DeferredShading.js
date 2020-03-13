@@ -104,10 +104,6 @@ export default class DeferredShading extends Pipeline {
   }
   uniform() {
 
-    this.vMatrix = this.camera.viewMatrix
-    this.pMatrix = mat4.create()
-
-    mat4.perspective(this.pMatrix, toRadian(60), canvas.clientWidth / canvas.clientHeight, .1, 100)
 
   }
 
@@ -119,10 +115,6 @@ export default class DeferredShading extends Pipeline {
       this.gBufferPrg.use()
 
       if (this.nanosuit) { // loaded
-        this.gBufferPrg.style({
-          vMatrix: this.vMatrix,
-          pMatrix: this.pMatrix
-        })
         for(let i =0 ;i < objectPositions.length; i++) {
           let mMatrix = mat4.create()
           mat4.translate(mMatrix, mMatrix, objectPositions[i])
@@ -183,10 +175,6 @@ export default class DeferredShading extends Pipeline {
 
     // render light cubes
     this.lampPrg.use()
-    this.lampPrg.style({
-      vMatrix: this.vMatrix,
-      pMatrix: this.pMatrix
-    })
     for(let i = 0; i < lightPositions.length; i++) {
       let mMatrix = mat4.create()
       mat4.translate(mMatrix, mMatrix, lightPositions[i])

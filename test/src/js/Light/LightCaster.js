@@ -16,8 +16,6 @@ import {
 } from 'libs/GlTools'
 import { GlTools } from '../../../libs/GlTools'
 
-let vMatrix = mat4.create()
-let pMatrix = mat4.create()
 const lightColor = [0.33, 0.42, 0.18]
 const ligthPos = [0, 0, 1].map(v => v * 50)
 const cubePosition = [
@@ -91,8 +89,7 @@ export default class LightCaster extends Pipeline {
   }
 
   uniform() {
-    vMatrix = this.camera.viewMatrix
-    mat4.perspective(pMatrix, toRadian(60), canvas.clientWidth / canvas.clientHeight, .1, 100)
+
 
   }
   render() {
@@ -100,8 +97,6 @@ export default class LightCaster extends Pipeline {
     if (this.params.directionalLight) {
       this.prg.use()
       this.prg.style({
-        vMatrix,
-        pMatrix,
         camPos: this.camera.position,
         'material.shininess': 30,
         'material.diffuse': this.diffuseTexture,
@@ -126,8 +121,6 @@ export default class LightCaster extends Pipeline {
       this.pointPrg.use()
 
       this.pointPrg.style({
-        vMatrix,
-        pMatrix,
         camPos: this.camera.position,
         'material.shininess': 30,
         'material.diffuse': this.diffuseTexture,
@@ -155,8 +148,6 @@ export default class LightCaster extends Pipeline {
       this.spotPrg.use()
 
       this.spotPrg.style({
-        vMatrix,
-        pMatrix,
         camPos: this.camera.position,
         'material.shininess': 30,
         'material.diffuse': this.diffuseTexture,
@@ -193,8 +184,6 @@ export default class LightCaster extends Pipeline {
     this.lampPrg.use()
     this.lampPrg.style({
       mMatrix,
-      vMatrix,
-      pMatrix,
       lightColor
     })
     gl.bindVertexArray(this.lampVao);

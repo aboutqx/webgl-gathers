@@ -11,13 +11,13 @@ out  vec2 TexCoord;
 out vec4 FragPosLightSpace;
 
 
-uniform mat4 pMatrix;
-uniform mat4 vMatrix;
+uniform mat4 uProjectionMatrix;
+uniform mat4 uViewMatrix;
 uniform mat4 mMatrix;
 uniform mat4 lightSpaceMatrix;
 
 void main(){
-  gl_Position = pMatrix * vMatrix * mMatrix * vec4(position, 1.);
+  gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(position, 1.);
   FragPos = vec3(mMatrix * vec4(position, 1.));
   Normal = transpose(inverse(mat3(mMatrix))) * normal;
   TexCoord = texCoord;

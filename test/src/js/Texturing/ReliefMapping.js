@@ -157,8 +157,6 @@ export default class ReliefMapping extends Pipeline {
     this.prg.use()
     this.prg.style({
       mMatrix,
-      vMatrix: this.camera.viewMatrix,
-      pMatrix: this.camera.projMatrix,
       viewPos: this.camera.position,
       lightPos,
       diffuseMap: getAssets.toyBox,

@@ -154,8 +154,6 @@ export default class NormalMap extends Pipeline {
     this.prg.use()
     this.prg.style({
       mMatrix,
-      vMatrix: this.camera.viewMatrix,
-      pMatrix: this.camera.projMatrix,
       viewPos: this.camera.position,
       lightPos,
       diffuseMap: getAssets.brickwall,
