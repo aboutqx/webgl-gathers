@@ -32,7 +32,7 @@ export default class Bloom extends Pipeline {
     this.quad = Geom.bigTriangle()
   }
   prepare(){
-    this.camera.radius = 3.5
+    this.orbital.radius = 3.5
     let fbo = new FrameBuffer(canvas.width, canvas.height, { internalFormat: gl.RGBA16F, type:gl.HALF_FLOAT,minFilter:gl.LINEAR,maxFilter:gl.LINEAR }, 2)
 
     this.hdrFb = fbo.frameBuffer

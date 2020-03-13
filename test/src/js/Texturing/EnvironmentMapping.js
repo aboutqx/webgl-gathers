@@ -38,8 +38,8 @@ export default class EnvMap extends Pipeline {
 
     this.venus = getAssets.venus
 
-    this.camera.radius = 19
-    this.camera.target = [0, 5, 0]
+    this.orbital.radius = 19
+    this.orbital.target = [0, 5, 0]
   }
   uniform() {
 

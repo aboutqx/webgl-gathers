@@ -1,26 +1,20 @@
 import Program from 'libs/GLShader'
-import Camera from 'libs/cameras/Camera'
-import { quat, mat4 } from 'gl-matrix'
-import { gl, GlTools } from 'libs/GlTools'
+import CameraPers from 'libs/cameras/CameraPerspective'
+import OrbitalControls from 'libs/controls/OrbitalControls'
+import { gl, GlTools, toRadian, canvas } from 'libs/GlTools'
 import FrameBufferGUI from 'libs/helpers/FrameBufferGUI'
 import * as dat from 'dat.gui'
 
 
 export default class Pipeline {
-  rotateQ = quat.create()
-  mousePos = { x:0, y:0 }
-  camera = new Camera()
-  pMatrix = mat4.create()
-  mvpMatrix = mat4.create()
-  tmpMatrix = mat4.create()
-
+  camera = new CameraPers(toRadian(45), canvas.width / canvas.height, .1, 1000)
   _params = {}
   gui = new dat.GUI({
     width: 300
   })
 
   constructor() {
-    this.vMatrix = this.camera.viewMatrix
+    this.orbital = new OrbitalControls(this.camera)
     GlTools.setCamera(this.camera)
     this.init()
     this.attrib()
@@ -53,7 +47,7 @@ export default class Pipeline {
   animate() {
     requestAnimationFrame(this._animate)
 
-    this.camera.updateMatrix()
+    this.orbital.updateMatrix()
     this.uniform()
     this.render()
     this.frameBufferGUI.draw()

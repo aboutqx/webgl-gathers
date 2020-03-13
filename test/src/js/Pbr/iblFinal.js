@@ -16,11 +16,7 @@ import simple2dVs from 'shaders/ibl_final/simple2d.vert'
 import brdfFs from 'shaders/ibl_final/brdf.frag'
 import irradianceFs from 'shaders/ibl_final/irradiance_convolution.frag'
 
-import {
-  ArrayBuffer,
-  IndexBuffer
-} from 'libs/glBuffer'
-import Vao from 'libs/vao'
+
 import {
   Sphere,
   CubeData

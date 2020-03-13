@@ -49,7 +49,7 @@ export default class IblDiffuse extends Pipeline {
   }
   prepare() {
 
-    this.camera.radius = 32
+    this.orbital.radius = 32
 
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
 

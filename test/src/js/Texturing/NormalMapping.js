@@ -140,7 +140,7 @@ export default class NormalMap extends Pipeline {
     this.quad.bufferIndex([0,1,2,3,4,5])
   }
   prepare() {
-    this.camera.offset = [0, 2, 0]
+    this.orbital.offset = [0, 2, 0]
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LEQUAL)
     gl.clearColor(0.3, 0.3, .3, 1.0)

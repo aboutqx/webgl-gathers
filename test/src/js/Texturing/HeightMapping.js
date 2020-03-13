@@ -142,7 +142,7 @@ export default class HeightMapping extends Pipeline {
     this.quad.bufferIndex([0,1,2,3,4,5])
   }
   prepare() {
-    this.camera.target = [0, 0, 0]
+    this.orbital.target = [0, 0, 0]
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LEQUAL)
     gl.clearColor(0.3, 0.3, .3, 1.0)

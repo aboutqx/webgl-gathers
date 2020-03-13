@@ -53,7 +53,7 @@ export default class Instance extends Pipeline {
 
   prepare() {
 
-    this.camera.radius = 100
+    this.orbital.radius = 100
     this.curTime = 0 
     this.lastTime = 0
   }

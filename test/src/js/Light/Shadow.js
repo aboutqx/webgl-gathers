@@ -57,7 +57,7 @@ export default class Shadow extends Pipeline {
 
 
     this.depthBuffer = depthTextureFbo(shadowWidth, shadowHeight)
-    this.camera.radius = 11
+    this.orbital.radius = 11
 
     this.wood = getAssets.wood
     this.wood.bind()

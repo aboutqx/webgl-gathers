@@ -12,7 +12,6 @@ const importLists = {
   shadow: 'Light/Shadow',
   deferredshading: 'OpenGL/DeferredShading',
   mask: 'OpenGL/Mask',
-  mrt: 'OpenGL/Mrt',
   ssao: 'OpenGL/SSAO',
   normalMapping: 'Texturing/NormalMapping',
   heightMapping: 'Texturing/HeightMapping',

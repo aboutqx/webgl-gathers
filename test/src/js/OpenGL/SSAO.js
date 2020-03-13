@@ -17,7 +17,7 @@ import {
 } from 'gl-matrix'
 import OBJLoader from 'libs/loaders/ObjLoader'
 import MTLLoader from 'libs/loaders/MTLLoader'
-import Fbo from 'libs/glFbo'
+import Fbo from 'libs/FrameBuffer'
 import Texture from 'libs/GLTexture'
 import Geom from 'libs/Geom'
 import { GlTools } from '../../../libs/GlTools'
@@ -96,9 +96,9 @@ export default class SSAO extends Pipeline {
     this.noiseTexture.bind()
     this.noiseTexture.repeat()
     // execute once
-    this.camera.target = [0, -1., 0]
-    this.camera.offset = [0, 0., 0]
-    this.camera.radius = 3
+    this.orbital.target = [0, -1., 0]
+    this.orbital.offset = [0, 0., 0]
+    this.orbital.radius = 3
     this.camera.rx = -1.5
   }
   uniform() {
