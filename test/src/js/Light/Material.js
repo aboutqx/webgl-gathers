@@ -49,8 +49,6 @@ export default class Color extends Pipeline {
     this.prg.use()
     this.prg.style({
       mMatrix,
-      vMatrix: this.camera.viewMatrix,
-      pMatrix: this.camera.projMatrix,
       camPos: this.camera.position,
       'light.position': ligthPos,
       'material.ambient': [1, .5, .31],
@@ -75,8 +73,6 @@ export default class Color extends Pipeline {
     this.lampPrg.use()
     this.lampPrg.style({
       mMatrix,
-      vMatrix: this.camera.viewMatrix,
-      pMatrix: this.camera.projMatrix,
       lightColor
     })
     GlTools.draw(this.lamp)

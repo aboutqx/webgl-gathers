@@ -3,7 +3,7 @@
 import Camera from './Camera';
 import Ray from '../physics/Ray';
 import { mat4, vec3 } from 'gl-matrix';
-
+import { canvas, toRadian } from '../GlTools'
 const mInverseViewProj = mat4.create();
 const cameraDir = vec3.create();
 
@@ -14,13 +14,13 @@ class CameraPerspective extends Camera {
 		super();
 		
 		if(mFov) {
-			this.setPerspective(mFov, mAspectRatio, mNear, mFar);
+			this.setPerspective(mFov, mNear, mFar, mAspectRatio);
 		}
 	}
 
-	setPerspective(mFov, mAspectRatio, mNear, mFar) {
+	setPerspective(mFov, mNear, mFar, mAspectRatio = canvas.width / canvas.height) {
 		
-		this._fov         = mFov;
+		this._fov         = toRadian(mFov);
 		this._near        = mNear;
 		this._far         = mFar;
 		this._aspectRatio = mAspectRatio;

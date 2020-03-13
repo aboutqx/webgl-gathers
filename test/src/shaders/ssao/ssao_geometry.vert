@@ -11,17 +11,17 @@ out vec3 Normal;
 uniform bool invertedNormals;
 
 uniform mat4 mMatrix;
-uniform mat4 vMatrix;
-uniform mat4 pMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
 
 void main()
 {
-    vec4 viewPos = vMatrix * mMatrix * vec4(position, 1.0);
+    vec4 viewPos = uViewMatrix * mMatrix * vec4(position, 1.0);
     FragPos = vec3(viewPos);
     TexCoords = texCoord;
 
     mat3 normalMatrix = transpose(inverse(mat3(mMatrix)));
     Normal = normalMatrix * (invertedNormals ? -normal : normal);
 
-    gl_Position = pMatrix * viewPos;
+    gl_Position = uProjectionMatrix * viewPos;
 }

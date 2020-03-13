@@ -97,19 +97,19 @@ export default class Mask extends Pipeline {
     gl.stencilFunc(gl.NOTEQUAL, 1, 0xff);
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
-    this.camera.setProj(60, .1, 100)
+    //this.camera.setPerspective(90, .1, 100)
+
   }
   uniform() {
 
-    let pMatrix = mat4.clone(this.camera.projMatrix)
+    let pMatrix = mat4.clone(this.camera.projectionMatrix)
     let vMatrix = mat4.clone(this.camera.viewMatrix)
     this.intersect.setRay(this.mousePos.x, this.mousePos.y, pMatrix, vMatrix, this.camera.position)
 
   }
   render() {
 
-    gl.clearColor(0.3, 0.3, .3, 1.0)
-    gl.clearDepth(1.0);
+    GlTools.clear()
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
     gl.stencilMask(0x00) //写入0
 

@@ -1,13 +1,14 @@
 import Program from 'libs/GLShader'
 import CameraPers from 'libs/cameras/CameraPerspective'
 import OrbitalControls from 'libs/controls/OrbitalControls'
-import { gl, GlTools, toRadian, canvas } from 'libs/GlTools'
+import { gl, GlTools, canvas } from 'libs/GlTools'
 import FrameBufferGUI from 'libs/helpers/FrameBufferGUI'
 import * as dat from 'dat.gui'
 
 
 export default class Pipeline {
-  camera = new CameraPers(toRadian(45), canvas.width / canvas.height, .1, 1000)
+  mousePos = { x:0, y:0 }
+  camera = new CameraPers(45, canvas.width / canvas.height, .1, 1000)
   _params = {}
   gui = new dat.GUI({
     width: 300

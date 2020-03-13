@@ -103,10 +103,7 @@ export default class SSAO extends Pipeline {
   }
   uniform() {
 
-    this.vMatrix = this.camera.viewMatrix
-    this.pMatrix = mat4.create()
 
-    mat4.perspective(this.pMatrix, toRadian(60), canvas.clientWidth / canvas.clientHeight, .1, 100)
   }
 
   render() {
@@ -115,10 +112,6 @@ export default class SSAO extends Pipeline {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
       this.gBufferPrg.use()
-      this.gBufferPrg.style({
-        vMatrix: this.vMatrix,
-        pMatrix: this.pMatrix
-      })
       if (this.nanosuit) { // loaded
         let mMatrix = mat4.create()
         mat4.translate(mMatrix, mMatrix, [-1.0, -3.3, 3.])

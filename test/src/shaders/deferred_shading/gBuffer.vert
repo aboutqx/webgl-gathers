@@ -9,8 +9,8 @@ out vec2 TexCoords;
 out vec3 Normal;
 
 uniform mat4 mMatrix;
-uniform mat4 vMatrix;
-uniform mat4 pMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
 
 void main()
 {
@@ -22,5 +22,5 @@ void main()
     mat3 normalMatrix = transpose(inverse(mat3(mMatrix)));
     Normal = normalMatrix * normal;
 
-    gl_Position = pMatrix * vMatrix * worldPos;
+    gl_Position = uProjectionMatrix * uViewMatrix * worldPos;
 }

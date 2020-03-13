@@ -4,8 +4,8 @@ layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 texCoord;
 
 uniform mat4 mMatrix;
-uniform mat4 vMatrix;
-uniform mat4 pMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
 
 out vec2 TexCoords;
 out vec3 Normal;
@@ -17,5 +17,5 @@ void main()
     Normal = mat3(transpose(inverse(mMatrix))) * normal;
     TexCoords = texCoord;
 
-    gl_Position = pMatrix * vMatrix * vec4(FragPos, 1.0);
+    gl_Position = uProjectionMatrix * uViewMatrix * vec4(FragPos, 1.0);
 }

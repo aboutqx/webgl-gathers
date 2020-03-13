@@ -16,8 +16,8 @@ out vec3 TangentViewPos;
 out vec3 TangentFragPos;
 
 
-uniform mat4 pMatrix;
-uniform mat4 vMatrix;
+uniform mat4 uProjectionMatrix;
+uniform mat4 uViewMatrix;
 uniform mat4 mMatrix;
 
 uniform vec3 lightPos;
@@ -38,5 +38,5 @@ void main() {
   TangentViewPos  = TBN * viewPos;
   TangentFragPos  = TBN * FragPos;
 
-  gl_Position = pMatrix * vMatrix * mMatrix * vec4(position, 1.0);
+  gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(position, 1.0);
 }

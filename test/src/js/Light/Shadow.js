@@ -64,7 +64,6 @@ export default class Shadow extends Pipeline {
     this.wood.repeat()
   }
   uniform() {
-    vMatrix = this.camera.viewMatrix
 
   }
 
@@ -93,8 +92,6 @@ export default class Shadow extends Pipeline {
       diffuseTexture: this.wood,
       lightPos,
       viewPos: this.camera.position,
-      mMatrix: this.mMatrix,
-      pMatrix: this.camera.projMatrix,
       vMatrix,
       lightSpaceMatrix: this.tmpMatrix,
     })
