@@ -7,6 +7,7 @@ import {
   mat4,
 }from 'gl-matrix'
 import {
+  gl,
   GlTools
 }from 'libs/GlTools'
 
@@ -26,7 +27,7 @@ export default class Instance extends Pipeline {
     this.cube = Geom.sphere(.01, 100)
 
 
-    this.cube.bufferInstance(this._caculateMatrix(), 'instanceMatrix')
+    this.cube.bufferInstance(this._caculateMatrix(), 'instanceMatrix', gl.DYNAMIC_DRAW)
   }
 
   _caculateMatrix() {

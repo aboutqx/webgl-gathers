@@ -8,7 +8,7 @@ import Mesh from '../Mesh';
 import { gltfVert, gltfFrag } from 'libs/shaders/CustomShaders'
 
 
-import GLTexture from '../GLTexture2';
+import GLTexture from '../GLTexture';
 import Object3D from 'physics/Object3D';
 
 

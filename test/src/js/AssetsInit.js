@@ -1,4 +1,4 @@
-import GLTexture from 'libs/GLTexture2'
+import GLTexture from 'libs/GLTexture'
 import GLCubeTexture from 'libs/GLCubeTexture'
 import HDRParser from 'loaders/HDRParser'
 import ObjLoader from 'loaders/ObjLoader'

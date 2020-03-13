@@ -1,7 +1,7 @@
 // FrameBuffer.js
 
 import { gl, GlTools } from './GlTools';
-import GLTexture from './GLTexture2';
+import GLTexture from './GLTexture';
 import WebglNumber from './utils/WebglNumber';
 
 

@@ -1,8 +1,9 @@
 import Pipeline from '../PipeLine'
 import {
   gl,
+  toRadian,
   canvas,
-  toRadian
+  GlTools
 } from 'libs/GlTools'
 import vs from 'shaders/pbr_flow/pbr_ibl.vert'
 import fs from 'shaders/pbr_flow/pbr_ibl.frag'
@@ -13,23 +14,13 @@ import skyboxVs from 'shaders/ibl_final/skybox.vert'
 import skyboxFs from 'shaders/ibl_final/skybox.frag'
 import simple2dVs from 'shaders/ibl_final/simple2d.vert'
 import brdfFs from 'shaders/ibl_final/brdf.frag'
+import Geom from 'libs/Geom'
 
-import {
-  ArrayBuffer,
-  IndexBuffer
-} from 'libs/glBuffer'
-import Vao from 'libs/vao'
-import {
-  Sphere,
-  CubeData
-} from '../Torus'
 import {
   mat4,
   vec3
 } from 'gl-matrix'
-import Mesh from 'libs/Mesh'
 import Texture from 'libs/glTexture'
-import HDRParser from 'libs/loaders/HDRParser'
 import GLCubeTexture from 'libs/GLCubeTexture'
 
 const nrRows = 7
@@ -60,56 +51,18 @@ export default class PbrFlow extends Pipeline {
     this.brdfPrg = this.compile(simple2dVs, brdfFs)
   }
   attrib() {
-    let {
-      pos,
-      index,
-      normal,
-      uv
-    } = Sphere(256, 256, .15)
-
-    let sphere = new Mesh()
-    sphere.bufferVertex(pos)
-    sphere.bufferIndex(index)
-    sphere.bufferNormal(normal)
-    sphere.bufferTexCoord(uv)
-    this.sphere = sphere
+    this.sphere = Geom.sphere(2, 100)
 
 
     this.cube = Geom.cube(2)
 
-    let planeVertices = [
-      // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-      3.0, -0.5, 3.0, 1.0, 0.0,
-      -3.0, -0.5, 3.0, 0.0, 0.0,
-      -3.0, -0.5, -3.0, 0.0, 1.0,
+    this.plane = Geom.plane()
 
-      3.0, -0.5, 3.0, 1.0, 0.0,
-      -3.0, -0.5, -3.0, 0.0, 1.0,
-      3.0, -0.5, -3.0, 1.0, 1.0
-    ]
+    this.quad = Geom.plane()
 
-    this.planeBuffer = new ArrayBuffer(gl, new Float32Array(planeVertices))
-
-    this.planeBuffer.attrib('position', 3, gl.FLOAT)
-    this.planeBuffer.attrib('texCoord', 2, gl.FLOAT)
-
-    this.planeVao = new Vao(gl)
-    this.planeVao.setup(this.cubePrg, [this.planeBuffer])
-
-    let quad = new Mesh()
-    let quadData = [
-      -1.0, 1.0, 0.0, 0.0, 1.0,
-      -1.0, -1.0, 0.0, 0.0, 0.0,
-      1.0, 1.0, 0.0, 1.0, 1.0,
-      1.0, -1.0, 0.0, 1.0, 0.0
-    ]
-    quad.bufferData(quadData, ['position', 'texCoord'], [3, 2])
-    this.quad = quad
   }
   prepare() {
 
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LEQUAL)
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
 
     let pMatrix = mat4.create()
@@ -127,12 +80,9 @@ export default class PbrFlow extends Pipeline {
       [vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, -1), vec3.fromValues(0, -1, 0)]
     ]
 
-    let hdrInfo = HDRParser(getAssets.equirectangular)
-    console.log('hdrInfo', hdrInfo)
-    this.hdrTexture = new Texture(gl)
-    gl.bindTexture(gl.TEXTURE_2D, this.hdrTexture.id)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, hdrInfo.shape[0], hdrInfo.shape[1], 0, gl.RGBA, gl.FLOAT, hdrInfo.data)
-    this.hdrTexture.clamp()
+
+    this.hdrTexture = getAssets.equirectangular
+    //this.hdrTexture.clamp()
 
 
     // cubemap
@@ -167,8 +117,7 @@ export default class PbrFlow extends Pipeline {
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, this.cubemapTexture, 0);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-      this.cube.bind(this.cubePrg, ['position', 'texCoord'])
-      this.cube.draw()
+      GlTools.draw(this.cube)
     }
 
 
@@ -189,19 +138,12 @@ export default class PbrFlow extends Pipeline {
     gl.viewport(0, 0, 512, 512)
     this.brdfPrg.use()
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    this.quad.bind(this.brdfPrg)
-    this.quad.draw(gl.TRIANGLE_STRIP)
+    GlTools.draw(this.quad)
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+console.log(getAssets)
 
-    let irr_posx = getAssets.irradiancePosX
-    let irr_negx = getAssets.irradianceNegX
-    let irr_posy = getAssets.irradiancePosY
-    let irr_negy = getAssets.irradianceNegY
-    let irr_posz = getAssets.irradiancePosZ
-    let irr_negz = getAssets.irradianceNegZ
-
-    this.irradianceMap = new GLCubeTexture([irr_posx, irr_negx, irr_posy, irr_negy, irr_posz, irr_negz])
+    this.irradianceMap = getAssets.outputiem
     this.prefilterMap = GLCubeTexture.parseDDS(getAssets.radiance)
   }
   uniform() {
@@ -263,9 +205,7 @@ export default class PbrFlow extends Pipeline {
 
   render() {
     gl.viewport(0, 0, canvas.width, canvas.height)
-    gl.clearColor(0.3, 0.3, 0.3, 1.);
-    gl.clearDepth(1.0)
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    GlTools.clear()
 
     let mMatrix = mat4.create()
     let baseUniforms = {
@@ -297,7 +237,7 @@ export default class PbrFlow extends Pipeline {
         prefilterMap: 1,
         brdfLUT: 2
       })
-      this.sphere.bind(this.prg, ['position', 'normal'])
+
       for (let row = 0; row < nrRows; row++) {
         this.prg.style({
           metallic: row / nrRows
@@ -309,7 +249,7 @@ export default class PbrFlow extends Pipeline {
             roughness: clamp(col / nrColumns, 0.05, 1.),
             mMatrix
           })
-          this.sphere.draw()
+          Gltools.draw(this.sphere)
         }
       }
     } else {
@@ -335,8 +275,7 @@ export default class PbrFlow extends Pipeline {
         prefilterMap: 6,
         brdfLUT: 7
       })
-      this.sphere.bind(this.mapPrg)
-      this.sphere.draw()
+      Gltools.draw(this.sphere)
     }
 
     // this.cubePrg.use()
@@ -363,8 +302,7 @@ export default class PbrFlow extends Pipeline {
       pMatrix: this.pMatrix,
       mMatrix: mat4.create(),
     })
-    this.cube.bind(this.skyboxPrg, ['position'])
-    this.cube.draw()
+    Gltools.draw(this.cube)
 
     // brdf out为vec2，设置为vec4时显示正常
     // this.brdfPrg.use()
