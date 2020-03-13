@@ -20,7 +20,7 @@ import {
   mat4,
   vec3
 } from 'gl-matrix'
-import Texture from 'libs/glTexture'
+import Texture from 'libs/GLTexture'
 import GLCubeTexture from 'libs/GLCubeTexture'
 
 const nrRows = 7

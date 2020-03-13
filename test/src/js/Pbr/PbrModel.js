@@ -23,7 +23,7 @@ import {
   vec3
 } from 'gl-matrix'
 import Mesh from 'libs/Mesh'
-import Texture from 'libs/glTexture'
+import Texture from 'libs/GLTexture'
 import GLCubeTexture from 'libs/GLCubeTexture'
 import OBJLoader from 'libs/loaders/ObjLoader'
 
