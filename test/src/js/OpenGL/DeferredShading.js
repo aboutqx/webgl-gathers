@@ -98,9 +98,9 @@ export default class DeferredShading extends Pipeline {
 
 
     // execute once
-    this.camera.target = [0, -1., 0]
-    this.camera.offset = [1, 3., 0]
-    this.camera.radius = 18
+    this.orbital.target = [0, -1., 0]
+    this.orbital.offset = [1, 3., 0]
+    this.orbital.radius = 18
   }
   uniform() {
 

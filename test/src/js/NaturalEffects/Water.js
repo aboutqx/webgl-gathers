@@ -34,8 +34,8 @@ export default class Color extends Pipeline {
     this.waterPlane = Geom.plane(size - 50 ,size - 50, 100 , 'xz')
   }
   prepare() {
-    this.camera.radius = 100
-    this.camera.offset = [0, 12, 18]
+    this.orbital.radius = 100
+    this.orbital.offset = [0, 12, 18]
 
     this.terrainTexture = getAssets.terrain
     this.terrainTexture.bind()
@@ -79,13 +79,13 @@ export default class Color extends Pipeline {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.hdrFb)
     GlTools.clear(0,0,0)
 
-    this.camera.flipY()
+    this.orbital.flipY()
     this._renderScene()
   
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
 
-    this.camera.flipY()
+    this.orbital.flipY()
     this.frameBufferGUI.textureList = [{ texture: this.textures[0], flipY:true }]
     this._renderScene()
     this.waterPrg.use()

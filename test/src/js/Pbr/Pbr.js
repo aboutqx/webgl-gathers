@@ -32,7 +32,7 @@ export default class Pbr extends Pipeline {
 
 	}
 	prepare() {
-		this.camera.radius = 36
+		this.orbital.radius = 36
 
 	}
 	uniform() {

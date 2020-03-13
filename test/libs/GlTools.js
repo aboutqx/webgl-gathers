@@ -7,14 +7,13 @@ const options = {
   antialias: false,
   stencil: true
 }
-const name = location.search.replace('?', '').toLocaleLowerCase()
-let gl
-if (name !== 'mrt') {
-  gl = canvas.getContext('webgl2', options)
-  if (!gl) console.warn('webgl2 not supported!')
-  console.log('webgl2 used.')
-  window.useWebgl2 = true
-} else gl = canvas.getContext('webgl', options)
+
+
+const gl = canvas.getContext('webgl2', options)
+if (!gl) console.error('webgl2 not supported!')
+console.log('webgl2 used.')
+window.useWebgl2 = true
+
 
 const toRadian = (deg) => {
   return deg / 180 * Math.PI
@@ -70,7 +69,7 @@ class GlTool{
     if(this.shader){
       //	DEFAULT UNIFORMS
       if(this.camera !== undefined) {
-        this.shader.uniform('uProjectionMatrix', 'mat4', this.camera.projMatrix);	
+        this.shader.uniform('uProjectionMatrix', 'mat4', this.camera.projectionMatrix);	
         this.shader.uniform('uViewMatrix', 'mat4', this.camera.viewMatrix);
       }
       

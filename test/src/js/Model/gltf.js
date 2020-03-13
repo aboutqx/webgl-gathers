@@ -21,9 +21,9 @@ export default class GLTF extends Pipeline {
   }
   attrib() {
     
-    this.camera.radius = 7
-    this.camera.offset = [0, 2, 0]
-    this.camera.target = [0, 2, 0]
+    this.orbital.radius = 7
+    this.orbital.offset = [0, 2, 0]
+    this.orbital.target = [0, 2, 0]
 
   }
   prepare() {

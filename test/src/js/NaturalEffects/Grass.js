@@ -23,8 +23,8 @@ export default class Reflection extends Pipeline {
 
   }
   prepare(){
-    this.camera.radius = 15.5
-    this.camera.target =[0, 5, 0]
+    this.orbital.radius = 15.5
+    this.orbital.target =[0, 5, 0]
   }
   _setGUI() {
     this.addGUIParams({

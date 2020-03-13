@@ -61,7 +61,7 @@ export default class LightCaster extends Pipeline {
     this.specularTexture = getAssets.cubeSpecular
     this.emissionTexture = getAssets.cubeEmission
 
-    this.camera.radius = 6
+    this.orbital.radius = 6
   }
   _setGUI() {
     this.addGUIParams({
