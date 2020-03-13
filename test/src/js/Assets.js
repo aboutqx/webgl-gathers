@@ -46,12 +46,12 @@ const Assets = {
     equirectangular: { url: './assets/hdr/newport_loft.hdr', type: 'binary' }
   },
   iblMaps: {
-    irradiancePosX: { url: './assets/pbrflow/output_iem_posx.hdr', type: 'binary' },
-    irradiancePosY: { url: './assets/pbrflow/output_iem_posy.hdr', type: 'binary' },
-    irradiancePosZ: { url: './assets/pbrflow/output_iem_posz.hdr', type: 'binary' },
-    irradianceNegX: { url: './assets/pbrflow/output_iem_negx.hdr', type: 'binary' },
-    irradianceNegY: { url: './assets/pbrflow/output_iem_negy.hdr', type: 'binary' },
-    irradianceNegZ: { url: './assets/pbrflow/output_iem_negz.hdr', type: 'binary' },
+    outputiemPosX: { url: './assets/pbrflow/output_iem_posx.hdr', type: 'binary' },
+    outputiemPosY: { url: './assets/pbrflow/output_iem_posy.hdr', type: 'binary' },
+    outputiemPosZ: { url: './assets/pbrflow/output_iem_posz.hdr', type: 'binary' },
+    outputiemNegX: { url: './assets/pbrflow/output_iem_negx.hdr', type: 'binary' },
+    outputiemNegY: { url: './assets/pbrflow/output_iem_negy.hdr', type: 'binary' },
+    outputiemNegZ: { url: './assets/pbrflow/output_iem_negz.hdr', type: 'binary' },
     radiance: { url: './assets/pbrflow/output_radiance.dds', type: 'binary' },
   },
   orb: {

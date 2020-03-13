@@ -3,7 +3,7 @@
 'use strict';
 
 import { gl, GlTools } from './GlTools';
-import GLTexture from './GLTexture2';
+import GLTexture from './GLTexture';
 import GLCubeTexture from './GLCubeTexture';
 import WebglNumbers from './utils/WebglNumber'
 

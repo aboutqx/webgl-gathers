@@ -2,7 +2,7 @@ import getAttribLoc from './utils/getAttribLoc';
 import {
 	gl, GlTools
 } from 'libs/GlTools'
-import Texture from 'libs/GLTexture2'
+import Texture from 'libs/GLTexture'
 import Object3D from 'physics/Object3D'
 import { vec3 } from 'gl-matrix'
 const STATIC_DRAW = 35044;

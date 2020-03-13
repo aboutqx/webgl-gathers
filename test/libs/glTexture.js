@@ -1,153 +1,321 @@
-var _UID = 0
-var T2D = 0x0DE1
+// GLTexture.js
 
-/*
- * compute filtering enum, return one of the following :
- *  NEAREST
- *  LINEAR
- *  NEAREST_MIPMAP_NEAREST
- *  LINEAR_MIPMAP_NEAREST
- *  NEAREST_MIPMAP_LINEAR
- *  LINEAR_MIPMAP_LINEAR
- */
-function getFilter (smooth, mipmap, miplinear) {
-  return 0x2600 | (+smooth) | (+mipmap << 8) | (+(mipmap && miplinear) << 1)
+import getTextureParameters from './utils/getTextureParameters';
+import WebglNumber from './utils/WebglNumber';
+import { gl } from './GlTools';
+import Scheduler from 'scheduling';
+
+class GLTexture {
+
+	constructor(mSource, mParam = {}, mWidth = 0, mHeight = 0) {
+
+
+		this._source = mSource;
+		this._getDimension(mSource, mWidth, mHeight);
+		this._sourceType = mParam.type || getSourceType(mSource);
+		this._checkSource();
+		this._texelType = this._getTexelType();
+		this._isTextureReady = true;
+
+		this._params = getTextureParameters(mParam, mSource, this._width, this._height);
+		//this.showParameters()
+		this._checkMipmap();
+		this._checkWrapping();
+
+		//	setup texture
+		this._texture = gl.createTexture();
+
+		if(this._sourceType === 'video') {
+			this._isTextureReady = false;
+			Scheduler.addEF(()=>this._loop());
+		} else {
+			this._uploadTexture();	
+		}
+		
+	}
+
+	_loop() {
+		if(this._source.readyState == 4) {
+			this._isTextureReady = true;
+			this._uploadTexture();
+		}
+	}
+
+
+	_uploadTexture() {
+		gl.bindTexture(gl.TEXTURE_2D, this._texture);
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+
+		if(this._isSourceHtmlElement()) {
+			gl.texImage2D(gl.TEXTURE_2D, 0, this._params.internalFormat, this._params.format, this._texelType, this._source);
+		} else {
+			gl.texImage2D(gl.TEXTURE_2D, 0, this._params.internalFormat, this._width, this._height, 0, this._params.format, this._texelType, this._source);	
+		}
+		
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this._params.magFilter);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._params.minFilter);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this._params.wrapS);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this._params.wrapT);
+		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this._params.premultiplyAlpha);
+
+		if(this._params.anisotropy > 0) {
+			const ext = gl.getExtension('EXT_texture_filter_anisotropic');
+			if(ext) {
+				const max = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+				const level = Math.min(max, this._params.anisotropy);
+				gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, level);
+			}	
+		}
+		
+
+		if(this._generateMipmap) {	gl.generateMipmap(gl.TEXTURE_2D);	}
+
+		//	unbind texture
+		gl.bindTexture(gl.TEXTURE_2D, null);
+	}
+
+
+	bind(index) {
+		if(index === undefined) { index = 0; }
+
+		gl.activeTexture(gl.TEXTURE0 + index);
+		if(this._isTextureReady) {
+			gl.bindTexture(gl.TEXTURE_2D, this._texture);	
+		} else {
+			gl.bindTexture(gl.TEXTURE_2D, GLTexture.blackTexture().texture);
+		}
+		this._bindIndex = index;
+	}
+
+
+	updateTexture(mSource) {
+		this._source = mSource;
+		this._checkSource();
+		this._uploadTexture();
+	}
+
+
+	generateMipmap() {
+		if (!this._generateMipmap) { return; }
+		gl.bindTexture(gl.TEXTURE_2D, this._texture);
+		gl.generateMipmap(gl.TEXTURE_2D);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+	}
+
+	showParameters() {
+		console.log('Source type : ', WebglNumber[this._sourceType] || this._sourceType);
+		console.log('Texel type:', WebglNumber[this.texelType]);
+		console.log('Dimension :', this._width, this._height);
+		for(const s in this._params) {
+			console.log(s, WebglNumber[this._params[s]] || this._params[s]);
+		}
+
+		console.log('Mipmapping :', this._generateMipmap);
+	}
+
+	_getDimension(mSource, mWidth, mHeight) {
+		if(mSource) {
+			//	for html image / video element
+			this._width = mSource.width || mSource.videoWidth;
+			this._height = mSource.height || mSource.videoWidth;
+
+			//	for manual width / height settings
+			this._width = this._width || mWidth;
+			this._height = this._height || mHeight;
+
+			//	auto detect ( data array) ? not sure is good idea ? 
+			//	todo : check HDR 
+			if(!this._width || !this._height) {
+				this._width = this._height = Math.sqrt(mSource.length / 4);
+				// console.log('Auto detect, data dimension : ', this._width, this._height);	
+			}
+
+		} else {
+			this._width = mWidth;
+			this._height = mHeight;
+		}
+	}
+
+	_checkSource() {
+		if(!this._source) {	return; }
+
+		if(this._sourceType === gl.UNSIGNED_BYTE) {
+			if (!(this._source instanceof Uint8Array)) {
+				// console.log('Converting to Uint8Array');
+				this._source = new Uint8Array(this._source);
+			}
+		} else if(this._sourceType === gl.FLOAT) {
+			if (!(this._source instanceof Float32Array)) {
+				// console.log('Converting to Float32Array');
+				this._source = new Float32Array(this._source);
+			}
+		}
+
+	}
+
+	_getTexelType() {
+		if(this._isSourceHtmlElement()) {
+			return gl.UNSIGNED_BYTE;	
+		}
+
+		//	bad code here, if the type is not on the webglNumber list, it doesn't work
+		return gl[WebglNumber[this._sourceType]] || this._sourceType;
+	}
+
+	_checkMipmap() {
+		this._generateMipmap = this._params.mipmap;
+
+		if(!(isPowerOfTwo(this._width) && isPowerOfTwo(this._height))) {
+			this._generateMipmap = false;
+		}
+
+		const minFilter = WebglNumber[this._params.minFilter];
+		if(minFilter.indexOf('MIPMAP') == -1) {
+			this._generateMipmap = false;
+		}
+	}
+
+	_checkWrapping() {
+		if(!this._generateMipmap) {
+			this._params.wrapS = gl.CLAMP_TO_EDGE;
+			this._params.wrapT = gl.CLAMP_TO_EDGE;
+		}
+	}
+
+	_isSourceHtmlElement() {
+		return this._sourceType === 'image' || this._sourceType === 'video' || this._sourceType === 'canvas';
+	}
+	repeat () {
+		this.wrapS = gl.REPEAT
+		this.wrapT = gl.REPEAT
+	}
+	clamp () {
+		this.wrapS = gl.CLAMP_TO_EDGE
+		this.wrapT = gl.CLAMP_TO_EDGE
+	}
+	get minFilter() {	return this._params.minFilter;	}
+
+	set minFilter(mValue) {
+		this._params.minFilter = mValue;
+		this._checkMipmap();
+
+		gl.bindTexture(gl.TEXTURE_2D, this._texture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._params.minFilter);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+
+		this.generateMipmap();
+	}
+
+	get magFilter() {	return this._params.minFilter;	}
+
+	set magFilter(mValue) {
+		this._params.magFilter = mValue;
+
+		gl.bindTexture(gl.TEXTURE_2D, this._texture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this._params.magFilter);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+	}
+
+
+	get wrapS() {	return this._params.wrapS;	}
+
+	set wrapS(mValue) {
+		this._params.wrapS = mValue;
+		this._checkWrapping();
+
+		gl.bindTexture(gl.TEXTURE_2D, this._texture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this._params.wrapS);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+	}
+
+
+	get wrapT() {	return this._params.wrapT;	}
+
+	set wrapT(mValue) {
+		this._params.wrapT = mValue;
+		this._checkWrapping();
+
+		gl.bindTexture(gl.TEXTURE_2D, this._texture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this._params.wrapT);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+	}
+
+	get texelType() {	return this._texelType;	}
+
+	get width() {	return this._width;	}
+
+	get height() {	return this._height;	}
+
+	get texture() {	return this._texture;	}
+
+	get isTextureReady() {	return this._isTextureReady;	}
+
 }
 
-/**
- * @class
- * @classdesc Texture class manage TEXTURE_2D types textures
- *
- *  @param {WebGLRenderingContext} gl webgl context the texture belongs to
- *  @param {GLenum} [format=GL_RGB] the pixel format, default to gl.RGB (can be gl.RGB, gl.RGBA, gl.LUMINANCE...)
- */
-function Texture (gl, format) {
-  this._uid = _UID++
-  this.gl = gl
-  this.id = this.gl.createTexture()
-  this.width = 0
-  this.height = 0
-  this.format = format || gl.RGB
-  this.type = gl.UNSIGNED_BYTE
-  this.img = null
 
-  gl.bindTexture(T2D, this.id)
-  this.setFilter(true)
-  return this
+function isPowerOfTwo(x) {	
+	return (x !== 0) && (!(x & (x - 1)));
+};
+
+function getSourceType(mSource) {
+	//	possible source type : Image / Video / Unit8Array / Float32Array
+	//	this list must be flexible
+
+	let type = gl.UNSIGNED_BYTE;
+
+	if(mSource instanceof Array) {
+		type = gl.UNSIGNED_BYTE;
+	} else if(mSource instanceof Uint8Array) {
+		type = gl.UNSIGNED_BYTE;
+	} else if(mSource instanceof Float32Array) {
+		type = gl.FLOAT;
+	} else if(mSource instanceof HTMLImageElement) {
+		type = 'image';
+	} else if(mSource instanceof HTMLCanvasElement) {
+		type = 'canvas';
+	} else if(mSource instanceof HTMLVideoElement) {
+		type = 'video';
+	}
+	return type;
 }
 
-Texture.prototype = {
+let _whiteTexture, _greyTexture, _blackTexture;
 
-  /**
-   * set texture data from html source
-   *   @param {TexImageSource} img the source. Can be ImageBitmap, ImageData, HTMLImageElement, HTMLCanvasElement, HTMLVideoElement
-   */
-  fromImage: function (img) {
-    var gl = this.gl
+GLTexture.whiteTexture = function whiteTexture() {
+	if(_whiteTexture === undefined) {
+		const canvas = document.createElement('canvas');
+		canvas.width = canvas.height = 2;
+		const ctx = canvas.getContext('2d');
+		ctx.fillStyle = '#fff';
+		ctx.fillRect(0, 0, 2, 2);
+		_whiteTexture = new GLTexture(canvas);
+	}
+	
+	return _whiteTexture;
+};
 
-    this.img = img
-    this.width = img.width
-    this.height = img.height
+GLTexture.greyTexture = function greyTexture() {
+	if(_greyTexture === undefined) {
+		const canvas = document.createElement('canvas');
+		canvas.width = canvas.height = 2;
+		const ctx = canvas.getContext('2d');
+		ctx.fillStyle = 'rgb(127, 127, 127)';
+		ctx.fillRect(0, 0, 2, 2);
+		_greyTexture = new GLTexture(canvas);
+	}
+	return _greyTexture;
+};
 
-    gl.bindTexture(T2D, this.id)
-    gl.texImage2D(T2D, 0, this.format, this.format, this.type, img)
-    return this
-  },
+GLTexture.blackTexture = function blackTexture() {
+	if(_blackTexture === undefined) {
+		const canvas = document.createElement('canvas');
+		canvas.width = canvas.height = 2;
+		const ctx = canvas.getContext('2d');
+		ctx.fillStyle = 'rgb(0, 0, 0)';
+		ctx.fillRect(0, 0, 2, 2);
+		_blackTexture = new GLTexture(canvas);
+	}
+	return _blackTexture;
+};
 
-  /**
-   * Allocate texture to the given size, with optional data (TypedArray) and data type
-   *  @param {number} width     the new texture's width
-   *  @param {number} height    the new texture's height
-   *  @param {TypedArray} [data=null]  TypedArray of texture data, can be null
-   *  @param {GLenum} [dataType=GL_UNSIGNED_BYTE] can be gl.UNSIGNED_BYTE, gl.FLOAT, half.HALF_FLOAT_OES etc depending on available extensions
-   */
-  fromData: function (width, height, data, dataType) {
-    var gl = this.gl
-
-    this.width = width
-    this.height = height
-
-    data = data || null
-    this.type = dataType || gl.UNSIGNED_BYTE
-
-    gl.bindTexture(T2D, this.id)
-    if (window.useWebgl2) {
-      // type = gl.RGBA16F etc..
-      if (dataType === gl.RGBA16F)
-        gl.texImage2D(gl.TEXTURE_2D, 0, this.type, width, height, 0, this.format, gl.HALF_FLOAT, data)
-      else if (dataType === gl.RG32F || dataType === gl.RGBA32F || dataType === gl.RGB32F) gl.texImage2D(gl.TEXTURE_2D, 0, this.type, width, height, 0, this.format, gl.FLOAT, data)
-      else gl.texImage2D(T2D, 0, this.format, width, height, 0, this.format, this.type, data)
-    } else gl.texImage2D(T2D, 0, this.format, width, height, 0, this.format, this.type, data)
-
-    return this
-  },
-
-  /**
-   * Bind the texture
-   *   @param {uint} [unit=undefined] optional texture unit to make active before binding
-   */
-  bind: function (unit) {
-    var gl = this.gl
-    if (unit !== undefined) {
-      gl.activeTexture(gl.TEXTURE0 + (0 | unit))
-    }
-    gl.bindTexture(T2D, this.id)
-  },
-
-  /**
-   * delete the webgl texture
-   *
-   */
-  dispose: function () {
-    this.gl && this.gl.deleteTexture(this.id)
-    this.id = null
-    this.gl = null
-  },
-
-  /**
-   * Change the filtering parameters
-   *   @param {boolean} [smooth=false]    if true, use LINEAR filtering
-   *   @param {boolean} [mipmap=false]    if true, enable mipmaping
-   *   @param {boolean} [miplinear=false] if true, use linear Mipmapping
-   */
-  setFilter: function (smooth, mipmap, miplinear) {
-    var gl = this.gl
-    var filter = getFilter(!!smooth, !!mipmap, !!miplinear)
-    gl.texParameteri(T2D, gl.TEXTURE_MAG_FILTER, getFilter(!!smooth, false, false))
-    gl.texParameteri(T2D, gl.TEXTURE_MIN_FILTER, filter)
-  },
-
-  /**
-   * Set both WRAP_S and WRAP_T property to gl.REPEAT
-   */
-  repeat: function () {
-    this.wrap(this.gl.REPEAT)
-  },
-
-  /**
-   * Set both WRAP_S and WRAP_T property to gl.CLAMP_TO_EDGE
-   */
-  clamp: function () {
-    this.wrap(this.gl.CLAMP_TO_EDGE)
-  },
-
-  /**
-   * Set both WRAP_S and WRAP_T property to gl.MIRRORED_REPEAT
-   */
-  mirror: function () {
-    this.wrap(this.gl.MIRRORED_REPEAT)
-  },
-
-  /**
-   * Set both WRAP_S and WRAP_T property to the given value
-   *  @param {GLenum} wrap the wrap enum
-   */
-  wrap: function (wrap) {
-    var gl = this.gl
-    gl.texParameteri(T2D, gl.TEXTURE_WRAP_S, wrap)
-    gl.texParameteri(T2D, gl.TEXTURE_WRAP_T, wrap)
-  }
-
-}
-
-module.exports = Texture
+export default GLTexture;

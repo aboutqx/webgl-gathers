@@ -2996,7 +2996,7 @@ var index = {
 /* unused harmony default export */ var _unused_webpack_default_export = (index);
 //# sourceMappingURL=dat.gui.module.js.map
 /* harmony import */ var _GlTools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
-/* harmony import */ var _GLTexture2__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(14);
+/* harmony import */ var _GLTexture__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(14);
 /* harmony import */ var _GLCubeTexture__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(12);
 // GLShader.js
 
@@ -3176,7 +3176,7 @@ class GLShader {
 
   uniformObject(mUniformObj) {
     for (const uniformName in mUniformObj) {
-      if (mUniformObj[uniformName] instanceof _GLTexture2__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"] || mUniformObj[uniformName] instanceof _GLCubeTexture__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"]) {
+      if (mUniformObj[uniformName] instanceof _GLTexture__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"] || mUniformObj[uniformName] instanceof _GLCubeTexture__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"]) {
         const texture = mUniformObj[uniformName];
         let textureIndex = -1;
         ;
@@ -8238,8 +8238,8 @@ class Material_Material {
 // EXTERNAL MODULE: ./libs/Mesh.js + 1 modules
 var Mesh = __webpack_require__(3);
 
-// EXTERNAL MODULE: ./libs/GLTexture2.js + 2 modules
-var GLTexture2 = __webpack_require__(14);
+// EXTERNAL MODULE: ./libs/GLTexture.js + 2 modules
+var GLTexture = __webpack_require__(14);
 
 // EXTERNAL MODULE: ./libs/physics/Object3D.js
 var Object3D = __webpack_require__(19);
@@ -8536,7 +8536,7 @@ const _loadTextures = gltfInfo => new Promise((resolve, reject) => {
   loaders_loadImages(imagesToLoad).then(o => {
     gltfInfo.output.textures = o.map((img, i) => {
       const settings = Object.assign({}, samplers ? samplers[textures[i].sampler] : {});
-      return new GLTexture2["a" /* default */](img, settings);
+      return new GLTexture["a" /* default */](img, settings);
     });
     resolve(gltfInfo);
   }, e => {
@@ -9181,8 +9181,8 @@ var Geom = __webpack_require__(8);
 // EXTERNAL MODULE: ./libs/shaders/CustomShaders.js
 var CustomShaders = __webpack_require__(13);
 
-// EXTERNAL MODULE: ./libs/GLTexture2.js + 2 modules
-var GLTexture2 = __webpack_require__(14);
+// EXTERNAL MODULE: ./libs/GLTexture.js + 2 modules
+var GLTexture = __webpack_require__(14);
 
 // EXTERNAL MODULE: ./libs/utils/WebglNumber.js
 var WebglNumber = __webpack_require__(20);
@@ -9312,7 +9312,7 @@ class FrameBuffer_FrameBuffer {
       parameters[s] = mParameters[s];
     }
 
-    const texture = new GLTexture2["a" /* default */](null, parameters, this.width, this.height);
+    const texture = new GLTexture["a" /* default */](null, parameters, this.width, this.height);
     return texture;
   } //	PUBLIC METHODS
 
