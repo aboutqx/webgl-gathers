@@ -18,7 +18,7 @@ import {
 import OBJLoader from 'libs/loaders/ObjLoader'
 import MTLLoader from 'libs/loaders/MTLLoader'
 import Fbo from 'libs/glFbo'
-import Texture from 'libs/glTexture'
+import Texture from 'libs/GLTexture'
 import Geom from 'libs/Geom'
 import { GlTools } from '../../../libs/GlTools'
 
@@ -92,7 +92,7 @@ export default class SSAO extends Pipeline {
 
     generateSample()
     generateNoise()
-    this.noiseTexture = new Texture(gl, gl.RGB).fromData(4, 4, ssaoNoise, gl.RGB32F)
+    this.noiseTexture = new Texture(ssaoNoise, {}, 4, 4)
     this.noiseTexture.bind()
     this.noiseTexture.repeat()
     // execute once
