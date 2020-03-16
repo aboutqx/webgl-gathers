@@ -18,13 +18,13 @@ class CameraPerspective extends Camera {
 		}
 	}
 
-	setPerspective(mFov, mNear, mFar, mAspectRatio = canvas.width / canvas.height) {
-		
+	setPerspective(mFov, mNear, mFar, mAspectRatio = (canvas.width / canvas.height)) {
+
 		this._fov         = toRadian(mFov);
 		this._near        = mNear;
 		this._far         = mFar;
 		this._aspectRatio = mAspectRatio;
-		mat4.perspective(this._projection, mFov, mAspectRatio, mNear, mFar);
+		mat4.perspective(this._projection, this._fov , mAspectRatio, mNear, mFar);
 
 		// this._frustumTop = this._near * Math.tan(this._fov * 0.5);
 		// this._frustumButtom = -this._frustumTop;

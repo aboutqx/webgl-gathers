@@ -4,7 +4,7 @@
 in vec3 position;
 in vec3 normal;
 in vec2 texCoord;
-uniform mat4 uModelMatrix;
+uniform mat4 mMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 out   vec3 vNormal;
@@ -13,5 +13,5 @@ out vec2 vTexCoord;
 void main(void){
     vNormal     = normal;
     vTexCoord = texCoord;
-    gl_Position = uProjectionMatrix* uViewMatrix * uModelMatrix * vec4(position, 1.0);
+    gl_Position = uProjectionMatrix* uViewMatrix * mMatrix * vec4(position, 1.0);
 }

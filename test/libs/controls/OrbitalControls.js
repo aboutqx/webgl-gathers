@@ -1,4 +1,3 @@
-import { mat4 } from 'gl-matrix'
 import { canvas, toRadian } from 'libs/GlTools'
 
 // cameraFront = -(cameraPos - camraTarget)

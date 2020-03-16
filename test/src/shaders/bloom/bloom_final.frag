@@ -2,7 +2,7 @@
 precision highp float;
 out vec4 FragColor;
 
-in vec2 TexCoords;
+in vec2 vTexCoord;
 
 uniform sampler2D scene;
 uniform sampler2D bloomBlur;
@@ -12,8 +12,8 @@ uniform float exposure;
 void main()
 {             
     const float gamma = 2.2;
-    vec3 hdrColor = texture(scene, TexCoords).rgb;      
-    vec3 bloomColor = texture(bloomBlur, TexCoords).rgb;
+    vec3 hdrColor = texture(scene, vTexCoord).rgb;      
+    vec3 bloomColor = texture(bloomBlur, vTexCoord).rgb;
     if(bloom)
         hdrColor += bloomColor; // additive blending
     // tone mapping

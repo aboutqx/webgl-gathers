@@ -184,8 +184,8 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
 			}
 
 			const mesh = new Mesh(primitiveInfo.mode, meshInfo.name);
-			const MaxSubMin = [primitiveInfo.max[0] - primitiveInfo.min[0], primitiveInfo.max[1] - primitiveInfo.min[1], primitiveInfo.max[2] - primitiveInfo.min[2]]
-			mesh.maxLength = Math.sqrt(MaxSubMin[0] * MaxSubMin[0] + MaxSubMin[1] * MaxSubMin[1] + MaxSubMin[2] * MaxSubMin[2])
+			mesh.vertexMin = primitiveInfo.min
+			mesh.vertexMax = primitiveInfo.max
 
 			for(const s in geometryInfo) {
 				const data = geometryInfo[s];
