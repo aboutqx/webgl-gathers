@@ -42,7 +42,7 @@ class GlTool{
 
   applyHdrExtension(){
     gl.getExtension("EXT_color_buffer_float")
-    gl.getExtension('OES_texture_float_linear') 
+    gl.getExtension('OES_texture_half_float_linear') 
   }
 
   setCamera(camera){

@@ -50,10 +50,10 @@ class FrameBuffer {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
 
 		if(window.useWebgl2) {
-			let depthRenderBuffer = gl.createRenderbuffer();
-			gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderBuffer);
-			gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, this.width, this.height);
-			gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderBuffer);
+			// let depthRenderBuffer = gl.createRenderbuffer();
+			// gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderBuffer);
+			// gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, this.width, this.height);
+			// gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderBuffer);
 
 			const buffers = [];
 			for (let i = 0; i < this._numTargets; i++) {
@@ -63,7 +63,7 @@ class FrameBuffer {
 
 			gl.drawBuffers(buffers);
 
-			//gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.glDepthTexture.texture, 0);
+			gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.glDepthTexture.texture, 0);
 
 		} else {
 			for (let i = 0; i < this._numTargets; i++) {
@@ -86,10 +86,10 @@ class FrameBuffer {
 		
 
 		//	CHECKING FBO
-		// const FBOstatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-		// if(FBOstatus != gl.FRAMEBUFFER_COMPLETE) {
-		// 	console.error('GL_FRAMEBUFFER_COMPLETE failed, CANNOT use Framebuffer', WebglNumber[FBOstatus]);
-		// }
+		const FBOstatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+		if(FBOstatus != gl.FRAMEBUFFER_COMPLETE) {
+			console.error('GL_FRAMEBUFFER_COMPLETE failed, CANNOT use Framebuffer', WebglNumber[FBOstatus]);
+		}
 
 		//	UNBIND
 
@@ -100,7 +100,7 @@ class FrameBuffer {
 		
 		//	CLEAR FRAMEBUFFER 
 
-		//this.clear();
+		this.clear();
 	}
 
 	_checkMaxNumRenderTarget() {
@@ -119,11 +119,11 @@ class FrameBuffer {
 		}
 
 		
-		// if(window.useWebgl2) { 
-		// 	this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT16, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, true);
-		// } else {
-		// 	this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, { minFilter:gl.LINEAR });
-		// }
+		if(window.useWebgl2) { 
+			this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT16, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, true);
+		} else {
+			this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, { minFilter:gl.LINEAR });
+		}
 	}
 
 	_createTexture(mInternalformat, mTexelType, mFormat, mParameters = {}) {
@@ -131,6 +131,7 @@ class FrameBuffer {
 		parameters.internalFormat = mInternalformat || parameters.internalFormat;
 		parameters.format = mFormat || parameters.format || gl.RGBA;
 		parameters.type = mTexelType || parameters.type || gl.UNSIGNED_BYTE;
+
 		for(const s in mParameters) {
 			parameters[s] = mParameters[s];
 		}
@@ -174,6 +175,10 @@ class FrameBuffer {
 		return this._textures
 	}
 
+	getTexture(mIndex = 0) {
+		return this._textures[mIndex];
+	}
+	
 	getDepthTexture() {
 		return this.glDepthTexture;
 	}
