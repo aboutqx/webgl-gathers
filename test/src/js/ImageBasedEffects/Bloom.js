@@ -20,9 +20,9 @@ export default class Bloom extends Pipeline {
   count = 0
   constructor() {
     super()
-    GlTools.applyHdrExtension()
   }
   init() {
+    GlTools.applyHdrExtension()
     this.prg = this.compile(vs, fs)
     this.blurPrg = this.compile(bigTriangleVert, blurFs)
     this.finalPrg = this.compile(bigTriangleVert, finalFs)
