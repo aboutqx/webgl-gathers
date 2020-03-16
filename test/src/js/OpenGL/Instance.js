@@ -24,10 +24,9 @@ export default class Instance extends Pipeline {
   }
   attrib() {
  
-    this.cube = Geom.sphere(.01, 100)
+    this.mesh = Geom.singleLine([0, 0, 0], [1, 1, 1])
 
-
-    this.cube.bufferInstance(this._caculateMatrix(), 'instanceMatrix', gl.DYNAMIC_DRAW)
+    this.mesh.bufferInstance(this._caculateMatrix(), 'instanceMatrix', gl.DYNAMIC_DRAW)
   }
 
   _caculateMatrix() {
@@ -53,7 +52,8 @@ export default class Instance extends Pipeline {
 
   prepare() {
 
-    this.orbital.radius = 100
+    this.orbital.radius = 60
+    //this.orbital.offset = [60, 60, 0]
     this.curTime = 0 
     this.lastTime = 0
   }
@@ -62,7 +62,7 @@ export default class Instance extends Pipeline {
 
     this.prg.use()
     this.prg.style({
-      objectColor: [0.1, .1, .1]
+      objectColor: [0.1, 0.1, .8]
     })
   }
   render() {
@@ -72,12 +72,12 @@ export default class Instance extends Pipeline {
     const interval = 100
     if(this.curTime - this.lastTime > interval) {
       const matrix = this._caculateMatrix()
-      this.cube.bufferSubData('instanceMatrix', matrix)
+      this.mesh.bufferSubData('instanceMatrix', matrix)
       this.lastTime = performance.now()
     }
     
 
-    GlTools.draw(this.cube)
+    GlTools.draw(this.mesh)
 
 
   }

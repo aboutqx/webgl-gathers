@@ -56,7 +56,7 @@ export default class Mesh extends Object3D {
 	name = ''
 	material = null
 	textures = {}
-	constructor(mDrawingType = 4, name, material) {
+	constructor(mDrawingType = gl.TRIANGLES, name, material) {
 		super()
 
 		this._extVAO = !!gl.createVertexArray;
@@ -467,6 +467,16 @@ export default class Mesh extends Object3D {
 	get numInstance() { return this._numInstance; }
 
 	get isInstanced() { return this._isInstanced; }
+
+	set vertexMin(value) { this._vertexMin = value }
+
+	set vertexMax(value) { this._vertexMax = value }
+
+	get maxLength() {
+		const maxSubMin = vec3.create()
+		vec3.subtract(maxSubMin, this._vertexMax, this._vertexMin)
+		return vec3.length(maxSubMin)
+	}
 }
 
 function has(arr, key, value) { // array child object has key-value

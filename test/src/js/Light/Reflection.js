@@ -44,11 +44,10 @@ export default class Reflection extends Pipeline {
 
     this.prg.use()
     this.prg.style({
-      uModelMatrix: mMatrix,
+      mMatrix,
       invMatrix,
       diffuseColor: [this.params.color[0] / 255, this.params.color[1] / 255, this.params.color[2] / 255],
       lightDirection: [-0.5, 0.5, 0.5],
-      eyeDirection: this.camera.position,
       ambientColor: [0.1, 0.1, 0.1],
       aoMap: getAssets.statueAo,
       useAo: this.params.useAo

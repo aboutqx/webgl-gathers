@@ -2,7 +2,7 @@
 precision mediump float;
 
 in vec2 position;
-out vec2 TexCoords;
+out vec2 vTexCoord;
 
 
 
@@ -10,5 +10,5 @@ void main(void){
 
 
 	gl_Position    = vec4(position, 0., 1.);
-	TexCoords = position * .5 + .5;
+	vTexCoord = position * .5 + .5;
 }

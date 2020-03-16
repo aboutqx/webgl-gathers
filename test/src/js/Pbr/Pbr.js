@@ -43,6 +43,8 @@ export default class Pbr extends Pipeline {
 		this.addGUIParams({
 			lambertDiffuse: true,
 			orenNayarDiffuse: false,
+			metallic: .5,
+			roughness: .5,
 			map: 'none',
 		})
 
@@ -54,6 +56,8 @@ export default class Pbr extends Pipeline {
 		folder1.add(this.params, 'orenNayarDiffuse').listen().onChange(() => {
 			this.setChecked('orenNayarDiffuse')
 		})
+		folder1.add(this.params, 'metallic', 0, 1).step(.1)
+		folder1.add(this.params, 'roughness', 0, 1).step(.1)
 		folder1.open()
 
 		let folder2 = this.gui.addFolder('material map')
@@ -99,27 +103,17 @@ export default class Pbr extends Pipeline {
 		}
 		if (this.params.map === 'none') {
 			this.prg.use()
+			mat4.scale(mMatrix, mMatrix, [3, 3, 3])
 			this.prg.style({
 				...baseUniforms,
 				albedo: [.1, .3, .3],
-				ao: .1
+				ao: .1,
+				metallic: this.params.metallic,
+				roughness: this.params.roughness,
+				mMatrix
 			})
-			
-			for (let row = 0; row < nrRows; row++) {
-				this.prg.style({
-					metallic: row / nrRows
-				})
-				for (let col = 0; col < nrColumns; col++) {
-					mat4.translate(mMatrix, mat4.create(), [(col - (nrColumns / 2)) * spacing, (row - (nrRows / 2)) * spacing, 0.0])
-					//mat4.translate(mMatrix, mMatrix, [1, 0, 0])
-					
-					this.prg.style({
-						roughness: clamp(col / nrColumns, 0.05, 1.),
-						mMatrix
-					})
-					GlTools.draw(this.sphere)
-				}
-			}
+			GlTools.draw(this.sphere)
+
 		} else {
 			this.mapPrg.use()
 			mat4.scale(mMatrix, mMatrix, [3, 3, 3])

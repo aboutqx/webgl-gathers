@@ -6,7 +6,7 @@ layout (location = 1) out vec4 BrightColor;
 
 in  vec3 FragPos;
 in  vec3 Normal;
-in  vec2 TexCoords;
+in  vec2 vTexCoord;
 
 
 struct Light {

@@ -3,6 +3,7 @@
 'use strict';
 
 import Mesh from './Mesh';
+import { gl } from './GlTools'
 
 const Geom = {};
 let meshTri;
@@ -528,5 +529,20 @@ Geom.bigTriangle = function bigTriangle() {
 
 	return meshTri;
 };
+
+Geom.singleLine = function singleLine(positionA, positionB){
+	const positions = [];
+	const indices = [0, 1];
+	const coords = [[0, 0], [1, 1]];
+	positions.push(positionA);
+	positions.push(positionB);
+	
+	const mesh = new Mesh(gl.LINES);
+	mesh.bufferVertex(positions);
+	mesh.bufferTexCoord(coords);
+	mesh.bufferIndex(indices);
+
+	return mesh;
+}
 
 export default Geom;

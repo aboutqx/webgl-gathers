@@ -8,14 +8,14 @@ out vec4 FragColor;
 uniform vec3 diffuseColor;
 uniform mat4 invMatrix;
 uniform vec3 lightDirection;
-uniform vec3 eyeDirection;
+uniform vec3 uCameraPos;
 uniform sampler2D aoMap;
 uniform vec3 ambientColor;
 uniform bool useAo;
 
 void main(void){
     vec3  invLight  = normalize(invMatrix * vec4(lightDirection, 0.0)).xyz;
-    vec3  invEye    = normalize(invMatrix * vec4(eyeDirection, 0.0)).xyz;
+    vec3  invEye    = normalize(invMatrix * vec4(uCameraPos, 0.0)).xyz;
     vec3  halfLE    = normalize(invLight + invEye);
     float diffuse   = clamp(dot(vNormal, invLight), 0.0, 1.0);
     float specular  = pow(clamp(dot(vNormal, halfLE), 0.0, 1.0), 8.0);
