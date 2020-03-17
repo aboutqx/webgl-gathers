@@ -6,6 +6,7 @@ import {
     GlTools
   } from 'libs/GlTools'
 import basec2dVert from '../glsl/basic2d.vert'
+import GLTexture from 'libs/GLTexture'
 
 export default class FrameBufferGUI {
     _position = [0, 0]
@@ -36,13 +37,18 @@ export default class FrameBufferGUI {
             mat4.translate(mMatrix, mMatrix, this._translate[i])
             mat4.scale(mMatrix, mMatrix, [v.size[0], v.size[1], 1])
 
-            // gl.activeTexture(gl.TEXTURE0)
-            // gl.bindTexture(gl.TEXTURE_2D, v.texture)
-            this.texturePrg.uniform('texture0', 'uniform1i', 0)
+            const flipY = v.flipY || false
+            if(!(v.texture instanceof GLTexture)){
+                gl.activeTexture(gl.TEXTURE0)
+                gl.bindTexture(gl.TEXTURE_2D, v.texture)
+                this.texturePrg.uniform('texture0', 'uniform1i', 0)
+            } else this.texturePrg.style({
+                texture0: v.texture
+            })
+                
             this.texturePrg.style({
                 mMatrix,
-                texture0: v.texture,
-                flipY: v.flipY
+                flipY
             })
             GlTools.draw(this.quad)
         })

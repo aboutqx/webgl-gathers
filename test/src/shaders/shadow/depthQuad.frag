@@ -2,7 +2,7 @@
 precision mediump float;
 out vec4 FragColor;
 
-in vec2 TexCoords;
+in vec2 vTexCoord;
 
 uniform sampler2D depthMap;
 uniform float near_plane;
@@ -17,7 +17,7 @@ float LinearizeDepth(float depth)
 
 void main()
 {
-    float depthValue = texture(depthMap, TexCoords).r;
+    float depthValue = texture(depthMap, vTexCoord).r;
     // FragColor = vec4(vec3(LinearizeDepth(depthValue) / far_plane), 1.0); // perspective
     FragColor = vec4(vec3(depthValue), 1.0); // orthographic
 }

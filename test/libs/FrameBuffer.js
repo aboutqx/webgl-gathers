@@ -1,6 +1,6 @@
 // FrameBuffer.js
 
-import { gl, GlTools } from './GlTools';
+import { gl, GlTools, canvas } from './GlTools';
 import GLTexture from './GLTexture';
 import WebglNumber from './utils/WebglNumber';
 
@@ -25,8 +25,8 @@ class FrameBuffer {
 	constructor(mWidth, mHeight, mParameters = {}, mNumTargets = 1) {
 		webglDepthTexture = !window.useWebgl2 && gl.getExtension('WEBGL_depth_texture');
 
-		this.width            = mWidth;
-		this.height           = mHeight;
+		this.width            = mWidth || canvas.width;
+		this.height           = mHeight || canvas.height;
 		this._numTargets 	  = mNumTargets;
 		this._multipleTargets = mNumTargets > 1;
 		this._parameters = mParameters;
@@ -54,16 +54,21 @@ class FrameBuffer {
 			// gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderBuffer);
 			// gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, this.width, this.height);
 			// gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderBuffer);
-
-			const buffers = [];
-			for (let i = 0; i < this._numTargets; i++) {
-				gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.TEXTURE_2D, this._textures[i].texture, 0);
-				buffers.push(gl[`COLOR_ATTACHMENT${i}`]);
+			if(this._numTargets === 0) {
+				gl.readBuffer(gl.NONE);
+				gl.drawBuffers([gl.NONE]);
+			}
+			else {
+				const buffers = [];
+				for (let i = 0; i < this._numTargets; i++) {
+					gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.TEXTURE_2D, this._textures[i].texture, 0);
+					buffers.push(gl[`COLOR_ATTACHMENT${i}`]);
+				}
+				gl.drawBuffers(buffers);
 			}
 
-			gl.drawBuffers(buffers);
+			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.glDepthTexture.texture, 0);
 
-			gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.glDepthTexture.texture, 0);
 
 		} else {
 			for (let i = 0; i < this._numTargets; i++) {
@@ -100,7 +105,7 @@ class FrameBuffer {
 		
 		//	CLEAR FRAMEBUFFER 
 
-		this.clear();
+		//this.clear();
 	}
 
 	_checkMaxNumRenderTarget() {
@@ -120,7 +125,7 @@ class FrameBuffer {
 
 		
 		if(window.useWebgl2) { 
-			this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT16, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, true);
+			this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT16, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, { minFilter:gl.NEAREST, magFilter: gl.NEAREST });
 		} else {
 			this.glDepthTexture = this._createTexture(gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, gl.DEPTH_COMPONENT, { minFilter:gl.LINEAR });
 		}
@@ -137,6 +142,7 @@ class FrameBuffer {
 		}
 
 		const texture = new GLTexture(null, parameters, this.width, this.height);
+
 		return texture;
 	}
 
@@ -179,7 +185,7 @@ class FrameBuffer {
 		return this._textures[mIndex];
 	}
 	
-	getDepthTexture() {
+	get depthTexture() {
 		return this.glDepthTexture;
 	}
 

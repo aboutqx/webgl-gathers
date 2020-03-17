@@ -173,6 +173,7 @@ class GLTexture {
 		if(minFilter.indexOf('MIPMAP') == -1) {
 			this._generateMipmap = false;
 		}
+
 	}
 
 	_checkWrapping() {
