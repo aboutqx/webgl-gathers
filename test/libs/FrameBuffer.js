@@ -2,7 +2,6 @@
 
 import { gl, GlTools, canvas } from './GlTools';
 import GLTexture from './GLTexture';
-import WebglNumber from './utils/WebglNumber';
 
 
 let webglDepthTexture;
@@ -17,7 +16,6 @@ const checkMultiRender = function () {
 		extDrawBuffer = gl.getExtension('WEBGL_draw_buffers');
 		return !!extDrawBuffer;
 	}
-	hasCheckedMultiRenderSupport =true
 };
 
 class FrameBuffer {
@@ -29,7 +27,9 @@ class FrameBuffer {
 		this.height           = mHeight || canvas.height;
 		this._numTargets 	  = mNumTargets;
 		this._multipleTargets = mNumTargets > 1;
-		this._parameters = mParameters;
+		if(mParameters.hdr == true) {
+			this._parameters = { internalFormat: gl.RGBA16F, type: gl.HALF_FLOAT, minFilter: gl.LINEAR, maxFilter: gl.LINEAR }
+		} else this._parameters = mParameters;
 
 		if(!hasCheckedMultiRenderSupport) {
 			checkMultiRender();
@@ -67,7 +67,7 @@ class FrameBuffer {
 				gl.drawBuffers(buffers);
 			}
 
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.glDepthTexture.texture, 0);
+			gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.glDepthTexture.texture, 0);
 
 
 		} else {
@@ -93,7 +93,7 @@ class FrameBuffer {
 		//	CHECKING FBO
 		const FBOstatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
 		if(FBOstatus != gl.FRAMEBUFFER_COMPLETE) {
-			console.error('GL_FRAMEBUFFER_COMPLETE failed, CANNOT use Framebuffer', WebglNumber[FBOstatus]);
+			console.log(`gl.checkFramebufferStatus() returned ${status.toString(16)}`);
 		}
 
 		//	UNBIND

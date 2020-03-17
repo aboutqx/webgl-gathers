@@ -2,7 +2,6 @@ import Pipeline from '../PipeLine'
 import {
   gl,
   canvas,
-  toRadian,
   GlTools
 } from 'libs/GlTools'
 import vs from 'shaders/deferred_shading/finalQuad.vert'
@@ -11,16 +10,13 @@ import gBufferVs from 'shaders/deferred_shading/gBuffer.vert'
 import gBufferFs from 'shaders/deferred_shading/gBuffer.frag'
 import fboVs from 'shaders/deferred_shading/fbo_debug.vert'
 import fboFs from 'shaders/deferred_shading/fbo_debug.frag'
-import lampVs from 'shaders/material/lamp.vert'
-import lampFs from 'shaders/material/lamp.frag'
+import lampVs from 'shaders/light_caster/lamp.vert'
+import lampFs from 'shaders/light_caster/lamp.frag'
 import Geom from 'libs/Geom'
-import {
-  QuadData
-} from '../Torus'
 import {
   mat4
 } from 'gl-matrix'
-import Mesh from 'libs/Mesh'
+import FrameBuffer from 'libs/FrameBuffer'
 import OBJLoader from 'libs/loaders/ObjLoader'
 import MTLLoader from 'libs/loaders/MTLLoader'
 const offset = 10.
@@ -59,14 +55,7 @@ export default class DeferredShading extends Pipeline {
 
   }
   init() {
-    // use webgl2
-    // gl.getExtension('OES_standard_derivatives')
-    // gl.getExtension('OES_texture_float')
-    // gl.getExtension('OES_texture_float_linear') // Even WebGL2 requires OES_texture_float_linear
-    gl.getExtension("EXT_color_buffer_float")
-    // gl.getExtension('OES_texture_half_float')
-    gl.getExtension('OES_texture_half_float_linear')
-    // gl.getExtension('EXT_shader_texture_lod')
+    GlTools.applyHdrExtension()
     this.prg = this.compile(vs, fs)
     this.gBufferPrg = this.compile(gBufferVs, gBufferFs)
     this.fboPrg = this.compile(fboVs, fboFs)
@@ -76,26 +65,18 @@ export default class DeferredShading extends Pipeline {
   async attrib() {
     this.cube = Geom.sphere(.3, 40)
 
-    let quad = new Mesh()
-    quad.bufferData(QuadData, ['position', 'texCoord'], [3, 2])
-    this.quad = quad
+    this.quad = Geom.bigTriangle()
 
     const materials = await new MTLLoader('nanosuit.mtl', './assets/models/nanosuit').parse(getAssets.nanosuitMTL)
-    new OBJLoader().load('./assets/models/nanosuit/nanosuit.obj2', (o) => {
+    new OBJLoader().load('./assets/models/nanosuit/nanosuit.obj', (o) => {
       this.nanosuit = OBJLoader.parse(o ,materials)
     })
     
 
   }
   prepare() {
-    gl.clearColor(0., 0., 0., 1.);
-    gl.clearDepth(1.0)
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LEQUAL)
-
     //position, normal, AlbedoSpec(diffuse, specular indensity)
-    this.mrt = framebufferMRT(canvas.width, canvas.height, ['16f', '16f', 'rgba'])
-
+    this.mrt = new FrameBuffer(canvas.width, canvas.height, {hdr: true}, 3)
 
     // execute once
     this.orbital.target = [0, -1., 0]
@@ -104,12 +85,11 @@ export default class DeferredShading extends Pipeline {
   }
   uniform() {
 
-
   }
 
   render() {
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.mrt.frameBuffer)
+    //gl.bindFramebuffer(gl.FRAMEBUFFER, this.mrt.frameBuffer)
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
       this.gBufferPrg.use()
@@ -126,66 +106,60 @@ export default class DeferredShading extends Pipeline {
           
         }
       }
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    // gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    // gl.activeTexture(gl.TEXTURE0)
-    // gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[1])
-    // this.fboPrg.use()
-    // this.fboPrg.style({
-    //   fboAttachment: 0
-    // })
-    // this.quad.bind(this.fboPrg, ['position', 'texCoord'])
-    // this.quad.draw(gl.TRIANGLE_STRIP)
+    // // gl.activeTexture(gl.TEXTURE0)
+    // // gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[1])
+    // // this.fboPrg.use()
+    // // this.fboPrg.style({
+    // //   fboAttachment: 0
+    // // })
+    // // this.quad.bind(this.fboPrg, ['position', 'texCoord'])
+    // // this.quad.draw(gl.TRIANGLE_STRIP)
 
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[0])
-    gl.activeTexture(gl.TEXTURE1)
-    gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[1])
-    gl.activeTexture(gl.TEXTURE2)
-    gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[2])
-    this.prg.use()
-    this.prg.style({
-      gPosition: 0,
-      gNormal: 1,
-      gAlbedoSpec: 2,
-      viewPos: this.camera.position
-    }, true)
-    for(let i = 0; i< lightPositions.length; i++) {
-      this.prg.style({
-        [`lights[${i}].Position`]: lightPositions[i],
-        [`lights[${i}].Color`]: lightColors[i],
-        [`lights[${i}].Linear`]: .1,
-        [`lights[${i}].Quadratic`]: .12
-      })
+    // this.prg.use()
+    // this.prg.style({
+    //   gPosition: this.mrt.getTexture(0),
+    //   gNormal: this.mrt.getTexture(1),
+    //   gAlbedoSpec: this.mrt.getTexture(2),
+    //   viewPos: this.camera.position
+    // }, true)
+    // for(let i = 0; i< lightPositions.length; i++) {
+    //   this.prg.style({
+    //     [`lights[${i}].Position`]: lightPositions[i],
+    //     [`lights[${i}].Color`]: lightColors[i],
+    //     [`lights[${i}].Linear`]: .1,
+    //     [`lights[${i}].Quadratic`]: .12
+    //   })
 
-    }
+    // }
 
-    GlTools.draw(this.quad)
+    // GlTools.draw(this.quad)
 
-    // copy depth
-    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.mrt.frameBuffer);
-    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null); // write to default framebuffer
-    // blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
-    // the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the
-    // depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
-    gl.blitFramebuffer(0, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height, gl.DEPTH_BUFFER_BIT, gl.NEAREST);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    // // // copy depth
+    // // gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.mrt.frameBuffer);
+    // // gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null); // write to default framebuffer
+    // // // blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
+    // // // the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the
+    // // // depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
+    // // gl.blitFramebuffer(0, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height, gl.DEPTH_BUFFER_BIT, gl.NEAREST);
+    // // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    // render light cubes
-    this.lampPrg.use()
-    for(let i = 0; i < lightPositions.length; i++) {
-      let mMatrix = mat4.create()
-      mat4.translate(mMatrix, mMatrix, lightPositions[i])
-      mat4.scale(mMatrix, mMatrix, [.3, .3, .3])
-      this.lampPrg.style({
-        mMatrix,
-        lightColor: lightColors[i]
+    // // render light cubes
+    // this.lampPrg.use()
+    // for(let i = 0; i < lightPositions.length; i++) {
+    //   let mMatrix = mat4.create()
+    //   mat4.translate(mMatrix, mMatrix, lightPositions[i])
+    //   mat4.scale(mMatrix, mMatrix, [.3, .3, .3])
+    //   this.lampPrg.style({
+    //     mMatrix,
+    //     lightColor: lightColors[i]
 
-      })
-      GlTools.draw(this.cube)
-    }
+    //   })
+    //   GlTools.draw(this.cube)
+    // }
   }
 }
 function framebufferMRT(width, height, type) {

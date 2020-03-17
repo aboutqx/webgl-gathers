@@ -179,30 +179,10 @@ export default class Mesh extends Object3D {
 		}
 
 		if (this.textures) {
-			let diffuseNr = 1
-			let specularNr = 1
-			let normalNr = 1
-			let heightNr = 1
-			let i = 0
-			for (let key in this.textures) {
-				gl.activeTexture(gl.TEXTURE0 + i)
-				let number = ''
-				if (key === 'diffuseMap') {
+			// key: diffuseMap, specularMap, normalMap, heightMap, bumpMap # three.js takes bumpMap as heightMap
 
-					number = (diffuseNr++) + ''
-				} else if (key === 'specularMap') {
-					number = (specularNr++) + ''
-				} else if (key === 'normalMap') {
-					number = (normalNr++) + ''
-				} else if (key === 'heightMap' || key === 'bumpMap') { // three.js takes bumpMap as heightMap
-					number = (heightNr++) + ''
-				}
-				let tmp = {}
-				tmp[key + number] = i
-				GlTools.shader.style(tmp)
-				gl.bindTexture(gl.TEXTURE_2D, this.textures[key])
-				i++
-			}
+			GlTools.shader.style(this.textures)
+
 		}
 	}
 
@@ -432,10 +412,10 @@ export default class Mesh extends Object3D {
 	}
 
 	_setMaterial() {
+
 		for (let key in this.material) {
 			if (this.material[key].constructor === HTMLImageElement) {
-				this.material[key] = new Texture(this.material[key]).texture
-				this.textures[key] = this.material[key]
+				this.textures[key]= new Texture(this.material[key], { wrapS: gl.REPEAT, wrapT: gl.REPEAT})
 			}
 		}
 	}

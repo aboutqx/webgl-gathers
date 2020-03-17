@@ -17,7 +17,7 @@ import {
 } from 'gl-matrix'
 import OBJLoader from 'libs/loaders/ObjLoader'
 import MTLLoader from 'libs/loaders/MTLLoader'
-import Fbo from 'libs/FrameBuffer'
+import FrameBuffer from 'libs/FrameBuffer'
 import Texture from 'libs/GLTexture'
 import Geom from 'libs/Geom'
 import { GlTools } from '../../../libs/GlTools'
@@ -51,14 +51,8 @@ export default class SSAO extends Pipeline {
 
   }
   init() {
-    // use webgl2
-    // gl.getExtension('OES_standard_derivatives')
-    // gl.getExtension('OES_texture_float')
-    gl.getExtension('OES_texture_float_linear') // Even WebGL2 requires OES_texture_float_linear
-    gl.getExtension("EXT_color_buffer_float")
-    // gl.getExtension('OES_texture_half_float')
-    gl.getExtension('OES_texture_half_float_linear')
-    // gl.getExtension('EXT_shader_texture_lod')
+
+    GlTools.applyHdrExtension()
     this.gBufferPrg = this.compile(gBufferVs, gBufferFs)
     this.ssaoPrg = this.compile(ssaoVs, ssaoFs)
     this.blurPrg = this.compile(ssaoVs, ssaoBlurFs)
@@ -71,24 +65,18 @@ export default class SSAO extends Pipeline {
     this.quad = Geom.plane(3, 2)
 
     const materials = await new MTLLoader('nanosuit.mtl', './assets/models/nanosuit').parse(getAssets.nanosuitMTL)
-    new OBJLoader().load('./assets/models/nanosuit/nanosuit.obj2', (o) => {
+    new OBJLoader().load('./assets/models/nanosuit/nanosuit.obj', (o) => {
       this.nanosuit = OBJLoader.parse(o ,materials)
     })
 
   }
   prepare() {
-    gl.clearColor(0., 0., 0., 1.);
-    gl.clearDepth(1.0)
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LEQUAL)
-
-
+  
     //position, normal, AlbedoSpec(diffuse, specular indensity)
-    this.mrt = framebufferMRT(canvas.width, canvas.height, ['16f', '16f', 'rgba'])
-    this.ssaoFbo = new Fbo(gl)
-    this.ssaoFbo.resize(canvas.width, canvas.height)
-    this.blurFbo = new Fbo(gl)
-    this.blurFbo.resize(canvas.width, canvas.height)
+    this.mrt = new FrameBuffer(canvas.width, canvas.height, {hdr: true}, 3)
+    this.ssaoFbo = new FrameBuffer()
+    this.blurFbo = new FrameBuffer()
+
 
     generateSample()
     generateNoise()
@@ -99,91 +87,82 @@ export default class SSAO extends Pipeline {
     this.orbital.target = [0, -1., 0]
     this.orbital.offset = [0, 0., 0]
     this.orbital.radius = 3
-    this.camera.rx = -1.5
+    this.orbital.rx = -1.5
+
+    
   }
   uniform() {
-
+    this.frameBufferGUI.textureList = [{ texture:  this.noiseTexture}]
 
   }
 
   render() {
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.mrt.frameBuffer)
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    // gl.bindFramebuffer(gl.FRAMEBUFFER, this.mrt.frameBuffer)
+    //   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-      this.gBufferPrg.use()
-      if (this.nanosuit) { // loaded
-        let mMatrix = mat4.create()
-        mat4.translate(mMatrix, mMatrix, [-1.0, -3.3, 3.])
-        mat4.scale(mMatrix, mMatrix, [.4, .4, .4])
-        mat4.rotate(mMatrix, mMatrix, -Math.PI / 2 , [1, 0, 0])
+    //   this.gBufferPrg.use()
+    //   if (this.nanosuit) { // loaded
+    //     let mMatrix = mat4.create()
+    //     mat4.translate(mMatrix, mMatrix, [-1.0, -3.3, 3.])
+    //     mat4.scale(mMatrix, mMatrix, [.4, .4, .4])
+    //     mat4.rotate(mMatrix, mMatrix, -Math.PI / 2 , [1, 0, 0])
 
-        this.gBufferPrg.style({
-          mMatrix,
-          invertedNormals: 0
-        })
-        GlTools.draw(this.nanosuit)
-      }
+    //     this.gBufferPrg.style({
+    //       mMatrix,
+    //       invertedNormals: 0
+    //     })
+    //     GlTools.draw(this.nanosuit)
+    //   }
 
-      let mMatrix = mat4.create()
-      mat4.scale(mMatrix, mMatrix,[8, 4, 8])
-      this.gBufferPrg.style({
-        mMatrix,
-        invertedNormals: 1
-      })
-      GlTools.draw(this.quad)
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    //   let mMatrix = mat4.create()
+    //   mat4.scale(mMatrix, mMatrix,[8, 4, 8])
+    //   this.gBufferPrg.style({
+    //     mMatrix,
+    //     invertedNormals: 1
+    //   })
+    //   GlTools.draw(this.quad)
+    // gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-    this.ssaoFbo.bind()
-      gl.clear(gl.COLOR_BUFFER_BIT)
-      gl.activeTexture(gl.TEXTURE0)
-      gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[0])
-      gl.activeTexture(gl.TEXTURE1)
-      gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[1])
-      this.noiseTexture.bind(2)
-      this.ssaoPrg.use()
-      this.ssaoPrg.style({
-        gPositionDepth: 0,
-        gNormal: 1,
-        texNoise: 2,
-        samples: ssaoKernel,
-        pMatrix: this.pMatrix
-      })
-      GlTools.draw(this.quad)
-    this.ssaoFbo.unbind()
+    // this.ssaoFbo.bind()
+    //   gl.clear(gl.COLOR_BUFFER_BIT)
 
-    this.blurFbo.bind()
-      this.ssaoFbo.color.bind(0)
-      this.blurPrg.use()
-      this.blurPrg.style({
-        ssaoInput: 0
-      })
-      GlTools.draw(this.quad)
-    this.blurFbo.unbind()
+    //   this.ssaoPrg.use()
+    //   this.ssaoPrg.style({
+    //     gPosition: this.mrt.getTexture(0),
+    //     gNormal: this.mrt.getTexture(1),
+    //     texNoise: this.noiseTexture,
+    //     samples: ssaoKernel,
+    //     pMatrix: this.pMatrix
+    //   })
+    //   GlTools.draw(this.quad)
+    // this.ssaoFbo.unbind()
 
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[0])
-    gl.activeTexture(gl.TEXTURE1)
-    gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[1])
-    gl.activeTexture(gl.TEXTURE2)
-    gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[2])
-    this.blurFbo.color.bind(3)
-    this.prg.use()
-    this.prg.style({
-      gPosition: 0,
-      gNormal: 1,
-      gAlbedoSpec: 2,
-      ssao: 3,
-      viewPos: this.camera.position,
-      'lights.Position': lightPositions,
-      'lights.Color': lightColors,
-      'lights.Linear': .09,
-      'lights.Quadratic': .032
-    })
+    // this.blurFbo.bind()
 
-    GlTools.draw(this.quad)
+    //   this.blurPrg.use()
+    //   this.blurPrg.style({
+    //     ssaoInput: this.ssaoFbo.getTexture()
+    //   })
+    //   GlTools.draw(this.quad)
+    // this.blurFbo.unbind()
 
+    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    
+    // this.prg.use()
+    // this.prg.style({
+    //   gPosition: this.mrt.getTexture(0),
+    //   gNormal: this.mrt.getTexture(1),
+    //   gAlbedoSpec: this.mrt.getTexture(2),
+    //   ssao: this.blurFbo.getTexture(),
+    //   viewPos: this.camera.position,
+    //   'lights.Position': lightPositions,
+    //   'lights.Color': lightColors,
+    //   'lights.Linear': .09,
+    //   'lights.Quadratic': .032
+    // })
+
+    // GlTools.draw(this.quad)
 
   }
 }
