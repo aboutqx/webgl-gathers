@@ -4,14 +4,14 @@ out vec4 FragColor;
 
 in vec3 FragPos;
 in vec3 Normal;
-in vec2 TexCoord;
+in vec2 vTexCoord;
 in vec4 FragPosLightSpace;
 
 
 uniform sampler2D diffuseTexture;
 uniform sampler2D shadowMap;
 uniform vec3 lightPos;
-uniform vec3 viewPos;
+uniform vec3 uCameraPos;
 
 float ShadowCalculation(vec4 fragPosLightSpace, float bias){
       // 执行透视除法
@@ -42,7 +42,7 @@ float ShadowCalculation(vec4 fragPosLightSpace, float bias){
 }
 
 void main(){
-    vec3 color = texture(diffuseTexture, TexCoord).rgb;
+    vec3 color = texture(diffuseTexture, vTexCoord).rgb;
     vec3 normal = normalize(Normal);
     vec3 lightColor = vec3(1.);
     // Ambient
@@ -52,7 +52,7 @@ void main(){
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * lightColor;
     // Specular
-    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 viewDir = normalize(uCameraPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = 0.0;
     vec3 halfwayDir = normalize(lightDir + viewDir);

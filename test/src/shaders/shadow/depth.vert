@@ -6,10 +6,10 @@ layout (location = 2) in vec2 texCoord;
 
 uniform mat4 lightSpaceMatrix;
 uniform mat4 mMatrix;
-out vec2 TexCoord;
+out vec2 vTexCoord;
 out vec3 Normal;
 void main(void){
-    TexCoord = texCoord;
+    vTexCoord = texCoord;
     Normal = normal;
     gl_Position = lightSpaceMatrix * mMatrix * vec4(position, 1.0);
 }

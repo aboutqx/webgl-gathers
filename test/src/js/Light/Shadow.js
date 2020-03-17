@@ -12,11 +12,12 @@ import {
 } from 'gl-matrix'
 import Geom from 'libs/Geom'
 import { bigTriangleVert } from 'libs/shaders/CustomShaders'
+import FrameBuffer from 'libs/FrameBuffer'
 
 const shadowWidth = 1024
 const shadowHeight = 1024
 const lightPos = [0, 4, -1]
-let vMatrix = mat4.create()
+
 
 export default class Shadow extends Pipeline {
   count = 0
@@ -28,14 +29,14 @@ export default class Shadow extends Pipeline {
     this.prg = this.compile(vs, fs)
     this.depthQuadPrg = this.compile(bigTriangleVert, depthQuadFs)
     this.shadowPrg = this.compile(shadowMappingVs, shadowMappingFs)
-    // flip texture
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
+
   }
   attrib() {
 
     this.plane = Geom.plane(30, 30 ,1, 'xz')
     this.cube = Geom.cube(1)
     this.quad = Geom.bigTriangle()
+
   }
 
   prepare() {
@@ -51,48 +52,39 @@ export default class Shadow extends Pipeline {
     mat4.lookAt(lightView, lightPos, [0, 0, 0], [0, 1, 0])
     mat4.multiply(this.tmpMatrix, lightProjection, lightView)
 
-    gl.enable(gl.DEPTH_TEST);
-    //gl.cullFace(gl.FRONT_AND_BACK)
-    gl.clearColor(0.3, 0.3, .3, 1.0)
 
-
-    this.depthBuffer = depthTextureFbo(shadowWidth, shadowHeight)
+    this._fboDepth = new FrameBuffer(shadowWidth, shadowHeight, {}, 0)
     this.orbital.radius = 11
 
     this.wood = getAssets.wood
     this.wood.bind()
     this.wood.repeat()
+
   }
   uniform() {
 
   }
 
-
   render() {
-    gl.viewport(0, 0, shadowWidth, shadowHeight)
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.depthBuffer.frameBuffer)
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    this._fboDepth.bind()
+      GlTools.clear()
       this.prg.use()
       this.prg.style({
         lightSpaceMatrix: this.tmpMatrix
       })
       this._renderScene(this.prg)
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+      this._fboDepth.unbind()
 
     gl.viewport(0, 0, canvas.width, canvas.height)
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    gl.activeTexture(gl.TEXTURE1)
-    gl.bindTexture(gl.TEXTURE_2D, this.depthBuffer.depthTexture)
+
     // for debug
-    //this.frameBufferGUI.textureList = [{ texture: this.depthBuffer.depthTexture }]
+    this.frameBufferGUI.textureList = [{ texture:  this._fboDepth.depthTexture}]
 
     this.shadowPrg.use()
-    this.shadowPrg.uniform('shadowMap', 'uniform1i', 1)
     this.shadowPrg.style({
       diffuseTexture: this.wood,
+      shadowMap: this._fboDepth.depthTexture,
       lightPos,
-      viewPos: this.camera.position,
-      vMatrix,
       lightSpaceMatrix: this.tmpMatrix,
     })
     this._renderScene(this.shadowPrg)
@@ -129,31 +121,9 @@ export default class Shadow extends Pipeline {
     GlTools.draw(this.cube)
   }
 }
-function depthTextureFbo (width, height) {
-  const frameBuffer = gl.createFramebuffer()
-  const depthTexture = gl.createTexture()
-  gl.bindTexture(gl.TEXTURE_2D, depthTexture)
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, width, height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-  const borderColor= [ 1.0, 1.0, 1.0, 1.0 ]
-  // gl.texParameterfv(gl.TEXTURE_2D, gl.TEXTURE_BORDER_COLOR, borderColor)
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer)
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture, 0)
-  gl.drawBuffers([gl.NONE]);
-  gl.readBuffer(gl.NONE)
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-
-  return {
-    frameBuffer,
-    depthTexture
-  }
-}
 /*
-  // 1. 首选渲染深度贴图
+  // 1. 渲染深度贴图
   glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
   glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
   glClear(GL_DEPTH_BUFFER_BIT);
