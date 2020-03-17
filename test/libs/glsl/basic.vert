@@ -3,20 +3,22 @@
 
 #define SHADER_NAME BASIC_VERTEX
 
-precision highp float;
 in vec3 position;
-in vec2 texCoord;
 in vec3 normal;
-
-uniform mat4 mMatrix;
+in vec2 texCoord;
+uniform   mat4 mMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 
-out vec2 vTextureCoord;
-out vec3 vNormal;
+out   vec3 vNormal;
+out vec3 vPosition;
+out vec2 vTexCoord;
+void main(void){
 
-void main(void) {
-    gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(position, 1.0);
-    vTextureCoord = texCoord;
-    vNormal = normal;
+	vec4 pos       = mMatrix * vec4(position, 1.0);
+	gl_Position    = uProjectionMatrix * uViewMatrix * pos;
+
+    vNormal = mat3(mMatrix) * normal;
+    vPosition = pos.xyz/pos.w;
+    vTexCoord = texCoord;
 }

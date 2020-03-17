@@ -2,7 +2,7 @@ import Pipeline from '../PipeLine'
 import {
 	GlTools
 } from 'libs/GlTools'
-import vs from 'shaders/pbr/pbr.vert'
+import vs from 'libs/glsl/basic.vert'
 import fs from 'shaders/pbr/pbr.frag'
 import mapFs from 'shaders/pbr/pbr_map.frag'
 

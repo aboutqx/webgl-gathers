@@ -112,6 +112,7 @@ class GlTool{
 
 
   draw(mObj, modelMatrix){ // modelMatrix flag determine if pass the uNormalMatrix mannully, default is undefined which passes false
+    if(!mObj) return
     if(mObj.length) {
       for(let i = 0; i < mObj.length; i++) {
         this.draw(mObj[i], modelMatrix);

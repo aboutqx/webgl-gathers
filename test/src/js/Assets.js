@@ -58,7 +58,7 @@ const Assets = {
     orb: { url: './assets/models/lte_orb/testObj.obj', type: 'text' }
   },
   nanosuit: {
-    nanosuit: { url: './assets/models/nanosuit/nanosuit.obj2', type: 'text' },
+    nanosuit: { url: './assets/models/nanosuit/nanosuit.obj', type: 'text' },
     nanosuitMTL: { url: './assets/models/nanosuit/nanosuit.mtl', type: 'text' }
   },
   brickwall: {
@@ -143,6 +143,7 @@ const Assets = {
 const mapAssets = {
   reflection: { ...Assets.statue, ...Assets.venus },
   lightcaster: { ...Assets.materialMaps },
+  material: { ...Assets.nanosuit },
   normalMapping: { ...Assets.brickwall },
   heightMapping: { ...Assets.bricks2 },
   reliefMapping: { ...Assets.toyBox },

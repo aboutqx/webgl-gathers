@@ -13,7 +13,7 @@ uniform vec3 lightColors[4];
 uniform vec3 uCameraPos;
 
 in vec3 vNormal;
-in vec3 WorldPos;
+in vec3 vPosition;
 out vec4 FragColor;
 #define saturate(x) clamp(x, 0.0, 1.0)
 const float PI = 3.14159265359;
@@ -70,7 +70,7 @@ vec3 getDiffuse( vec3 diffuseColor, float roughness4, float NoV, float NoL, floa
 
 void main(void){
     vec3 N = normalize(vNormal);
-    vec3 V = normalize(uCameraPos - WorldPos);
+    vec3 V = normalize(uCameraPos - vPosition);
 
     vec3 F0 = vec3(0.04);
     F0      = mix(F0, albedo, metallic);
@@ -80,7 +80,7 @@ void main(void){
     for(int i = 0; i < 4; ++i)
     {
         // calculate per-light radiance
-        vec3 L = normalize(lightPositions[i] - WorldPos);
+        vec3 L = normalize(lightPositions[i] - vPosition);
         vec3 H = normalize(V + L);
 
         // get all the usefull dot products and clamp them between 0 and 1 just to be safe
@@ -89,7 +89,7 @@ void main(void){
         float VoH				= saturate( dot( V, H ) );
         float NoH				= saturate( dot( N, H ) );
 
-        float distance = length(lightPositions[i] - WorldPos);
+        float distance = length(lightPositions[i] - vPosition);
         float attenuation = 1.0 / (distance * distance);
         vec3 radiance = lightColors[i] * attenuation;
 

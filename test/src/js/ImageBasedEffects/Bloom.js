@@ -33,12 +33,12 @@ export default class Bloom extends Pipeline {
   }
   prepare(){
     this.orbital.radius = 3.5
-    let fbo = new FrameBuffer(canvas.width, canvas.height, { internalFormat: gl.RGBA16F, type:gl.HALF_FLOAT,minFilter:gl.LINEAR,maxFilter:gl.LINEAR }, 2)
+    let fbo = new FrameBuffer(canvas.width, canvas.height, {hdr: true}, 2)
 
     this.hdrFb = fbo.frameBuffer
     this.textures = fbo.textures
 
-    this.pingpongFbo = new FboPingPong(canvas.width, canvas.height, { internalFormat: gl.RGBA16F, type:gl.HALF_FLOAT,minFilter:gl.LINEAR,maxFilter:gl.LINEAR })
+    this.pingpongFbo = new FboPingPong(canvas.width, canvas.height, {hdr: true})
     
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)

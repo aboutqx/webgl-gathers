@@ -1,8 +1,7 @@
 import Pipeline from '../PipeLine'
-import vs from 'shaders/material/material.vert'
-import fs from 'shaders/material/material.frag'
-import lampFs from 'shaders/material/lamp.frag'
-import lampVs from 'shaders/material/lamp.vert'
+import vs from 'libs/glsl/basic.vert'
+import fs from 'libs/glsl/obj/objMtl.frag'
+import lampFs from 'libs/glsl/basicColor.frag'
 import Geom from 'libs/Geom'
 import {
   mat4,
@@ -14,9 +13,27 @@ import {
   toRadian,
   GlTools
 }from 'libs/GlTools'
+import OBJLoader from 'libs/loaders/ObjLoader'
+import MTLLoader from 'libs/loaders/MTLLoader'
 
-const lightColor = [0.83, 0.82, 0.88]
-const ligthPos = [1, 1.5, 1.5]
+
+
+const NR_LIGHTS =32
+const lightPositions =[]
+const lightColors = []
+for (let i = 0; i < NR_LIGHTS; i++) {
+  // calculate slightly random offsets
+  let xPos = Math.random() * 20 - 16.0;
+  let yPos = Math.random() * 10 - 2.0;
+  let zPos = Math.random() * 10 - 4.0;
+  lightPositions.push([xPos, yPos, zPos]);
+  // lightPositions.push()
+  // also calculate random color
+  let rColor = (Math.random()  / 2.0) + 0.5; // between 0.5 and 1.0
+  let gColor = (Math.random()  / 2.0) + 0.5; // between 0.5 and 1.0
+  let bColor = (Math.random()  / 2.0) + 0.5; // between 0.5 and 1.0
+  lightColors.push([rColor, gColor, bColor]);
+}
 export default class Color extends Pipeline {
   count = 0
   constructor() {
@@ -25,20 +42,21 @@ export default class Color extends Pipeline {
   }
   init() {
     this.prg = this.compile(vs, fs)
-    this.lampPrg = this.compile(lampVs, lampFs)
+    this.lampPrg = this.compile(vs, lampFs)
   }
-  attrib() {
-
-    this.cube = Geom.cube(1)
+  async attrib() {
 
     this.lamp = Geom.sphere(.1, 60)
+
+    const materials = await new MTLLoader('nanosuit.mtl', './assets/models/nanosuit').parse(getAssets.nanosuitMTL)
+    new OBJLoader().load('./assets/models/nanosuit/nanosuit.obj', (o) => {
+      this.nanosuit = OBJLoader.parse(o ,materials)
+    })
   }
   prepare() {
-    gl.enable(gl.DEPTH_TEST)
-    gl.depthFunc(gl.LEQUAL)
-    gl.clearColor(0.3, 0.3, .3, 1.0)
-    gl.clearDepth(1.0)
-
+    this.orbital.radius = 22
+    this.orbital.offset = [0, 8, 0]
+    this.orbital.target = [0, 8, 0]
 
   }
   uniform() {
@@ -48,32 +66,33 @@ export default class Color extends Pipeline {
 
     this.prg.use()
     this.prg.style({
-      mMatrix,
-      camPos: this.camera.position,
-      'light.position': ligthPos,
-      'material.ambient': [1, .5, .31],
-      'material.diffuse': [.0, .0, .0],
-      'material.specular': [1., 1., 1.],
-      'material.shininess': 50,
-      'light.ambient': [.1 ,.1 ,.1],
-      'light.diffuse': [1., 1., 1.],
-      'light.specular': [1., 1., 1.]
+      mMatrix
     })
+
+    for(let i = 0; i< lightPositions.length; i++) {
+      this.prg.style({
+        [`lights[${i}].Position`]: lightPositions[i],
+        [`lights[${i}].Color`]: lightColors[i],
+        [`lights[${i}].Linear`]: .1,
+        [`lights[${i}].Quadratic`]: .12
+      })
+
+    }
   }
   render() {
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    GlTools.clear()
 
-    GlTools.draw(this.cube)
+    GlTools.draw(this.nanosuit)
 
 
     let mMatrix = mat4.create()
-    mat4.translate(mMatrix, mMatrix, ligthPos)
+    mat4.translate(mMatrix, mMatrix, lightPositions[0])
     mat4.scale(mMatrix , mMatrix , [.2, .2, .2])
 
     this.lampPrg.use()
     this.lampPrg.style({
       mMatrix,
-      lightColor
+      color:lightColors[0]
     })
     GlTools.draw(this.lamp)
   }
