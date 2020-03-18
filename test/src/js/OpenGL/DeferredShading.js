@@ -4,12 +4,10 @@ import {
   canvas,
   GlTools
 } from 'libs/GlTools'
-import vs from 'shaders/deferred_shading/finalQuad.vert'
+import { bigTriangleVert } from 'libs/shaders/CustomShaders'
 import fs from 'shaders/deferred_shading/finalQuad.frag'
 import gBufferVs from 'shaders/deferred_shading/gBuffer.vert'
 import gBufferFs from 'shaders/deferred_shading/gBuffer.frag'
-import fboVs from 'shaders/deferred_shading/fbo_debug.vert'
-import fboFs from 'shaders/deferred_shading/fbo_debug.frag'
 import lampVs from 'shaders/light_caster/lamp.vert'
 import lampFs from 'shaders/light_caster/lamp.frag'
 import Geom from 'libs/Geom'
@@ -56,9 +54,8 @@ export default class DeferredShading extends Pipeline {
   }
   init() {
     GlTools.applyHdrExtension()
-    this.prg = this.compile(vs, fs)
+    this.prg = this.compile(bigTriangleVert, fs)
     this.gBufferPrg = this.compile(gBufferVs, gBufferFs)
-    this.fboPrg = this.compile(fboVs, fboFs)
     this.lampPrg = this.compile(lampVs, lampFs)
 
   }
@@ -81,7 +78,7 @@ export default class DeferredShading extends Pipeline {
     // execute once
     this.orbital.target = [0, -1., 0]
     this.orbital.offset = [1, 3., 0]
-    this.orbital.radius = 18
+    this.orbital.radius = 28
   }
   uniform() {
 
@@ -89,7 +86,7 @@ export default class DeferredShading extends Pipeline {
 
   render() {
 
-    //gl.bindFramebuffer(gl.FRAMEBUFFER, this.mrt.frameBuffer)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.mrt.frameBuffer)
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
       this.gBufferPrg.use()
@@ -106,37 +103,30 @@ export default class DeferredShading extends Pipeline {
           
         }
       }
-    // gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    GlTools.clear()
+    
+    this.frameBufferGUI.textureList = [{ texture:  this.mrt.getTexture(0)}]
 
-    // // gl.activeTexture(gl.TEXTURE0)
-    // // gl.bindTexture(gl.TEXTURE_2D, this.mrt.texture[1])
-    // // this.fboPrg.use()
-    // // this.fboPrg.style({
-    // //   fboAttachment: 0
-    // // })
-    // // this.quad.bind(this.fboPrg, ['position', 'texCoord'])
-    // // this.quad.draw(gl.TRIANGLE_STRIP)
+    this.prg.use()
+    this.prg.style({
+      gPosition: this.mrt.getTexture(0),
+      gNormal: this.mrt.getTexture(1),
+      gAlbedoSpec: this.mrt.getTexture(2),
+      viewPos: this.camera.position
+    }, true)
+    for(let i = 0; i< lightPositions.length; i++) {
+      this.prg.style({
+        [`lights[${i}].Position`]: lightPositions[i],
+        [`lights[${i}].Color`]: lightColors[i],
+        [`lights[${i}].Linear`]: .1,
+        [`lights[${i}].Quadratic`]: .12
+      })
 
-    // this.prg.use()
-    // this.prg.style({
-    //   gPosition: this.mrt.getTexture(0),
-    //   gNormal: this.mrt.getTexture(1),
-    //   gAlbedoSpec: this.mrt.getTexture(2),
-    //   viewPos: this.camera.position
-    // }, true)
-    // for(let i = 0; i< lightPositions.length; i++) {
-    //   this.prg.style({
-    //     [`lights[${i}].Position`]: lightPositions[i],
-    //     [`lights[${i}].Color`]: lightColors[i],
-    //     [`lights[${i}].Linear`]: .1,
-    //     [`lights[${i}].Quadratic`]: .12
-    //   })
+    }
 
-    // }
-
-    // GlTools.draw(this.quad)
+    GlTools.draw(this.quad)
 
     // // // copy depth
     // // gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.mrt.frameBuffer);

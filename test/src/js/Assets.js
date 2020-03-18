@@ -148,15 +148,13 @@ const mapAssets = {
   heightMapping: { ...Assets.bricks2 },
   reliefMapping: { ...Assets.toyBox },
   pbr: { ...Assets.ballMaps },
-  pbrflow: { ...Assets.hdrSkybox, ...Assets.iblMaps, ...Assets.ballMaps },
-  pbrmodel: { ...Assets.hdrSkybox, ...Assets.iblMaps,...Assets.orb },
   ibldiffuse: { ...Assets.hdrSkybox },
   iblfinal: { ...Assets.hdrSkybox },
   deferredshading: { ...Assets.nanosuit },
   ssao: { ...Assets.nanosuit },
   envMapping: { ...Assets.skyboxLake, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue },
   gltf: { ...Assets.skybox, ...Assets.gltf },
-  bloom: { ...Assets.statue },
+  bloom: { ...Assets.statue, ...Assets.venus },
   water: { ...Assets.water, ...Assets.skybox, },
   grass: { ...Assets.statue, ...Assets.venus }
 }
