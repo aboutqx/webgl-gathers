@@ -105,7 +105,7 @@ class FrameBuffer {
 		
 		//	CLEAR FRAMEBUFFER 
 
-		//this.clear();
+		this.clear(); // can't comment this, or Bloom.js effects can't work in chrome, while works at firefox. May caused by the depth texture.
 	}
 
 	_checkMaxNumRenderTarget() {

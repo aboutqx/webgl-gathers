@@ -24,7 +24,7 @@ const lightColors = []
 for (let i = 0; i < NR_LIGHTS; i++) {
   // calculate slightly random offsets
   let xPos = Math.random() * 20 - 16.0;
-  let yPos = Math.random() * 10 - 2.0;
+  let yPos = Math.random() * 25 - 2.0;
   let zPos = Math.random() * 10 - 4.0;
   lightPositions.push([xPos, yPos, zPos]);
   // lightPositions.push()

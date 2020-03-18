@@ -12,6 +12,15 @@ uniform sampler2D specularMap;
 // uniform sampler2D heightMap;
 // uniform sampler2D bumpMap;
 
+#ifdef HAS_EMISSIVEMAP
+uniform sampler2D uEmissiveMap;
+uniform vec3 uEmissiveFactor;
+#endif
+
+#ifdef HAS_AMBIENTMAP
+uniform sampler2D uAmbientMap;
+#endif
+
 struct Light {
     vec3 Position;
     vec3 Color;
@@ -47,5 +56,16 @@ void main() {
         specular *= attenuation;
         lighting += diffuse + specular;
     }
-    outColor = vec4(Diffuse,1.0);
+
+    #ifdef HAS_AMBIENTMAP
+        vec3 ambient = texture(uAmbientMap, vTexCoord).r* Diffuse;
+        lighting += ambient;
+    #endif
+
+    #ifdef HAS_EMISSIVEMAP
+        vec3 emissive = texture(uEmissiveMap, vTexCoord).rgb * uEmissiveFactor;
+        lighting += emissive;
+    #endif
+    
+    outColor = vec4(lighting,1.0);
 }

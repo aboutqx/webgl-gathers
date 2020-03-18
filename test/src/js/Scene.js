@@ -22,8 +22,6 @@ const importLists = {
   pbr: 'Pbr/Pbr',
   ibldiffuse: 'Pbr/IblDiffuse',
   iblfinal: 'Pbr/iblFinal',
-  pbrflow: 'Pbr/PbrFlow',
-  pbrmodel: 'Pbr/PbrModel',
   gltf: 'Model/Gltf',
   water: 'NaturalEffects/Water',
   grass: 'NaturalEffects/Grass'

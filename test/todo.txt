@@ -1,5 +1,7 @@
-gltf model有些max，min position值太小，为0.0099左右，需要进行智能缩放到1左右
-gltf model 载入sketchfeb里模型有问题
+gltf model有些max，min position值太小，为0.0099左右，需要进行智能缩放到1左右 √
+gltf model 载入sketchfeb里模型有问题 √
 post 添加相关效果blur， bloom
-controls 完善
-camera orth，cubecamera需要完成，pbr里常用
+controls 完善 
+camera orth，cubecamera需要完成，pbr里常用 √
+完善 FrameBufferGUI 支持hdr texture display， 传递一个hdr flag来判断是否需要hdr显示
+envmap 使用gltf，也就是pbr 的env reflection和refraction
