@@ -32,6 +32,8 @@ export default class Bloom extends Pipeline {
     this.quad = Geom.bigTriangle()
   }
   prepare(){
+    GlTools.srcBlend()
+
     this.orbital.radius = 3.5
     let fbo = new FrameBuffer(canvas.width, canvas.height, {hdr: true}, 2)
 
@@ -39,9 +41,6 @@ export default class Bloom extends Pipeline {
     this.textures = fbo.textures
 
     this.pingpongFbo = new FboPingPong(canvas.width, canvas.height, {hdr: true})
-    
-    gl.enable(gl.BLEND)
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
     
   }
   _setGUI() {

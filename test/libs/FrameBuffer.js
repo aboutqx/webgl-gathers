@@ -106,6 +106,8 @@ class FrameBuffer {
 		//	CLEAR FRAMEBUFFER 
 
 		this.clear(); // can't comment this, or Bloom.js effects can't work in chrome, while works at firefox. May caused by the depth texture.
+		//well, it's a type mistake,in unbind, which set viewport size to gl.width, which is not defined there, and no error or warnning.
+		//so it seems firefox handle it somewhere.
 	}
 
 	_checkMaxNumRenderTarget() {
@@ -158,7 +160,7 @@ class FrameBuffer {
 
 	unbind(mAutoSetViewport=true) {
 		if(mAutoSetViewport) {
-			gl.viewport(0, 0, gl.width, gl.height);	
+			gl.viewport(0, 0, canvas.width, canvas.height);	
 		}
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 

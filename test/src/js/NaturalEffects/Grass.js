@@ -1,15 +1,20 @@
 import Pipeline from '../PipeLine'
-import vs from 'shaders/reflection.vert'
-import fs from 'shaders/reflection.frag'
+import Geom from 'libs/Geom'
+import vs from 'shaders/grass/grass.vert'
+import fs from 'shaders/grass/grass.frag'
+
 import {
-  mat4
-} from 'gl-matrix'
+  mat4,
+}from 'gl-matrix'
 import {
   gl,
   GlTools
-} from 'libs/GlTools'
+}from 'libs/GlTools'
+import GLTexture from '../../../libs/GLTexture'
 
-export default class Reflection extends Pipeline {
+const random = function(min, max) { return min + Math.random() * (max - min);	}
+
+export default class Grass extends Pipeline {
   count = 0
   constructor() {
     super()
@@ -17,52 +22,71 @@ export default class Reflection extends Pipeline {
   }
   init() {
     this.prg = this.compile(vs, fs)
+    GlTools.srcBlend()
   }
   attrib() {
-    this.statue = getAssets.venus
-
+    
+    this.grass = Geom.plane(4, 4, 12)
+    this.ground = Geom.plane(100, 100, 10, 'xz')
+    this.grass.bufferInstance(this._caculateMatrix(), 'instanceMatrix', gl.DYNAMIC_DRAW)
   }
-  prepare(){
-    this.orbital.radius = 15.5
-    this.orbital.target =[0, 5, 0]
-  }
-  _setGUI() {
-    this.addGUIParams({
-      color: [110,122,110],
-      useAo: true
-    })
 
-    this.gui.addColor(this.params, 'color')
-    this.gui.add(this.params, 'useAo')
+  _caculateMatrix() {
+    const num = 10
+    let instanceMatrix = []
+    let x, y, z
+    for(let i = 0; i < num; i++) {
+      const scale = random(.1, 10)
+
+      let mMatrix = mat4.create()
+      let displacement =  (Math.random() * 2 - 1 ) * 50
+      x = displacement
+      displacement =  (Math.random() * 2 - 1 ) * 50
+      y = displacement
+      displacement =  (Math.random() * 2 - 1 ) * 50
+      z = displacement
+      mat4.translate(mMatrix, mMatrix, [x, y, z])
+      mat4.scale(mMatrix, mMatrix, [scale, scale, scale])
+      instanceMatrix.push(mMatrix)
+    }
+    return instanceMatrix
+  }
+
+  prepare() {
+
+    this.orbital.radius = 60
+    //this.orbital.offset = [60, 60, 0]
+    this.curTime = 0 
+    this.lastTime = 0
+    gl.disable(gl.CULL_FACE)
   }
   uniform() {
-
-    let mMatrix = mat4.create()
-
-    let invMatrix = mat4.create()
-    mat4.invert(invMatrix, mMatrix)
+    
 
     this.prg.use()
     this.prg.style({
-      uModelMatrix: mMatrix,
-      invMatrix,
-      diffuseColor: [this.params.color[0] / 255, this.params.color[1] / 255, this.params.color[2] / 255],
-      lightDirection: [-0.5, 0.5, 0.5],
-      eyeDirection: this.camera.position,
-      ambientColor: [0.1, 0.1, 0.1],
-      aoMap: getAssets.venusAo,
-      useAo: this.params.useAo
+      texture0: GLTexture.checkboardTexture()//getAssets.grass
     })
   }
   render() {
-
     GlTools.clear()
 
-    this.prg.use()
-
-    GlTools.draw(this.statue)
+    this.curTime = performance.now()
+    const interval = 100
+    if(this.curTime - this.lastTime > interval) {
+      const matrix = this._caculateMatrix()
+      //this.grass.bufferSubData('instanceMatrix', matrix)
+      this.lastTime = performance.now()
+    }
     
+
+    GlTools.draw(this.grass)
+
+    
+    this.prg.style({
+      texture0: getAssets.ground
+    })
+    GlTools.draw(this.ground)
 
   }
 }
-

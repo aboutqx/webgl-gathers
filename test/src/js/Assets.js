@@ -136,7 +136,10 @@ const Assets = {
   },
   water: {
     terrain: { url:'./assets/water/terrain.jpg' },
-    flower: { url: './assets/flower.png' }
+  },
+  grass: {
+    grass: { url:'./assets/grass.png' },
+    ground: { url:'./assets/ground.jpg' }
   }
 
 }
@@ -156,6 +159,6 @@ const mapAssets = {
   gltf: { ...Assets.skybox, ...Assets.gltf },
   bloom: { ...Assets.statue, ...Assets.venus },
   water: { ...Assets.water, ...Assets.skybox, },
-  grass: { ...Assets.statue, ...Assets.venus }
+  grass: { ...Assets.grass }
 }
 export default mapAssets

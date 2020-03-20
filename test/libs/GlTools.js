@@ -45,6 +45,11 @@ class GlTool{
     gl.getExtension('OES_texture_half_float_linear') 
   }
 
+  srcBlend() {
+    gl.enable(gl.BLEND)
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+  }
+
   setCamera(camera){
     this.camera = camera
   }
