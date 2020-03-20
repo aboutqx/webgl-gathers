@@ -7,11 +7,11 @@ import {
 import Batch from './Batch'
 // batch create skybox
 export default class BatchSkybox extends Batch{
-    
+
     constructor(size, skymap) {
         const shader = new Program(skyboxVert, skyboxFrag)
         const mesh = Geom.skybox(size)
-        
+
         super(mesh, shader)
         this.skyMap = skymap
     }

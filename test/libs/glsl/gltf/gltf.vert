@@ -30,7 +30,7 @@ out vec3 vNormal;
 void main(void) {
 	vec4 tPosition = uModelMatrix * vec4(position, 1.0);
 	vPosition     = tPosition.xyz / tPosition.w;
-	
+
 	#ifdef HAS_UV
 	vTextureCoord = vec2(texCoord.x, texCoord.y);
 	#else
@@ -40,6 +40,6 @@ void main(void) {
 	#ifdef HAS_NORMALS
 	vNormal       = normalize(vec3(uModelMatrix * vec4(normal, 0.0)));
 	#endif
-	
+
 	gl_Position   = uProjectionMatrix * uViewMatrix * tPosition;
 }

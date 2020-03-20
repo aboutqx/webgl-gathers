@@ -333,10 +333,10 @@ export default class IblFinal extends Pipeline {
     let map = this.params.map
     if (map === 'none') return
     this.texture0 = getAssets[map + 'Albedo']
-		this.texture1 = getAssets[map + 'Roughness']
-		this.texture2 = getAssets[map + 'Metallic']
-		this.texture3 = getAssets[map + 'Ao']
-		this.texture4 = getAssets[map + 'Normal']
+    this.texture1 = getAssets[map + 'Roughness']
+    this.texture2 = getAssets[map + 'Metallic']
+    this.texture3 = getAssets[map + 'Ao']
+    this.texture4 = getAssets[map + 'Normal']
   }
 
   render() {
@@ -386,11 +386,11 @@ export default class IblFinal extends Pipeline {
 
       this.mapPrg.style({
         ...baseUniforms,
-				albedoMap: this.texture0,
-				roughnessMap: this.texture1,
-				metallicMap: this.texture2,
-				aoMap: this.texture3,
-				normalMap: this.texture4
+        albedoMap: this.texture0,
+        roughnessMap: this.texture1,
+        metallicMap: this.texture2,
+        aoMap: this.texture3,
+        normalMap: this.texture4
       })
       this.sphere.bind(this.mapPrg)
     }

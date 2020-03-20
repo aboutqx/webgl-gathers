@@ -1,5 +1,5 @@
 
-const assetsToLoad = {{ASSETS}};
+const assetsToLoad = {{ ASSETS }};
 
 
 export default assetsToLoad;

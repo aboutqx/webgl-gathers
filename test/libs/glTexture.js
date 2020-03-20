@@ -25,17 +25,17 @@ class GLTexture {
 		//	setup texture
 		this._texture = gl.createTexture();
 
-		if(this._sourceType === 'video') {
+		if (this._sourceType === 'video') {
 			this._isTextureReady = false;
-			Scheduler.addEF(()=>this._loop());
+			Scheduler.addEF(() => this._loop());
 		} else {
-			this._uploadTexture();	
+			this._uploadTexture();
 		}
-		
+
 	}
 
 	_loop() {
-		if(this._source.readyState == 4) {
+		if (this._source.readyState == 4) {
 			this._isTextureReady = true;
 			this._uploadTexture();
 		}
@@ -46,29 +46,29 @@ class GLTexture {
 		gl.bindTexture(gl.TEXTURE_2D, this._texture);
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
-		if(this._isSourceHtmlElement()) {
+		if (this._isSourceHtmlElement()) {
 			gl.texImage2D(gl.TEXTURE_2D, 0, this._params.internalFormat, this._params.format, this._texelType, this._source);
 		} else {
-			gl.texImage2D(gl.TEXTURE_2D, 0, this._params.internalFormat, this._width, this._height, 0, this._params.format, this._texelType, this._source);	
+			gl.texImage2D(gl.TEXTURE_2D, 0, this._params.internalFormat, this._width, this._height, 0, this._params.format, this._texelType, this._source);
 		}
-		
+
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this._params.magFilter);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._params.minFilter);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this._params.wrapS);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this._params.wrapT);
 		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this._params.premultiplyAlpha);
 
-		if(this._params.anisotropy > 0) {
+		if (this._params.anisotropy > 0) {
 			const ext = gl.getExtension('EXT_texture_filter_anisotropic');
-			if(ext) {
+			if (ext) {
 				const max = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
 				const level = Math.min(max, this._params.anisotropy);
 				gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, level);
-			}	
+			}
 		}
-		
 
-		if(this._generateMipmap) {	gl.generateMipmap(gl.TEXTURE_2D);	}
+
+		if (this._generateMipmap) { gl.generateMipmap(gl.TEXTURE_2D); }
 
 		//	unbind texture
 		gl.bindTexture(gl.TEXTURE_2D, null);
@@ -76,11 +76,11 @@ class GLTexture {
 
 
 	bind(index) {
-		if(index === undefined) { index = 0; }
+		if (index === undefined) { index = 0; }
 
 		gl.activeTexture(gl.TEXTURE0 + index);
-		if(this._isTextureReady) {
-			gl.bindTexture(gl.TEXTURE_2D, this._texture);	
+		if (this._isTextureReady) {
+			gl.bindTexture(gl.TEXTURE_2D, this._texture);
 		} else {
 			gl.bindTexture(gl.TEXTURE_2D, GLTexture.blackTexture().texture);
 		}
@@ -106,7 +106,7 @@ class GLTexture {
 		console.log('Source type : ', WebglNumber[this._sourceType] || this._sourceType);
 		console.log('Texel type:', WebglNumber[this.texelType]);
 		console.log('Dimension :', this._width, this._height);
-		for(const s in this._params) {
+		for (const s in this._params) {
 			console.log(s, WebglNumber[this._params[s]] || this._params[s]);
 		}
 
@@ -114,7 +114,7 @@ class GLTexture {
 	}
 
 	_getDimension(mSource, mWidth, mHeight) {
-		if(mSource) {
+		if (mSource) {
 			//	for html image / video element
 			this._width = mSource.width || mSource.videoWidth;
 			this._height = mSource.height || mSource.videoWidth;
@@ -123,11 +123,11 @@ class GLTexture {
 			this._width = this._width || mWidth;
 			this._height = this._height || mHeight;
 
-			//	auto detect ( data array) ? not sure is good idea ? 
-			//	todo : check HDR 
-			if(!this._width || !this._height) {
+			//	auto detect ( data array) ? not sure is good idea ?
+			//	todo : check HDR
+			if (!this._width || !this._height) {
 				this._width = this._height = Math.sqrt(mSource.length / 4);
-				// console.log('Auto detect, data dimension : ', this._width, this._height);	
+				// console.log('Auto detect, data dimension : ', this._width, this._height);
 			}
 
 		} else {
@@ -137,14 +137,14 @@ class GLTexture {
 	}
 
 	_checkSource() {
-		if(!this._source) {	return; }
+		if (!this._source) { return; }
 
-		if(this._sourceType === gl.UNSIGNED_BYTE) {
+		if (this._sourceType === gl.UNSIGNED_BYTE) {
 			if (!(this._source instanceof Uint8Array)) {
 				// console.log('Converting to Uint8Array');
 				this._source = new Uint8Array(this._source);
 			}
-		} else if(this._sourceType === gl.FLOAT) {
+		} else if (this._sourceType === gl.FLOAT) {
 			if (!(this._source instanceof Float32Array)) {
 				// console.log('Converting to Float32Array');
 				this._source = new Float32Array(this._source);
@@ -154,8 +154,8 @@ class GLTexture {
 	}
 
 	_getTexelType() {
-		if(this._isSourceHtmlElement()) {
-			return gl.UNSIGNED_BYTE;	
+		if (this._isSourceHtmlElement()) {
+			return gl.UNSIGNED_BYTE;
 		}
 
 		//	bad code here, if the type is not on the webglNumber list, it doesn't work
@@ -165,19 +165,19 @@ class GLTexture {
 	_checkMipmap() {
 		this._generateMipmap = this._params.mipmap;
 
-		if(!(isPowerOfTwo(this._width) && isPowerOfTwo(this._height))) {
+		if (!(isPowerOfTwo(this._width) && isPowerOfTwo(this._height))) {
 			this._generateMipmap = false;
 		}
 
 		const minFilter = WebglNumber[this._params.minFilter];
-		if(minFilter.indexOf('MIPMAP') == -1) {
+		if (minFilter.indexOf('MIPMAP') == -1) {
 			this._generateMipmap = false;
 		}
 
 	}
 
 	_checkWrapping() {
-		if(!this._generateMipmap) {
+		if (!this._generateMipmap) {
 			this._params.wrapS = gl.CLAMP_TO_EDGE;
 			this._params.wrapT = gl.CLAMP_TO_EDGE;
 		}
@@ -186,15 +186,15 @@ class GLTexture {
 	_isSourceHtmlElement() {
 		return this._sourceType === 'image' || this._sourceType === 'video' || this._sourceType === 'canvas';
 	}
-	repeat () {
+	repeat() {
 		this.wrapS = gl.REPEAT
 		this.wrapT = gl.REPEAT
 	}
-	clamp () {
+	clamp() {
 		this.wrapS = gl.CLAMP_TO_EDGE
 		this.wrapT = gl.CLAMP_TO_EDGE
 	}
-	get minFilter() {	return this._params.minFilter;	}
+	get minFilter() { return this._params.minFilter; }
 
 	set minFilter(mValue) {
 		this._params.minFilter = mValue;
@@ -207,7 +207,7 @@ class GLTexture {
 		this.generateMipmap();
 	}
 
-	get magFilter() {	return this._params.minFilter;	}
+	get magFilter() { return this._params.minFilter; }
 
 	set magFilter(mValue) {
 		this._params.magFilter = mValue;
@@ -218,7 +218,7 @@ class GLTexture {
 	}
 
 
-	get wrapS() {	return this._params.wrapS;	}
+	get wrapS() { return this._params.wrapS; }
 
 	set wrapS(mValue) {
 		this._params.wrapS = mValue;
@@ -230,7 +230,7 @@ class GLTexture {
 	}
 
 
-	get wrapT() {	return this._params.wrapT;	}
+	get wrapT() { return this._params.wrapT; }
 
 	set wrapT(mValue) {
 		this._params.wrapT = mValue;
@@ -241,20 +241,20 @@ class GLTexture {
 		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
 
-	get texelType() {	return this._texelType;	}
+	get texelType() { return this._texelType; }
 
-	get width() {	return this._width;	}
+	get width() { return this._width; }
 
-	get height() {	return this._height;	}
+	get height() { return this._height; }
 
-	get texture() {	return this._texture;	}
+	get texture() { return this._texture; }
 
-	get isTextureReady() {	return this._isTextureReady;	}
+	get isTextureReady() { return this._isTextureReady; }
 
 }
 
 
-function isPowerOfTwo(x) {	
+function isPowerOfTwo(x) {
 	return (x !== 0) && (!(x & (x - 1)));
 };
 
@@ -264,17 +264,17 @@ function getSourceType(mSource) {
 
 	let type = gl.UNSIGNED_BYTE;
 
-	if(mSource instanceof Array) {
+	if (mSource instanceof Array) {
 		type = gl.UNSIGNED_BYTE;
-	} else if(mSource instanceof Uint8Array) {
+	} else if (mSource instanceof Uint8Array) {
 		type = gl.UNSIGNED_BYTE;
-	} else if(mSource instanceof Float32Array) {
+	} else if (mSource instanceof Float32Array) {
 		type = gl.FLOAT;
-	} else if(mSource instanceof HTMLImageElement) {
+	} else if (mSource instanceof HTMLImageElement) {
 		type = 'image';
-	} else if(mSource instanceof HTMLCanvasElement) {
+	} else if (mSource instanceof HTMLCanvasElement) {
 		type = 'canvas';
-	} else if(mSource instanceof HTMLVideoElement) {
+	} else if (mSource instanceof HTMLVideoElement) {
 		type = 'video';
 	}
 	return type;
@@ -283,7 +283,7 @@ function getSourceType(mSource) {
 let _whiteTexture, _greyTexture, _blackTexture, _checkboardTexture;
 
 GLTexture.whiteTexture = function whiteTexture() {
-	if(_whiteTexture === undefined) {
+	if (_whiteTexture === undefined) {
 		const canvas = document.createElement('canvas');
 		canvas.width = canvas.height = 2;
 		const ctx = canvas.getContext('2d');
@@ -291,12 +291,12 @@ GLTexture.whiteTexture = function whiteTexture() {
 		ctx.fillRect(0, 0, 2, 2);
 		_whiteTexture = new GLTexture(canvas);
 	}
-	
+
 	return _whiteTexture;
 };
 
 GLTexture.greyTexture = function greyTexture() {
-	if(_greyTexture === undefined) {
+	if (_greyTexture === undefined) {
 		const canvas = document.createElement('canvas');
 		canvas.width = canvas.height = 2;
 		const ctx = canvas.getContext('2d');
@@ -308,7 +308,7 @@ GLTexture.greyTexture = function greyTexture() {
 };
 
 GLTexture.blackTexture = function blackTexture() {
-	if(_blackTexture === undefined) {
+	if (_blackTexture === undefined) {
 		const canvas = document.createElement('canvas');
 		canvas.width = canvas.height = 2;
 		const ctx = canvas.getContext('2d');
@@ -320,13 +320,13 @@ GLTexture.blackTexture = function blackTexture() {
 };
 
 GLTexture.checkboardTexture = function checkboardTexture() {
-	if(_checkboardTexture === undefined) {
+	if (_checkboardTexture === undefined) {
 		const data = []
-		data.push([255,255,255,255])
-		data.push([0,0,0,255])
-		data.push([0,0,0,255])
-		data.push([255,255,255,255])
-		
+		data.push([255, 255, 255, 255])
+		data.push([0, 0, 0, 255])
+		data.push([0, 0, 0, 255])
+		data.push([255, 255, 255, 255])
+
 		_checkboardTexture = new GLTexture(new Uint8Array(data.flat()), {
 			magFilter: gl.NEAREST,
 		}, 2, 2);

@@ -4,37 +4,37 @@ import FrameBuffer from './FrameBuffer';
 
 class FboArray {
 
-	constructor(mNum, width, height, params={}, mNumTargets=1) {
-		this._fbos = [];
+    constructor(mNum, width, height, params = {}, mNumTargets = 1) {
+        this._fbos = [];
 
 
-		for(let i=0; i<mNum; i++) {
-			const fbo = new FrameBuffer(width, height, params, mNumTargets);
-			this._fbos.push(fbo);
-		}
+        for (let i = 0; i < mNum; i++) {
+            const fbo = new FrameBuffer(width, height, params, mNumTargets);
+            this._fbos.push(fbo);
+        }
 
-	}
-
-
-	swap() {
-		const a = this._fbos.shift();
-		this._fbos.push(a);
-	}
+    }
 
 
-	get read() {
-		return this._fbos[this._fbos.length - 1];
-	}
+    swap() {
+        const a = this._fbos.shift();
+        this._fbos.push(a);
+    }
 
 
-	get write() {
-		return this._fbos[0];
-	}
+    get read() {
+        return this._fbos[this._fbos.length - 1];
+    }
 
 
-	get all() {
-		return this._fbos;
-	}
+    get write() {
+        return this._fbos[0];
+    }
+
+
+    get all() {
+        return this._fbos;
+    }
 
 }
 

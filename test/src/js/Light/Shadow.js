@@ -33,7 +33,7 @@ export default class Shadow extends Pipeline {
   }
   attrib() {
 
-    this.plane = Geom.plane(30, 30 ,1, 'xz')
+    this.plane = Geom.plane(30, 30, 1, 'xz')
     this.cube = Geom.cube(1)
     this.quad = Geom.bigTriangle()
 
@@ -67,18 +67,18 @@ export default class Shadow extends Pipeline {
 
   render() {
     this._fboDepth.bind()
-      GlTools.clear()
-      this.prg.use()
-      this.prg.style({
-        lightSpaceMatrix: this.tmpMatrix
-      })
-      this._renderScene(this.prg)
-      this._fboDepth.unbind()
+    GlTools.clear()
+    this.prg.use()
+    this.prg.style({
+      lightSpaceMatrix: this.tmpMatrix
+    })
+    this._renderScene(this.prg)
+    this._fboDepth.unbind()
 
     gl.viewport(0, 0, canvas.width, canvas.height)
 
     // for debug
-    this.frameBufferGUI.textureList = [{ texture:  this._fboDepth.depthTexture}]
+    this.frameBufferGUI.textureList = [{ texture: this._fboDepth.depthTexture }]
 
     this.shadowPrg.use()
     this.shadowPrg.style({

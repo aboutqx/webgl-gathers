@@ -72,11 +72,11 @@ vec3 correctGamma(vec3 color, float g) {
 
 vec3 getPbr(vec3 N, vec3 V, vec3 baseColor, float roughness, float metallic, float specular) {
 	vec3 diffuseColor	= baseColor - baseColor * metallic;
-	vec3 specularColor	= mix( vec3( 0.08 * specular ), baseColor, specular );	
+	vec3 specularColor	= mix( vec3( 0.08 * specular ), baseColor, specular );
 
 	vec3 color;
 	float roughness4 = pow(roughness, 4.0);
-	
+
 	// sample the pre-filtered cubemap at the corresponding mipmap level
 	float numMips		= 6.0;
 	float mip			= numMips - 1.0 + log2(roughness);
@@ -84,11 +84,11 @@ vec3 getPbr(vec3 N, vec3 V, vec3 baseColor, float roughness, float metallic, flo
 	lookup				= fix_cube_lookup( lookup, 512.0, mip );
 	vec3 radiance		= pow( textureCubeLodEXT( uRadianceMap, lookup, mip ).rgb, vec3( 2.2 ) );
 	vec3 irradiance		= pow( textureCube( uIrradianceMap, N ).rgb, vec3( 1 ) );
-	
+
 	// get the approximate reflectance
 	float NoV			= saturate( dot( N, V ) );
 	vec3 reflectance	= EnvBRDFApprox( specularColor, roughness4, NoV );
-	
+
 	// combine the specular IBL and the BRDF
     vec3 diffuse  		= diffuseColor * irradiance;
     vec3 _specular 		= radiance * reflectance;
@@ -101,7 +101,7 @@ void main() {
 	vec3 N 				= normalize( vWsNormal );
 	vec3 V 				= normalize( vEyePosition );
 	vec3 baseColor		= texture2D( uColorMap, vTextureCoord).rgb;
-	
+
 	vec3 color 			= getPbr(N, V, baseColor, uRoughness, uMetallic, uSpecular);
 
 	vec3 ao 			= texture2D(uAoMap, vTextureCoord).rgb;
@@ -111,7 +111,7 @@ void main() {
 	color				= Uncharted2Tonemap( color * uExposure );
 	// white balance
 	color				= color * ( 1.0 / Uncharted2Tonemap( vec3( 20.0 ) ) );
-	
+
 	// gamma correction
 	color				= pow( color, vec3( 1.0 / uGamma ) );
 
