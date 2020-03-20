@@ -1,7 +1,8 @@
 // webpack.config.js
 const path = require('path')
 const webpack = require('webpack')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const TerserPlugin = require("terser-webpack-plugin");
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const ip = require('ip');
 const serverIp = ip.address();
@@ -42,17 +43,10 @@ let plugins = [
 
 if (isProd) {
   plugins = plugins.concat([
-    // new webpack.optimize.UglifyJsPlugin({
-    //   sourceMap: false,
-    //   compress: {
-    //     drop_debugger: true,
-    //     drop_console: true,
-    //     screw_ie8: true
-    //   },
-    //   comments: false,
-    //   mangle: false
-    // }),
-    new ExtractTextPlugin('[name].css'),
+    new MiniCssExtractPlugin({
+      filename: "[name].css",
+      chunkFilename: "[id].css"
+    }),
     new CopyWebpackPlugin([{
       from: 'src/assets',
       to: 'assets'
@@ -98,13 +92,16 @@ const config = {
         exclude: pathNodeModules
       },
       {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader"]
+      },
+      {
         test: /\.scss$/,
-        use: isProd ?
-          ExtractTextPlugin.extract({
-            fallback: "style-loader",
-            use: ["css-loader", "sass-loader"]
-          }) : ["style-loader", "css-loader", "sass-loader"],
-        exclude: pathNodeModules
+        use: [
+                "style-loader", // creates style nodes from JS strings
+                "css-loader", // translates CSS into CommonJS
+                "sass-loader" // compiles Sass to CSS, using Node Sass by default
+            ]
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
@@ -130,7 +127,10 @@ const config = {
       'loaders': path.resolve(__dirname, './libs/loaders'),
 
     }
-  }
+  },
+  optimization: {
+    minimizer: [new TerserPlugin({ parallel: true })]
+  },
 }
 
 module.exports = config;
