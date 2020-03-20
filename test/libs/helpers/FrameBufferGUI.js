@@ -5,7 +5,7 @@ import {
     gl,
     GlTools
   } from 'libs/GlTools'
-import basec2dVert from '../glsl/basic2d.vert'
+import basic2dVert from '../glsl/basic2d.vert'
 import GLTexture from 'libs/GLTexture'
 
 export default class FrameBufferGUI {
@@ -15,7 +15,7 @@ export default class FrameBufferGUI {
     _texturelist = []
 
     constructor () {
-        this.texturePrg = new Program(basec2dVert)
+        this.texturePrg = new Program(basic2dVert)
         this.quad = Geom.plane(1, 1, 1) // size(.5, .5)
     }
 

@@ -65,7 +65,7 @@ export default class Grass extends Pipeline {
 
     this.prg.use()
     this.prg.style({
-      texture0: GLTexture.checkboardTexture()//getAssets.grass
+      texture0: getAssets.grass
     })
   }
   render() {
