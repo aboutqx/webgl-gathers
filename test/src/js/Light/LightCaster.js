@@ -117,7 +117,7 @@ export default class LightCaster extends Pipeline {
         })
         GlTools.draw(this.cube)
       })
-    } else if(this.params.pointLight) {
+    } else if (this.params.pointLight) {
       this.pointPrg.use()
 
       this.pointPrg.style({

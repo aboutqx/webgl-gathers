@@ -29,7 +29,7 @@ void main(void){
     color				= Uncharted2Tonemap( color * uExposure );
 	// white balance
 	color				= color * ( 1.0 / Uncharted2Tonemap( vec3( 20.0 ) ) );
-	
+
 	// gamma correction
 	color				= pow( color, vec3( 1.0 / uGamma ) );
 

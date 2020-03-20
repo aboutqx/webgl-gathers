@@ -10,83 +10,83 @@ import rFs from 'shaders/env_map/env_refract.frag'
 import fVs from 'shaders/env_map/fresnell_chromatic.vert'
 import fFs from 'shaders/env_map/fresnell_chromatic.frag'
 import {
-  mat4
+    mat4
 } from 'gl-matrix'
 import {
-  GlTools
+    GlTools
 } from 'libs/GlTools'
 
 export default class EnvMap extends Pipeline {
-  count = 0
-  constructor() {
-    super()
+    count = 0
+    constructor() {
+        super()
 
-  }
-  init() {
+    }
+    init() {
 
-    this.specularPrg = this.compile(sVs, sFs)
-    this.refractPrg = this.compile(rVs, rFs)
-    this.frenellPrg = this.compile(fVs, fFs)
-  }
-  attrib() {
-    this.skybox = new BatchSkyBox(40, getAssets.skyboxlake)
-    this.skyboxMap = getAssets.skyboxlake
+        this.specularPrg = this.compile(sVs, sFs)
+        this.refractPrg = this.compile(rVs, rFs)
+        this.frenellPrg = this.compile(fVs, fFs)
+    }
+    attrib() {
+        this.skybox = new BatchSkyBox(40, getAssets.skyboxlake)
+        this.skyboxMap = getAssets.skyboxlake
 
-  }
-  prepare() {
-
-
-    this.venus = getAssets.venus
-
-    this.orbital.radius = 19
-    this.orbital.target = [0, 5, 0]
-  }
-  uniform() {
+    }
+    prepare() {
 
 
-  }
-  render() {
+        this.venus = getAssets.venus
 
-    GlTools.clear()
-    this.skybox.draw()
+        this.orbital.radius = 19
+        this.orbital.target = [0, 5, 0]
+    }
+    uniform() {
 
-    let mMatrix = mat4.create()
-    mat4.translate(mMatrix, mMatrix, [-6,0, 0])
-    this.specularPrg.use()
-    this.specularPrg.style({
-      mMatrix: mMatrix,
-      skybox: this.skyboxMap,
-      cameraPos: this.camera.position,
-      aoMap: getAssets.venusAo
-    })
-    GlTools.draw(this.venus)
 
-    mMatrix = mat4.create()
-    mat4.translate(mMatrix, mMatrix, [6,0, 0])
-    this.refractPrg.use()
-    this.refractPrg.style({
-      mMatrix: mMatrix,
-      skybox: this.skyboxMap,
-      cameraPos: this.camera.position,
-      aoMap: getAssets.venusAo
-    })
-    GlTools.draw(this.venus)
-    
-    mMatrix = mat4.create()
-    mat4.translate(mMatrix, mMatrix, [0,0, 0])
-    this.refractPrg.use()
-    this.refractPrg.style({
-      mMatrix: mMatrix,
-      skybox: this.skyboxMap,
-      cameraPos: this.camera.position,
-      etaRatio: [.65, .67,.69],
-      fresnelPower: .8,
-      fresnelBias: .1,
-      fresnelScale: .9
-    })
-    GlTools.draw(this.venus)
-    
-    
-  }
+    }
+    render() {
+
+        GlTools.clear()
+        this.skybox.draw()
+
+        let mMatrix = mat4.create()
+        mat4.translate(mMatrix, mMatrix, [-6, 0, 0])
+        this.specularPrg.use()
+        this.specularPrg.style({
+            mMatrix: mMatrix,
+            skybox: this.skyboxMap,
+            cameraPos: this.camera.position,
+            aoMap: getAssets.venusAo
+        })
+        GlTools.draw(this.venus)
+
+        mMatrix = mat4.create()
+        mat4.translate(mMatrix, mMatrix, [6, 0, 0])
+        this.refractPrg.use()
+        this.refractPrg.style({
+            mMatrix: mMatrix,
+            skybox: this.skyboxMap,
+            cameraPos: this.camera.position,
+            aoMap: getAssets.venusAo
+        })
+        GlTools.draw(this.venus)
+
+        mMatrix = mat4.create()
+        mat4.translate(mMatrix, mMatrix, [0, 0, 0])
+        this.refractPrg.use()
+        this.refractPrg.style({
+            mMatrix: mMatrix,
+            skybox: this.skyboxMap,
+            cameraPos: this.camera.position,
+            etaRatio: [.65, .67, .69],
+            fresnelPower: .8,
+            fresnelBias: .1,
+            fresnelScale: .9
+        })
+        GlTools.draw(this.venus)
+
+
+    }
 }
 

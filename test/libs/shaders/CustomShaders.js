@@ -5,9 +5,9 @@ import gltfVert from '../glsl/gltf/gltf.vert';
 import bigTriangleVert from '../glsl/bigTriangle.vert'
 import copyFrag from '../glsl/copy.frag'
 
-export  {
+export {
 
-	skyboxVert,
+    skyboxVert,
     skyboxFrag,
     gltfVert,
     gltfFrag,

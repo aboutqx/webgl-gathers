@@ -7,93 +7,93 @@ import waterFs from 'shaders/water/water.frag'
 import BatchSkyBox from 'libs/helpers/BatchSkyBox'
 import Geom from 'libs/Geom'
 import {
-  mat4,
-  vec3
-}from 'gl-matrix'
+    mat4,
+    vec3
+} from 'gl-matrix'
 import {
-  gl,
-  canvas,
-  GlTools
-}from 'libs/GlTools'
+    gl,
+    canvas,
+    GlTools
+} from 'libs/GlTools'
 
 export default class Color extends Pipeline {
-  count = 0
-  constructor() {
-    super()
-    
-  }
-  init() {
-    GlTools.applyHdrExtension()
-    this.terrainPrg = this.compile(terrainVs, terrainFs)
-    this.waterPrg = this.compile(waterVs, waterFs)
-  }
-  attrib() {
-    this.skybox = new BatchSkyBox(400, getAssets.outputskybox)
+    count = 0
+    constructor() {
+        super()
 
-    const size = 150
-    this.terrainPlane = Geom.plane(size ,size, 100 , 'xz')
-    this.waterPlane = Geom.plane(size - 50 ,size - 50, 100 , 'xz')
-  }
-  prepare() {
-    this.orbital.radius = 100
-    this.orbital.offset = [0, 12, 18]
+    }
+    init() {
+        GlTools.applyHdrExtension()
+        this.terrainPrg = this.compile(terrainVs, terrainFs)
+        this.waterPrg = this.compile(waterVs, waterFs)
+    }
+    attrib() {
+        this.skybox = new BatchSkyBox(400, getAssets.outputskybox)
 
-    this.terrainTexture = getAssets.terrain
-    this.terrainTexture.bind()
-    this.terrainTexture.repeat()
+        const size = 150
+        this.terrainPlane = Geom.plane(size, size, 100, 'xz')
+        this.waterPlane = Geom.plane(size - 50, size - 50, 100, 'xz')
+    }
+    prepare() {
+        this.orbital.radius = 100
+        this.orbital.offset = [0, 12, 18]
 
-
-    let fbo = new FrameBuffer(canvas.width, canvas.height, { hdr: true })
-    this.hdrFb = fbo.frameBuffer
-    this.textures = fbo.textures
-  }
-  uniform() {
-    let mMatrix = mat4.create()
-    
-    this.terrainPrg.use()
-    this.terrainPrg.style({
-      mMatrix,
-      texture0: this.terrainTexture
-    })
-
-    mMatrix = mat4.create()
-    
-    this.waterPrg.use()
-    this.waterPrg.style({
-      mMatrix
-    })
-    
-  }
-
-  _renderScene(){
-    this.skybox.draw()
-
-    this.terrainPrg.use()
-    GlTools.draw(this.terrainPlane)
+        this.terrainTexture = getAssets.terrain
+        this.terrainTexture.bind()
+        this.terrainTexture.repeat()
 
 
-  }
+        let fbo = new FrameBuffer(canvas.width, canvas.height, { hdr: true })
+        this.hdrFb = fbo.frameBuffer
+        this.textures = fbo.textures
+    }
+    uniform() {
+        let mMatrix = mat4.create()
 
-  render() {
-    GlTools.clear()
+        this.terrainPrg.use()
+        this.terrainPrg.style({
+            mMatrix,
+            texture0: this.terrainTexture
+        })
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.hdrFb)
-    GlTools.clear(0,0,0)
+        mMatrix = mat4.create()
 
-    this.orbital.flipY()
-    this._renderScene()
-  
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        this.waterPrg.use()
+        this.waterPrg.style({
+            mMatrix
+        })
+
+    }
+
+    _renderScene() {
+        this.skybox.draw()
+
+        this.terrainPrg.use()
+        GlTools.draw(this.terrainPlane)
 
 
-    this.orbital.flipY()
-    this.frameBufferGUI.textureList = [{ texture: this.textures[0], flipY:true }]
-    this._renderScene()
-    this.waterPrg.use()
-    this.waterPrg.style({
-      reflectionTetxture: this.textures[0]
-    })
-    GlTools.draw(this.waterPlane)
+    }
 
-  }
+    render() {
+        GlTools.clear()
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.hdrFb)
+        GlTools.clear(0, 0, 0)
+
+        this.orbital.flipY()
+        this._renderScene()
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+
+        this.orbital.flipY()
+        this.frameBufferGUI.textureList = [{ texture: this.textures[0], flipY: true }]
+        this._renderScene()
+        this.waterPrg.use()
+        this.waterPrg.style({
+            reflectionTetxture: this.textures[0]
+        })
+        GlTools.draw(this.waterPlane)
+
+    }
 }

@@ -1,21 +1,21 @@
 // material 应该在shader编译前，需要注入define来定义具有相关material map
 //这里我们将shader compile相关任务放在shader.js这里
 import Shader from 'libs/shaders/Shader'
-export default class Material{
+export default class Material {
 
-    constructor(vs, fs, uniforms={}, defines={}, doubleSided = false) {
-		this.doubleSided = doubleSided
-		this._shader= Shader.get(vs, fs, defines);
-		this.uniforms = Object.assign({}, uniforms);
-	}
-
-
-	update() {
-		this._shader.bind();
-		this._shader.uniform(this.uniforms);
+    constructor(vs, fs, uniforms = {}, defines = {}, doubleSided = false) {
+        this.doubleSided = doubleSided
+        this._shader = Shader.get(vs, fs, defines);
+        this.uniforms = Object.assign({}, uniforms);
     }
-    
-	get shader() {
-		return this._shader
-	}
+
+
+    update() {
+        this._shader.bind();
+        this._shader.uniform(this.uniforms);
+    }
+
+    get shader() {
+        return this._shader
+    }
 }

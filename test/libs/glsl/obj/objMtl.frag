@@ -66,6 +66,6 @@ void main() {
         vec3 emissive = texture(uEmissiveMap, vTexCoord).rgb * uEmissiveFactor;
         lighting += emissive;
     #endif
-    
+
     outColor = vec4(lighting,1.0);
 }

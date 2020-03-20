@@ -29,15 +29,15 @@ void main(void) {
 	vec3 position 			= aVertexPosition * uScale + uPosition;
 	vec4 worldSpacePosition	= uModelMatrix * vec4(position, 1.0);
     vec4 viewSpacePosition	= uViewMatrix * worldSpacePosition;
-	
+
     vNormal					= uNormalMatrix * aNormal;
     vPosition				= viewSpacePosition.xyz;
 	vWsPosition				= worldSpacePosition.xyz;
-	
+
 	vec4 eyeDirViewSpace	= viewSpacePosition - vec4( 0, 0, 0, 1 );
 	vEyePosition			= -vec3( uModelViewMatrixInverse * eyeDirViewSpace.xyz );
 	vWsNormal				= normalize( uModelViewMatrixInverse * vNormal );
-	
+
     gl_Position				= uProjectionMatrix * viewSpacePosition;
 
 	vTextureCoord			= aTextureCoord;

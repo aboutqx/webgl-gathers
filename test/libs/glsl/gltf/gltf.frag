@@ -106,7 +106,7 @@ vec3 getNormal() {
 	vec3 tex_dy = dFdy(vec3(vTextureCoord, 0.0));
 	vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
 
-	
+
 #ifdef HAS_NORMALS
 	vec3 ng = normalize(vNormal);
 #else
@@ -190,37 +190,37 @@ void main() {
 	vec4 mrSample = texture(uMetallicRoughnessMap, vTextureCoord);
 	perceptualRoughness = mrSample.g * perceptualRoughness;
 	metallic = mrSample.b * metallic;
-#endif	
+#endif
 	perceptualRoughness         = clamp(perceptualRoughness, c_MinRoughness, 1.0);
 	metallic                    = clamp(metallic, 0.0, 1.0);
 	float alphaRoughness        = perceptualRoughness * perceptualRoughness;
 
-#ifdef HAS_BASECOLORMAP	
+#ifdef HAS_BASECOLORMAP
 	vec4 baseColor = SRGBtoLINEAR(texture(uColorMap, vTextureCoord));
 #else
 	vec4 baseColor              = vec4(uBaseColor, 1.0);
-#endif	
-	
+#endif
+
 	vec3 f0                     = vec3(0.04);
 	vec3 diffuseColor           = baseColor.rgb * (vec3(1.0) - f0);
 	diffuseColor                *= 1.0 - metallic;
 	vec3 specularColor          = mix(f0, baseColor.rgb, metallic);
-	
+
 	// Compute reflectance.
 	float reflectance           = max(max(specularColor.r, specularColor.g), specularColor.b);
-	
+
 	// For typical incident reflectance range (between 4% to 100%) set the grazing reflectance to 100% for typical fresnel effect.
 	// For very low reflectance range on highly diffuse objects (below 4%), incrementally reduce grazing reflecance to 0%.
 	float reflectance90         = clamp(reflectance * 50.0, 0.0, 1.0);
 	vec3 specularEnvironmentR0  = specularColor.rgb;
 	vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
-	
+
 	vec3 n                      = getNormal();                             // normal at surface point
 	vec3 v                      = normalize(uCameraPos - vPosition);        // Vector from surface point to camera
 	vec3 l                      = normalize(uLightDirection);             // Vector from surface point to light
 	vec3 h                      = normalize(l+v);                          // Half vector between both l and v
 	vec3 reflection             = -normalize(reflect(v, n));
-	
+
 	float NdotL                 = clamp(dot(n, l), 0.001, 1.0);
 	float NdotV                 = abs(dot(n, v)) + 0.001;
 	float NdotH                 = clamp(dot(n, h), 0.0, 1.0);
@@ -246,34 +246,34 @@ void main() {
 	vec3 F              = specularReflection(pbrInputs);
 	float G             = geometricOcclusion(pbrInputs);
 	float D             = microfacetDistribution(pbrInputs);
-	
+
 	// Calculation of analytical lighting contribution
 	vec3 diffuseContrib = (1.0 - F) * diffuse(pbrInputs);
 	vec3 specContrib    = F * G * D / (4.0 * NdotL * NdotV);
 	// Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
 	vec3 color          = NdotL * uLightColor * (diffuseContrib + specContrib);
-	
+
 #ifdef USE_IBL
 	color += getIBLContribution(pbrInputs, n, reflection);
 #endif
 
-#ifdef HAS_OCCLUSIONMAP	
+#ifdef HAS_OCCLUSIONMAP
 	float ao            = texture(uAoMap, vTextureCoord).r;
 	color               = mix(color, color * ao, uOcclusionStrength);
-#endif	
+#endif
 
 #ifdef HAS_EMISSIVEMAP
 	vec3 emissive = SRGBtoLINEAR(texture(uEmissiveMap, vTextureCoord)).rgb * uEmissiveFactor;
 	color += emissive;
 #endif
-	
+
 	// This section uses mix to override final color for reference app visualization
 	// of various parameters in the lighting equation.
 	color               = mix(color, F, uScaleFGDSpec.x);
 	color               = mix(color, vec3(G), uScaleFGDSpec.y);
 	color               = mix(color, vec3(D), uScaleFGDSpec.z);
 	color               = mix(color, specContrib, uScaleFGDSpec.w);
-	
+
 	color               = mix(color, diffuseContrib, uScaleDiffBaseMR.x);
 	color               = mix(color, baseColor.rgb, uScaleDiffBaseMR.y);
 	color               = mix(color, vec3(metallic), uScaleDiffBaseMR.z);
