@@ -20,9 +20,10 @@ export default class Color extends Pipeline {
   count = 0
   constructor() {
     super()
-    GlTools.applyHdrExtension()
+    
   }
   init() {
+    GlTools.applyHdrExtension()
     this.terrainPrg = this.compile(terrainVs, terrainFs)
     this.waterPrg = this.compile(waterVs, waterFs)
   }
@@ -42,7 +43,7 @@ export default class Color extends Pipeline {
     this.terrainTexture.repeat()
 
 
-    let fbo = new FrameBuffer(canvas.width, canvas.height, { internalFormat: gl.RGBA16F, type:gl.HALF_FLOAT,minFilter:gl.LINEAR,maxFilter:gl.LINEAR })
+    let fbo = new FrameBuffer(canvas.width, canvas.height, { hdr: true })
     this.hdrFb = fbo.frameBuffer
     this.textures = fbo.textures
   }

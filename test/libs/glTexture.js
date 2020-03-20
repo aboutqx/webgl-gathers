@@ -280,7 +280,7 @@ function getSourceType(mSource) {
 	return type;
 }
 
-let _whiteTexture, _greyTexture, _blackTexture;
+let _whiteTexture, _greyTexture, _blackTexture, _checkboardTexture;
 
 GLTexture.whiteTexture = function whiteTexture() {
 	if(_whiteTexture === undefined) {
@@ -317,6 +317,22 @@ GLTexture.blackTexture = function blackTexture() {
 		_blackTexture = new GLTexture(canvas);
 	}
 	return _blackTexture;
+};
+
+GLTexture.checkboardTexture = function checkboardTexture() {
+	if(_checkboardTexture === undefined) {
+		const data = []
+		data.push([255,255,255,255])
+		data.push([0,0,0,255])
+		data.push([0,0,0,255])
+		data.push([255,255,255,255])
+		
+		_checkboardTexture = new GLTexture(new Uint8Array(data.flat()), {
+			magFilter: gl.NEAREST,
+		}, 2, 2);
+
+	}
+	return _checkboardTexture;
 };
 
 export default GLTexture;
