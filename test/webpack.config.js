@@ -2,6 +2,7 @@
 const path = require('path')
 const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const TerserPlugin = require("terser-webpack-plugin");
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const ip = require('ip');
@@ -25,7 +26,8 @@ function getOutput() {
 }
 
 let plugins = [
-    new webpack.HotModuleReplacementPlugin(), new HtmlWebpackPlugin({
+    new webpack.HotModuleReplacementPlugin(),
+    new HtmlWebpackPlugin({
         cache: true,
         hash: true,
         inject: true,
@@ -38,7 +40,8 @@ let plugins = [
         publicPath: '/', // css js path
         filename: 'index.html',
         template: 'src/index.html'
-    })
+    }),
+    //new BundleAnalyzerPlugin()
 ]
 
 if (isProd) {

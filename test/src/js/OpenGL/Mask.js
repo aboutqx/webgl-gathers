@@ -7,7 +7,7 @@ import vs from 'shaders/mask.vert'
 import fs from 'shaders/mask.frag'
 import outlineFs from 'shaders/maskOutline.frag'
 import { mat4, vec4 } from 'gl-matrix'
-import { Torus } from '../Torus'
+import { Torus } from 'physics/Torus'
 import Intersect from 'physics/Intersect'
 import Geom from 'libs/Geom'
 
