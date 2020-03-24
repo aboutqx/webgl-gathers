@@ -83,6 +83,7 @@ module.exports = {
 	5124: 'INT',
 	5125: 'UNSIGNED_INT',
 	5126: 'FLOAT',
+	5131: 'HALF_FLOAT',
 	5386: 'INVERT',
 	5890: 'TEXTURE',
 	6401: 'STENCIL_INDEX',

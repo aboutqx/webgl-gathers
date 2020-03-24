@@ -9,7 +9,6 @@ class GLTexture {
 
 	constructor(mSource, mParam = {}, mWidth = 0, mHeight = 0) {
 
-
 		this._source = mSource;
 		this._getDimension(mSource, mWidth, mHeight);
 		this._sourceType = mParam.type || getSourceType(mSource);
@@ -17,8 +16,9 @@ class GLTexture {
 		this._texelType = this._getTexelType();
 		this._isTextureReady = true;
 
-		this._params = getTextureParameters(mParam, mSource, this._width, this._height);
-		//this.showParameters()
+		this._params = getTextureParameters(mParam, this._texelType, this._width, this._height);
+
+		// this.showParameters()
 		this._checkMipmap();
 		this._checkWrapping();
 
@@ -40,6 +40,7 @@ class GLTexture {
 			this._uploadTexture();
 		}
 	}
+
 
 
 	_uploadTexture() {
@@ -280,7 +281,7 @@ function getSourceType(mSource) {
 	return type;
 }
 
-let _whiteTexture, _greyTexture, _blackTexture, _checkboardTexture;
+let _whiteTexture, _greyTexture, _blackTexture, _checkboardTexture, _halfFloatTexture;
 
 GLTexture.whiteTexture = function whiteTexture() {
 	if (_whiteTexture === undefined) {
@@ -333,6 +334,20 @@ GLTexture.checkboardTexture = function checkboardTexture() {
 
 	}
 	return _checkboardTexture;
+};
+
+GLTexture.halfFloatTexture = function halfFloatTexture() {
+	if (_halfFloatTexture === undefined) {
+		const data = []
+		data.push([13653, 13653, 13653, 13653])
+
+		_halfFloatTexture = new GLTexture(new Uint16Array(data.flat()), {
+			type: gl.HALF_FLOAT,
+			minFilter: gl.LINEAR
+		}, 1, 1);
+
+	}
+	return _halfFloatTexture;
 };
 
 export default GLTexture;

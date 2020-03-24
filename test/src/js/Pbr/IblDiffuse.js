@@ -29,11 +29,7 @@ export default class IblDiffuse extends Pipeline {
 
     }
     init() {
-        // gl.getExtension('OES_standard_derivatives')
-        // gl.getExtension('OES_texture_float')
-        gl.getExtension('OES_texture_float_linear')
-        // gl.getExtension('OES_texture_half_float')
-        // gl.getExtension('OES_texture_half_float_linear')
+        GlTools.applyHdrExtension()
         this.prg = this.compile(vs, fs)
         this.mapPrg = this.compile(vs, mapFs)
         this.cubePrg = this.compile(cubeVs, cubeFs)
