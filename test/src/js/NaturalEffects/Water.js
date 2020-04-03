@@ -109,4 +109,3 @@ export default class Color extends Pipeline {
 
     }
 }
-

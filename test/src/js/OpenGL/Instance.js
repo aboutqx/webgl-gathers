@@ -54,7 +54,6 @@ export default class Instance extends Pipeline {
 
         this.orbital.radius = 60
         //this.orbital.offset = [60, 60, 0]
-
     }
     uniform() {
 
