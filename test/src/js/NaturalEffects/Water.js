@@ -13,7 +13,8 @@ import {
 import {
     gl,
     canvas,
-    GlTools
+    GlTools,
+    toRadian
 } from 'libs/GlTools'
 
 export default class Color extends Pipeline {
@@ -30,22 +31,20 @@ export default class Color extends Pipeline {
     attrib() {
         this.skybox = new BatchSkyBox(400, getAssets.outputskybox)
 
-        const size = 150
-        this.terrainPlane = Geom.plane(size, size, 100, 'xz')
+        const size = 350
+        this.terrainPlane = Geom.plane(size, size, 20, 'xz')
         this.waterPlane = Geom.plane(size - 50, size - 50, 100, 'xz')
     }
     prepare() {
-        this.orbital.radius = 100
-        this.orbital.offset = [0, 12, 18]
+        this.orbital.radius = 120
+        this.orbital.offset = [0, 22, 18]
 
         this.terrainTexture = getAssets.terrain
-        this.terrainTexture.bind()
         this.terrainTexture.repeat()
 
 
-        let fbo = new FrameBuffer(canvas.width, canvas.height, { hdr: true })
-        this.hdrFb = fbo.frameBuffer
-        this.textures = fbo.textures
+        this._relectionFbo = new FrameBuffer(canvas.width, canvas.height, { hdr: true })
+        this._relectionFbo.getTexture().repeat()
     }
     uniform() {
         let mMatrix = mat4.create()
@@ -69,6 +68,10 @@ export default class Color extends Pipeline {
         this.skybox.draw()
 
         this.terrainPrg.use()
+        this.terrainPrg.style({
+            waterRadius: 90,
+            terrainHeight: 20
+        })
         GlTools.draw(this.terrainPlane)
 
 
@@ -77,23 +80,33 @@ export default class Color extends Pipeline {
     render() {
         GlTools.clear()
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.hdrFb)
+        this._relectionFbo.bind()
         GlTools.clear(0, 0, 0)
 
         this.orbital.flipY()
         this._renderScene()
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        this._relectionFbo.unbind()
 
 
         this.orbital.flipY()
-        this.frameBufferGUI.textureList = [{ texture: this.textures[0], flipY: true }]
+        this.frameBufferGUI.textureList = [{ texture: this._relectionFbo.getTexture(), flipY: true }]
         this._renderScene()
         this.waterPrg.use()
+        
+        const speed = 0.1
+        // console.log(performance.now() / 1000 * speed)
         this.waterPrg.style({
-            reflectionTetxture: this.textures[0]
+            reflectionTetxture: this._relectionFbo.getTexture(),
+            dudvMap: getAssets.dudvMap,
+            count: performance.now() / 1000 * speed,
+            waveStrength: 0.02,
+            normalMap: getAssets.matchingNormalMap,
+            lightColor: [1., 1., 1.],
+            lightPositon: [10., 10., 10.]
         })
         GlTools.draw(this.waterPlane)
 
     }
 }
+

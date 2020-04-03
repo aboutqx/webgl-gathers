@@ -10,7 +10,6 @@ import {
     gl,
     GlTools
 } from 'libs/GlTools'
-import GLTexture from '../../../libs/GLTexture'
 
 const random = function (min, max) { return min + Math.random() * (max - min); }
 
@@ -26,7 +25,7 @@ export default class Grass extends Pipeline {
     }
     attrib() {
 
-        this.grass = Geom.plane(4, 4, 12)
+        this.grass = Geom.plane(4, 4, 12, 'xy')
         this.ground = Geom.plane(100, 100, 10, 'xz')
         this.grass.bufferInstance(this._caculateMatrix(), 'instanceMatrix', gl.DYNAMIC_DRAW)
     }
@@ -65,7 +64,7 @@ export default class Grass extends Pipeline {
 
         this.prg.use()
         this.prg.style({
-            texture0: GLTexture.halfFloatTexture()
+            texture0: getAssets.grass
         })
     }
     render() {

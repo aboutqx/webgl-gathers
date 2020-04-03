@@ -16,5 +16,5 @@ void main()
   vTexCoord = texCoord;
   FragPos = vec3(instanceMatrix * vec4(position, 1.0));
   gl_Position = uProjectionMatrix * uViewMatrix * instanceMatrix * vec4(position, 1.0);
-
+  gl_PointSize = 1.1;
 }

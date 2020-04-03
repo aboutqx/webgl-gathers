@@ -4,6 +4,7 @@ import gltfFrag from '../glsl/gltf/gltf.frag';
 import gltfVert from '../glsl/gltf/gltf.vert';
 import bigTriangleVert from '../glsl/bigTriangle.vert'
 import copyFrag from '../glsl/copy.frag'
+import basicColorFrag from '../glsl/basicColor.frag'
 
 export {
 
@@ -12,6 +13,7 @@ export {
     gltfVert,
     gltfFrag,
     bigTriangleVert,
-    copyFrag
+    copyFrag,
+    basicColorFrag
 
 }

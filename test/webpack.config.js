@@ -128,7 +128,7 @@ const config = {
             'physics': path.resolve(__dirname, './libs/physics'),
             'helpers': path.resolve(__dirname, './libs/helpers'),
             'loaders': path.resolve(__dirname, './libs/loaders'),
-
+            'utils': path.resolve(__dirname, './libs/utils'),
         }
     },
     optimization: {

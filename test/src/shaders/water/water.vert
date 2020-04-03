@@ -11,14 +11,21 @@ in vec3 normal;
 uniform mat4 mMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
+uniform vec3 lightPositon;
+uniform vec3 uCameraPos;
 
-out vec2 vTextureCoord;
+out vec2 vTexCoord;
 out vec3 vNormal;
 out vec4 clipSpace;
+out vec3 vToLightVector;
+out vec3 vToCameraVector;
 
 void main(void) {
-    clipSpace = uProjectionMatrix * uViewMatrix * mMatrix * vec4(position, 1.0);
+    vec4 worldPosition = mMatrix * vec4(position, 1.0);
+    clipSpace = uProjectionMatrix * uViewMatrix * worldPosition;
     gl_Position = clipSpace;
-    vTextureCoord = texCoord;
+    vTexCoord = texCoord;
     vNormal = normal;
+    vToLightVector = lightPositon - worldPosition.xyz/worldPosition.w;
+    vToCameraVector = uCameraPos - worldPosition.xyz/worldPosition.w;
 }

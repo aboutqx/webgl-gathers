@@ -2,7 +2,7 @@ import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
 import vs from 'shaders/instance/instance.vert'
 import fs from 'shaders/instance/instance.frag'
-
+import FrameInterval from 'utils/FrameInterval'
 import {
     mat4,
 } from 'gl-matrix'
@@ -54,8 +54,7 @@ export default class Instance extends Pipeline {
 
         this.orbital.radius = 60
         //this.orbital.offset = [60, 60, 0]
-        this.curTime = 0
-        this.lastTime = 0
+
     }
     uniform() {
 
@@ -68,14 +67,10 @@ export default class Instance extends Pipeline {
     render() {
         GlTools.clear(0, 0, 0)
 
-        this.curTime = performance.now()
-        const interval = 100
-        if (this.curTime - this.lastTime > interval) {
+        FrameInterval(100, () => {
             const matrix = this._caculateMatrix()
             this.mesh.bufferSubData('instanceMatrix', matrix)
-            this.lastTime = performance.now()
-        }
-
+        })
 
         GlTools.draw(this.mesh)
 

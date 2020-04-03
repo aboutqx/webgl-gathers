@@ -19,7 +19,7 @@ export default class Reflection extends Pipeline {
         this.prg = this.compile(vs, fs)
     }
     attrib() {
-        this.statue = getAssets.statue
+        this.plane = Geom.plane(10, 10, 'xz')
 
     }
     prepare() {

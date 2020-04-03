@@ -11,6 +11,8 @@ in vec3 normal;
 uniform mat4 mMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
+uniform float waterRadius;
+uniform float terrainHeight;
 
 out vec2 vTextureCoord;
 out vec3 vNormal;
@@ -26,8 +28,8 @@ float rand (vec2 st) {
 
 void main(void) {
     vec3 Position;
-    if(distance(position, vec3(0,0,0)) > (40. + rand(position.xz) * 10.))
-        Position = vec3(position.x, rand(position.xz) * 8., position.z);
+    if(distance(position, vec3(0,0,0)) > (waterRadius + rand(position.xz) * 10.))
+        Position = vec3(position.x, rand(position.xz) * terrainHeight, position.z);
     else 
         Position = vec3(position.x, -.1, position.z);
     gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(Position, 1.0);

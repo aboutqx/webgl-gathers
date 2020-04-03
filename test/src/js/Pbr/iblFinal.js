@@ -21,7 +21,6 @@ import {
 	mat4,
 	vec3
 } from 'gl-matrix'
-import Texture from 'libs/GLTexture'
 import { GlTools } from '../../../libs/GlTools'
 
 export default class IblFinal extends Pipeline {

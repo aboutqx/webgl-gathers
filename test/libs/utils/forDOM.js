@@ -350,3 +350,11 @@ function Toast(message) {
 export function isMobile() {
     return /iPhone|Andorid|ipad|ipod/i.test(navigator.userAgent)
 }
+
+export function ObjectPropertyMax(objectes, property) {
+    let max = objectes[0][property]
+    objectes.forEach(v =>{
+        if(v[property] > max) max = v[property]
+    })
+    return max
+}

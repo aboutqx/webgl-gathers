@@ -136,6 +136,9 @@ const Assets = {
     },
     water: {
         terrain: { url: './assets/water/terrain.jpg' },
+        dudvMap: { url: './assets/water/dudv.png'},
+        normalMap: { url: './assets/water/normalMap.png' },
+        matchingNormalMap: { url: './assets/water/matchingNormalMap.png' },
     },
     grass: {
         grass: { url: './assets/grass.png' },

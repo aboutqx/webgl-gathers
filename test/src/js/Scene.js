@@ -13,6 +13,7 @@ const importLists = {
     deferredshading: 'OpenGL/DeferredShading',
     mask: 'OpenGL/Mask',
     ssao: 'OpenGL/SSAO',
+    noise: 'OpenGL/Noise',
     normalMapping: 'Texturing/NormalMapping',
     heightMapping: 'Texturing/HeightMapping',
     reliefMapping: 'Texturing/ReliefMapping', // can also provide self-shadowing.

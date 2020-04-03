@@ -545,4 +545,9 @@ Geom.singleLine = function singleLine(positionA, positionB) {
     return mesh;
 }
 
+//选中plane中的一个点为中心点，以此进行triangle_fan
+//Practical Algorithms for 3D Computer Graphics (2nd ed.) [Ferguson 2013-12-19].pdf
+Geom.bezierBorderPlane = function bezierBorderPlane(bezierLines) {
+
+}
 export default Geom;

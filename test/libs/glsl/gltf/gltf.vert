@@ -10,6 +10,7 @@ in vec2 texCoord;
 
 #ifdef HAS_NORMALS
 in vec3 normal;
+in vec3 aTangent;
 #endif
 
 uniform mat4 uModelMatrix;
@@ -24,6 +25,7 @@ out vec2 vTextureCoord;
 
 #ifdef HAS_NORMALS
 out vec3 vNormal;
+out vec3 vTangent;
 #endif
 
 
@@ -39,6 +41,7 @@ void main(void) {
 
 	#ifdef HAS_NORMALS
 	vNormal       = normalize(vec3(uModelMatrix * vec4(normal, 0.0)));
+	vTangent = normalize(vec3(uModelMatrix * vec4(aTangent, 0.0)));
 	#endif
 
 	gl_Position   = uProjectionMatrix * uViewMatrix * tPosition;
