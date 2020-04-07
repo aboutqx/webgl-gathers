@@ -12,6 +12,7 @@ uniform mat4 mMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform float terrainHeight;
+uniform float uTime;
 
 out vec2 vTextureCoord;
 out vec3 vNormal;
@@ -28,7 +29,7 @@ float rand (vec2 st) {
 void main(void) {
     vec3 Position;
 
-    Position = vec3(position.x, rand(position.x) * terrainHeight, position.z);
+    Position = vec3(position.x, rand(position.xz / uTime) * terrainHeight, position.z);
 
     gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(Position, 1.0);
     vTextureCoord = texCoord;

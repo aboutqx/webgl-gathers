@@ -48,16 +48,16 @@ function fixInternalFormat(type, pixelFormat) {
 
     if (type === gl.FLOAT) {
         switch (pixelFormat) {
-            case PixelFormat.RGBA:
+            case gl.RGBA:
                 internalFormat = gl.RGBA32F;
                 break;
-            case PixelFormat.RGB:
+            case gl.RGB:
                 internalFormat = gl.RGB32F;
                 break;
-            case PixelFormat.RG:
+            case gl.RG:
                 internalFormat = gl.RG32F;
                 break;
-            case PixelFormat.R:
+            case gl.R:
                 internalFormat = gl.R32F;
                 break;
         }

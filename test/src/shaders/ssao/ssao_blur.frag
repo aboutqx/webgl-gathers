@@ -1,6 +1,6 @@
 #version 300 es
 precision mediump float;
-in vec2 TexCoords;
+in vec2 vTexCoord;
 out float FragColor;
 uniform sampler2D ssaoInput;
 
@@ -13,7 +13,7 @@ void main() {
     for (int y = -2; y < 2; ++y)
     {
         vec2 offset = vec2(float(x), float(y)) * texelSize;
-        result += texture(ssaoInput, TexCoords + offset).r;
+        result += texture(ssaoInput, vTexCoord + offset).r;
     }
   }
   FragColor = result / (4.0 * 4.0);

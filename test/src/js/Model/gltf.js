@@ -37,7 +37,7 @@ export default class GLTF extends Pipeline {
 		const skySize = 40
 		this.skybox = new BatchSkyBox(skySize, this.textureRad)
 
-		const gltfList = ['hebe', 'great_wall_survey', 'trees_and_foliage', 'chinatown_lion', 'BoomBox', 'FlightHelmet', 'horse_statuette', 'swan_sculpture', 'triton_on_a_frieze']
+		const gltfList = ['hebe', 'trees_and_foliage', 'chinatown_lion', 'BoomBox', 'FlightHelmet', 'horse_statuette', 'swan_sculpture', 'triton_on_a_frieze']
 		const index = 1
 		const url = `assets/gltf/${gltfList[index]}/scene.gltf`
 		GLTFLoader.load(url)

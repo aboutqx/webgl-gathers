@@ -23,15 +23,14 @@ export default class Noise extends Pipeline {
     }
     attrib() {
 
-        this.plane = Geom.plane(8, 8, 12, 'xz', gl.LINES)
+        this.plane = Geom.plane(8, 8, 22, 'xz', gl.LINES)
 
     }
 
     prepare() {
 
-        this.orbital.radius = 10
-
-        gl.disable(gl.CULL_FACE)
+        this.orbital.radius = 5
+        this.orbital.offset = [ 0, 2, 3]
     }
     uniform() {
         
@@ -44,8 +43,10 @@ export default class Noise extends Pipeline {
         this.prg.style({
             mMatrix,
             color: [0. , .5 ,0.6],
-            terrainHeight: 0.3
+            terrainHeight: 0.3,
+            uTime: Math.floor(performance.now() / 100)
         })
+
         GlTools.draw(this.plane)
 
     }

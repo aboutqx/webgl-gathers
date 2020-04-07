@@ -1,7 +1,7 @@
 #version 300 es
 precision mediump float;
 out float FragColor;
-in vec2 TexCoords;
+in vec2 vTexCoord;
 
 uniform sampler2D gPositionDepth;
 uniform sampler2D gNormal;
@@ -17,9 +17,9 @@ float bias = 0.025;
 const vec2 noiseScale = vec2(960.0/4.0, 640.0/4.0);
 
 void main() {
-    vec3 fragPos = texture(gPositionDepth, TexCoords).xyz;
-    vec3 normal = texture(gNormal, TexCoords).rgb;
-    vec3 randomVec = texture(texNoise, TexCoords * noiseScale).xyz;
+    vec3 fragPos = texture(gPositionDepth, vTexCoord).xyz;
+    vec3 normal = texture(gNormal, vTexCoord).rgb;
+    vec3 randomVec = texture(texNoise, vTexCoord * noiseScale).xyz;
 
     // Gramm-Schmidt正交化
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));

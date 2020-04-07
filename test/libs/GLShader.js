@@ -283,8 +283,10 @@ class GLShader {
         } else {
 
             const uniformIndices = gl.getUniformIndices(this.shaderProgram, [mUniformName]);
-            const uniformType = gl.getActiveUniforms(this.shaderProgram, uniformIndices, gl.UNIFORM_TYPE)[0]
-            return mapping[WebglNumbers[uniformType]]
+            const uniformTypes = gl.getActiveUniforms(this.shaderProgram, uniformIndices, gl.UNIFORM_TYPE)
+            if(!uniformTypes) console.error(uniformTypes)
+
+            return mapping[WebglNumbers[uniformTypes[0]]]
         }
     };
 

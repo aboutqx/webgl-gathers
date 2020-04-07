@@ -3,7 +3,7 @@ precision mediump float;
 
 out vec4 outColor;
 
-in vec2 TexCoords;
+in vec2 vTexCoord;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
@@ -18,18 +18,17 @@ struct Light {
     float Quadratic;
 };
 uniform Light lights;
-uniform vec3 viewPos;
 
 void main() {
-    vec3 FragPos = texture(gPosition, TexCoords).rgb;
-    vec3 Normal = texture(gNormal, TexCoords).rgb;
-    vec3 Diffuse = texture(gAlbedoSpec, TexCoords).rgb;
-    float AmbientOcclusion = texture(ssao, TexCoords).r;
+    vec3 FragPos = texture(gPosition, vTexCoord).rgb;
+    vec3 Normal = texture(gNormal, vTexCoord).rgb;
+    vec3 Diffuse = texture(gAlbedoSpec, vTexCoord).rgb;
+    float AmbientOcclusion = texture(ssao, vTexCoord).r;
 
     // then calculate lighting as usual
     vec3 ambient = vec3(0.3 * Diffuse * AmbientOcclusion);
     vec3 lighting  = ambient;
-    vec3 viewDir  = normalize(- FragPos);
+    vec3 viewDir  = normalize(-FragPos);
 
 
     // diffuse
