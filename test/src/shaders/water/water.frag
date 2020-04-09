@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 // basic.frag
 in vec4 clipSpace;
 in vec2 vTexCoord;

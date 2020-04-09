@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 in vec3 WorldPos;
 out vec4 outColor;
 uniform samplerCube environmentMap;

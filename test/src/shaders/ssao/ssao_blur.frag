@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 in vec2 vTexCoord;
 out float FragColor;
 uniform sampler2D ssaoInput;

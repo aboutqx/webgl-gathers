@@ -2,7 +2,7 @@
 #version 300 es
 #define SHADER_NAME COPY_FRAGMENT
 
-precision mediump float;
+precision highp float;
 
 in vec2 vTexCoord;
 uniform sampler2D texture0;

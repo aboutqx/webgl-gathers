@@ -1,5 +1,5 @@
 
-precision mediump float;
+precision highp float;
 
 uniform sampler2D equirectangularMap;
 varying vec3 WorldPos;

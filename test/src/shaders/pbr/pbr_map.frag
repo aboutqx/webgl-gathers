@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 // material map
 uniform sampler2D albedoMap;
 uniform sampler2D normalMap;

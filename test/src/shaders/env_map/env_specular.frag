@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 in vec3 Normal;
 in vec3 Position;
 uniform vec3 cameraPos;

@@ -1,5 +1,5 @@
 
-precision mediump float;
+precision highp float;
 
 uniform samplerCube environmentMap;
 varying vec3 WorldPos;

@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 layout (location = 0) out vec3 gPositionDepth;
 layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gAlbedoSpec;
