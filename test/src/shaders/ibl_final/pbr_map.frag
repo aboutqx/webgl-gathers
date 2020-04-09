@@ -14,7 +14,7 @@ uniform vec3 camPos;
 
 in vec3 vNormal;
 in vec3 WorldPos;
-in vec2 TexCoords;
+in vec2 vTexCoord;
 
 out vec4 outColor;
 
@@ -73,12 +73,12 @@ vec3 getDiffuse( vec3 diffuseColor, float roughness4, float NoV, float NoL, floa
 
 vec3 getNormalFromMap()
 {
-    vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(normalMap, vTexCoord).xyz * 2.0 - 1.0;
 
     vec3 Q1  = dFdx(WorldPos);
     vec3 Q2  = dFdy(WorldPos);
-    vec2 st1 = dFdx(TexCoords);
-    vec2 st2 = dFdy(TexCoords);
+    vec2 st1 = dFdx(vTexCoord);
+    vec2 st2 = dFdy(vTexCoord);
 
     vec3 N   = normalize(vNormal);
     vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
@@ -89,11 +89,11 @@ vec3 getNormalFromMap()
 }
 
 void main(void){
-    vec3 albedo     = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
+    vec3 albedo     = pow(texture(albedoMap, vTexCoord).rgb, vec3(2.2));
     vec3 N     = getNormalFromMap();
-    float metallic  = texture(metallicMap, TexCoords).r;
-    float roughness = texture(roughnessMap, TexCoords).r;
-    float ao        = texture(aoMap, TexCoords).r;
+    float metallic  = texture(metallicMap, vTexCoord).r;
+    float roughness = texture(roughnessMap, vTexCoord).r;
+    float ao        = texture(aoMap, vTexCoord).r;
     vec3 V = normalize(camPos - WorldPos);
 
     vec3 F0 = vec3(0.04);

@@ -21,14 +21,14 @@ void main(void) {
     vec2 reflectionTexCoord = vec2(1.-ndc.x ,ndc.y);
 
     float moveFactor = fract(count) * .3;
-    vec2 distortedTexCoords = texture(dudvMap, vec2(vTexCoord.x + moveFactor, vTexCoord.y)).rg*0.1;
-	distortedTexCoords = vTexCoord + vec2(distortedTexCoords.x, distortedTexCoords.y+moveFactor);
-	vec2 totalDistortion = (texture(dudvMap, distortedTexCoords).rg * 2.0 - 1.0) * waveStrength;
+    vec2 distortedvTexCoord = texture(dudvMap, vec2(vTexCoord.x + moveFactor, vTexCoord.y)).rg*0.1;
+	distortedvTexCoord = vTexCoord + vec2(distortedvTexCoord.x, distortedvTexCoord.y+moveFactor);
+	vec2 totalDistortion = (texture(dudvMap, distortedvTexCoord).rg * 2.0 - 1.0) * waveStrength;
     reflectionTexCoord += totalDistortion;
 
 
     vec3 reflection = texture(reflectionTexture, reflectionTexCoord).rgb;
-    vec4 normalMapColor = texture(normalMap, distortedTexCoords);
+    vec4 normalMapColor = texture(normalMap, distortedvTexCoord);
     vec3 normal = vec3(normalMapColor.r * 2. - 1., normalMapColor.g, normalMapColor.b * 2. - 1.);
     normal = normalize(normal);
 

@@ -3,7 +3,7 @@ precision mediump float;
 out vec4 FragColor;
 
 in vec3 FragPos;
-in vec2 TexCoords;
+in vec2 vTexCoord;
 in vec3 TangentLightPos;
 in vec3 TangentViewPos;
 in vec3 TangentFragPos;
@@ -18,12 +18,12 @@ uniform vec3 viewPos;
 void main()
 {
      // obtain normal from normal map in range [0,1]
-    vec3 normal = texture(normalMap, TexCoords).rgb;
+    vec3 normal = texture(normalMap, vTexCoord).rgb;
     // transform normal vector to range [-1,1]
     normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
 
     // get diffuse color
-    vec3 color = texture(diffuseMap, TexCoords).rgb;
+    vec3 color = texture(diffuseMap, vTexCoord).rgb;
     // ambient
     vec3 ambient = 0.1 * color;
     // diffuse

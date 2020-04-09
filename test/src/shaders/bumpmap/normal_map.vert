@@ -10,7 +10,7 @@ layout (location = 4) in vec3 bitangent;
 
 
 out vec3 FragPos;
-out vec2 TexCoords;
+out vec2 vTexCoord;
 out vec3 TangentLightPos;
 out vec3 TangentViewPos;
 out vec3 TangentFragPos;
@@ -25,7 +25,7 @@ uniform vec3 viewPos;
 
 void main() {
   FragPos = vec3(mMatrix * vec4(position, 1.));
-  TexCoords = texCoord;
+  vTexCoord = texCoord;
 
   mat3 normalMatrix = transpose(inverse(mat3(mMatrix)));
   vec3 T = normalize(normalMatrix * tangent);

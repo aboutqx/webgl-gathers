@@ -118,3 +118,7 @@ export class RayCast {
     }
 
 }
+
+export class Frustum {
+
+}

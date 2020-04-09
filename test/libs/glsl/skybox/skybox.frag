@@ -2,7 +2,7 @@
 #define SHADER_NAME SKYBOX_FRAGMENT
 
 precision highp float;
-in   vec2 TexCoords;
+in   vec2 vTexCoord;
 in vec3 vertex;
 uniform samplerCube tex;
 uniform float uGamma;

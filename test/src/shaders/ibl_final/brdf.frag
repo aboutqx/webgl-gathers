@@ -1,7 +1,7 @@
 #version 300 es
 precision mediump float;
 out vec2 FragColor;
-in vec2 TexCoords;
+in vec2 vTexCoord;
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
@@ -109,7 +109,7 @@ vec2 IntegrateBRDF(float NdotV, float roughness)
 // ----------------------------------------------------------------------------
 void main()
 {
-    vec2 integratedBRDF = IntegrateBRDF(TexCoords.x, TexCoords.y);
+    vec2 integratedBRDF = IntegrateBRDF(vTexCoord.x, vTexCoord.y);
     FragColor = integratedBRDF;
     // FragColor = vec4(integratedBRDF,0. ,1.);
 }

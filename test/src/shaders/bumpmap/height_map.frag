@@ -3,7 +3,7 @@ precision mediump float;
 out vec4 FragColor;
 
 in vec3 FragPos;
-in vec2 TexCoords;
+in vec2 vTexCoord;
 in vec3 TangentLightPos;
 in vec3 TangentViewPos;
 in vec3 TangentFragPos;
@@ -18,11 +18,11 @@ uniform vec3 viewPos;
 
 uniform float heightScale;
 
-vec2 textureOffset(vec2 texCoords, vec3 viewDir)
+vec2 textureOffset(vec2 vTexCoord, vec3 viewDir)
 { 
-    float height =  texture(heightMap, texCoords).r;    
+    float height =  texture(heightMap, vTexCoord).r;    
     vec2 p = viewDir.xy / viewDir.z * (height * heightScale);
-    return texCoords - p;    
+    return vTexCoord - p;    
 } 
 
 void main()
@@ -30,17 +30,17 @@ void main()
     
 
     vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
-    vec2 texCoords = textureOffset(TexCoords,  viewDir);
-    if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
+    vec2 vTexCoord = textureOffset(vTexCoord,  viewDir);
+    if(vTexCoord.x > 1.0 || vTexCoord.y > 1.0 || vTexCoord.x < 0.0 || vTexCoord.y < 0.0)
     discard;
 
      // obtain normal from normal map in range [0,1]
-    vec3 normal = texture(normalMap, texCoords).rgb;
+    vec3 normal = texture(normalMap, vTexCoord).rgb;
     // transform normal vector to range [-1,1]
     normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
 
     // get diffuse color
-    vec3 color = texture(diffuseMap, texCoords).rgb;
+    vec3 color = texture(diffuseMap, vTexCoord).rgb;
     // ambient
     vec3 ambient = 0.1 * color;
     // diffuse

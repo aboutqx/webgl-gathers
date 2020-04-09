@@ -57,8 +57,8 @@ export default class LightCaster extends Pipeline {
 	_setGUI() {
 		this.addGUIParams({
 			directionalLight: false,
-			pointLight: false,
-			spotLight: true
+			pointLight: true,
+			spotLight: false
 		})
 
 		let folder1 = this.gui.addFolder('diffuse model')

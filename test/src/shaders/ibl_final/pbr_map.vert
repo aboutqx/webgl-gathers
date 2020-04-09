@@ -9,7 +9,7 @@ uniform   mat4 vpMatrix;
 
 out vec3 vNormal;
 out vec3 WorldPos;
-out vec2 TexCoords;
+out vec2 vTexCoord;
 
 
 void main(void){
@@ -19,5 +19,5 @@ void main(void){
 
   vNormal = mat3(mMatrix) * normal;
   WorldPos = pos.xyz;
-  TexCoords = texCoord;
+  vTexCoord = texCoord;
 }
