@@ -5,6 +5,7 @@ out vec4 FragColor;
 struct Material {
     sampler2D diffuse;
     sampler2D specular;
+    sampler2D emission;
     float shininess;
 };
 
@@ -27,6 +28,7 @@ in vec2 vTexCoord;
 uniform vec3 camPos;
 uniform Material material;
 uniform Light light;
+uniform float uTime;
 
 void main()
 {
@@ -53,6 +55,8 @@ void main()
     diffuse   *= attenuation;
     specular *= attenuation;
 
-    vec3 result = ambient + diffuse + specular;
+    vec3 emission = texture(material.emission, vTexCoord).rgb * vec3(.3,.3,7.) * .6;
+    emission = emission * (sin(uTime) * 0.5 + 0.5) * 2.0;   
+    vec3 result = ambient + diffuse + specular + emission;
     FragColor = vec4(result, 1.0);
 }

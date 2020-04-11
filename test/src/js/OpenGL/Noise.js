@@ -23,7 +23,7 @@ export default class Noise extends Pipeline {
     }
     attrib() {
 
-        this.plane = Geom.plane(8, 8, 22, 'xz', gl.LINES)
+        this.plane = Geom.plane(8, 8, 30, 'xz', gl.LINES)
 
     }
 
@@ -44,7 +44,7 @@ export default class Noise extends Pipeline {
             mMatrix,
             color: [0. , .5 ,0.6],
             terrainHeight: 0.3,
-            uTime: Math.floor(performance.now() / 100)
+            uTime: performance.now() / 50
         })
 
         GlTools.draw(this.plane)

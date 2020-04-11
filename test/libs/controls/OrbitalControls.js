@@ -86,7 +86,7 @@ export default class OrbitalControls {
 
     flipY() {
 
-        this.position = [this.position[0], -this.position[1], this.position[2]]
+        this.position[1] = -this.position[1]
         this.up[1] = - this.up[1]
 
         this.cameraPers.lookAt(this.position, this.target, this.up)
@@ -115,7 +115,6 @@ export default class OrbitalControls {
         this.position[0] = Math.cos(this._rx + Math.PI * 0.5) * tr
         this.position[2] = Math.sin(this._rx + Math.PI * 0.5) * tr
 
-        this.up[1] = 1
         this.position = [this.position[0] + this.offset[0], this.position[1] + this.offset[1], this.position[2] + this.offset[2]]
 
         this.cameraPers.lookAt(this.position, this.target, this.up)

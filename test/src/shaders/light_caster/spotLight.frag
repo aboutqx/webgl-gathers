@@ -69,7 +69,7 @@ void main()
   diffuse   *= attenuation;
   specular *= attenuation;
 
-  vec3 emission = texture(material.emission, vTexCoord).rgb * .2;
+  vec3 emission = texture(material.emission, vTexCoord).rgb * vec3(.3,.3,7.) * .6;
   result = ambient + diffuse + specular + emission;
 
 
