@@ -43,6 +43,7 @@ class GlTool {
     applyHdrExtension() {
         gl.getExtension("EXT_color_buffer_float")
         gl.getExtension('OES_texture_half_float_linear')
+        gl.getExtension('OES_texture_float_linear')
     }
 
     srcBlend() {
@@ -82,6 +83,7 @@ class GlTool {
             if (!modelMatrix) this.shader.uniform('uModelMatrix', 'mat4', mMesh.matrix);
             this.shader.uniform('uNormalMatrix', 'mat3', this._normalMatrix);
             this.shader.uniform('uModelViewMatrixInverse', 'mat3', this._inverseModelViewMatrix);
+            this.shader.uniform('uTime', 'float', performance.now());
         }
 
         const drawType = mMesh.drawType;

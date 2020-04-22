@@ -1,9 +1,9 @@
-
+#version 300 es
 precision highp float;
 
 uniform sampler2D equirectangularMap;
-varying vec3 WorldPos;
-varying vec2 vUv;
+in vec3 WorldPos;
+out vec4 outColor;
 
 const vec2 invAtan = vec2(0.1591, 0.3183);
 vec2 SampleSphericalMap(vec3 v)
@@ -17,8 +17,8 @@ vec2 SampleSphericalMap(vec3 v)
 void main()
 {
     vec2 uv = SampleSphericalMap(normalize(WorldPos));
-    vec3 color = texture2D(equirectangularMap, uv).rgb;
+    vec3 color = textureLod(equirectangularMap, uv, 0.).rgb;
 
-    gl_FragColor = vec4(color, 1.0);
+    outColor = vec4(color, 1.0);
     // gl_FragColor = vec4(WorldPos,1.);
 }

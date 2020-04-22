@@ -16,7 +16,8 @@ export default class BatchSkybox extends Batch{
         this.skyMap = skymap
     }
 
-    draw() {
+    draw(skyMap) {
+        if(skyMap) this.skyMap = skyMap
         let  mMatrix = mat4.create()
         this.shader.use()
         this.shader.style({

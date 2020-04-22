@@ -9,9 +9,11 @@ uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 out   vec3 vNormal;
 out vec2 vTexCoord;
+out vec3 positionEye;
 
 void main(void){
     vNormal     = normal;
     vTexCoord = texCoord;
     gl_Position = uProjectionMatrix* uViewMatrix * mMatrix * vec4(position, 1.0);
+    positionEye = (uViewMatrix * mMatrix * vec4(position, 1.0)).xyz;
 }

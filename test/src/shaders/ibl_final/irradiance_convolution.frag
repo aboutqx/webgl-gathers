@@ -1,6 +1,6 @@
 #version 300 es
 precision highp float;
-in vec3 WorldPos;
+in vec3 vPosition;
 out vec4 outColor;
 uniform samplerCube environmentMap;
 
@@ -9,11 +9,11 @@ const float PI = 3.14159265359;
 void main()
 {
 	// The world vector acts as the normal of a tangent surface
-    // from the origin, aligned to WorldPos. Given this normal, calculate all
+    // from the origin, aligned to vPosition. Given this normal, calculate all
     // incoming radiance of the environment. The result of this radiance
     // is the radiance of light coming from -Normal direction, which is what
     // we use in the PBR shader to sample irradiance.
-    vec3 N = normalize(WorldPos);
+    vec3 N = normalize(vPosition);
 
     vec3 irradiance = vec3(0.0);
 

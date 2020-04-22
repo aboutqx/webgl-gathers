@@ -105,6 +105,7 @@ export default class Color extends Pipeline {
             lightColor: [1., 1., 1.],
             lightPositon: [10., 10., 10.]
         })
+
         GlTools.draw(this.waterPlane)
 
     }

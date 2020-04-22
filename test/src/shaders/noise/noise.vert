@@ -54,7 +54,7 @@ float noise (in vec2 st) {
 void main(void) {
     vec3 Position;
 
-    Position = vec3(position.x, noise(position.xz - vec2(cos(uTime*0.15),sin(uTime*0.1))) * terrainHeight, position.z);
+    Position = vec3(position.x, noise(position.xz - vec2(cos(uTime*0.15/50.),sin(uTime*0.1/50.))) * terrainHeight, position.z);
 
     gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(Position, 1.0);
     vTextureCoord = texCoord;

@@ -358,3 +358,13 @@ export function ObjectPropertyMax(objectes, property) {
     })
     return max
 }
+
+function clamp(value, min, max) {
+    if (min > max) {
+        return clamp(value, max, min);
+    }
+
+    if (value < min) return min;
+    else if (value > max) return max;
+    else return value;
+}

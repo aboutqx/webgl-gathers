@@ -56,7 +56,7 @@ void main()
     specular *= attenuation;
 
     vec3 emission = texture(material.emission, vTexCoord).rgb * vec3(.3,.3,7.) * .6;
-    emission = emission * (sin(uTime) * 0.5 + 0.5) * 2.0;   
+    emission = emission * (sin(uTime/180.) * 0.5 + 0.5) * 2.0;   
     vec3 result = ambient + diffuse + specular + emission;
     FragColor = vec4(result, 1.0);
 }

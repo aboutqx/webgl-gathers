@@ -12,6 +12,7 @@ uniform vec3 uCameraPos;
 uniform sampler2D aoMap;
 uniform vec3 ambientColor;
 uniform bool useAo;
+in vec3 positionEye;
 
 void main(void){
     vec3  invLight  = normalize(invMatrix * vec4(lightDirection, 0.0)).xyz;
@@ -21,7 +22,8 @@ void main(void){
     float specular  = pow(clamp(dot(vNormal, halfLE), 0.0, 1.0), 8.0);
 
     float ao = texture(aoMap, vTexCoord).r;
-    vec4  destColor = vec4(diffuseColor, 1.) * vec4(vec3(diffuse), 1.0) + .3 * vec4(vec3(specular), 1.0);
-    if(useAo) destColor += ao * vec4(diffuseColor, 1.) * .08 ;
-    FragColor    = destColor;
+    vec3  destColor = diffuseColor * diffuse + .3 * vec3(specular);
+    if(useAo) destColor += ao * diffuseColor * .08 ;
+    FragColor    = vec4(destColor, 1.);
+    // FragColor    = vec4(positionEye, 1.);
 }

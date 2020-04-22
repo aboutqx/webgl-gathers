@@ -2,26 +2,32 @@ import Pipeline from '../PipeLine'
 import {
 	gl,
 	canvas,
-	toRadian
+	toRadian,
+	GlTools
 } from 'libs/GlTools'
 import vs from 'shaders/ibl_final/pbr_ibl.vert'
 import fs from 'shaders/ibl_final/pbr_ibl.frag'
 import mapFs from 'shaders/ibl_final/pbr_map.frag'
-import cubeVs from 'shaders/ibl_final/cubemap.vert'
-import cubeFs from 'shaders/ibl_final/equirectangular_to_cubemap.frag'
-import skyboxVs from 'shaders/ibl_final/skybox.vert'
-import skyboxFs from 'shaders/ibl_final/skybox.frag'
+import cubeFs from 'libs/glsl/equirectangular_to_cubemap.frag'
+import BatchSkyBox from 'libs/helpers/BatchSkyBox'
 import prefilterFs from 'shaders/ibl_final/prefilter.frag'
-import simple2dVs from 'shaders/ibl_final/simple2d.vert'
 import brdfFs from 'shaders/ibl_final/brdf.frag'
 import irradianceFs from 'shaders/ibl_final/irradiance_convolution.frag'
-
+import { bigTriangleVert, basicVert } from 'libs/shaders/CustomShaders'
 import Geom from 'libs/Geom'
 import {
 	mat4,
 	vec3
 } from 'gl-matrix'
-import { GlTools } from '../../../libs/GlTools'
+import GLCubeTexture from 'libs/GLCubeTexture'
+
+const checkFrameBuffer = () => {
+	const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+	if (status != gl.FRAMEBUFFER_COMPLETE) {
+		console.log(`gl.checkFramebufferStatus() returned ${status.toString(16)}`);
+	}
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+}
 
 export default class IblFinal extends Pipeline {
 	count = 0
@@ -30,29 +36,24 @@ export default class IblFinal extends Pipeline {
 
 	}
 	init() {
-		// use webgl2
 		GlTools.applyHdrExtension()
 		this.prg = this.compile(vs, fs)
 		// this.mapPrg = this.compile(vs, mapFs)
-		this.cubePrg = this.compile(cubeVs, cubeFs)
-		this.skyboxPrg = this.compile(skyboxVs, skyboxFs)
-		this.prefilterPrg = this.compile(cubeVs, prefilterFs)
-		this.brdfPrg = this.compile(simple2dVs, brdfFs)
-		this.irradiancePrg = this.compile(cubeVs, irradianceFs)
+		this.cubePrg = this.compile(basicVert, cubeFs)
+		this.prefilterPrg = this.compile(basicVert, prefilterFs)
+		this.brdfPrg = this.compile(bigTriangleVert, brdfFs)
+		this.irradiancePrg = this.compile(basicVert, irradianceFs)
 	}
 	attrib() {
 		this.sphere = Geom.sphere(2, 100)
-
+		this.skybox = new BatchSkyBox(2)
 		this.cube = Geom.cube(2)
-
-		this.plane = Geom.plane(4, 4, 10)
-
-		this.quad = Geom.bigTriangle
+		this.quad = Geom.bigTriangle()
+		
+		this.orbital.radius = 12
 	}
 	prepare() {
 
-		gl.enable(gl.DEPTH_TEST)
-		gl.depthFunc(gl.LEQUAL)
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
 
 		let pMatrix = mat4.create()
@@ -70,25 +71,15 @@ export default class IblFinal extends Pipeline {
 			[vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, -1), vec3.fromValues(0, -1, 0)]
 		]
 
-
 		this.hdrTexture = getAssets.equirectangular
 
 		// cubemap
-		let cubemapTexture = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubemapTexture)
-		for (var i = 0; i < 6; i++) {
-			//r,l,u,d,b,f 为6个面指定空数据
-			gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA32F, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
-		}
-		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		let cubemapTexture = new GLCubeTexture(null, { width: 512, height: 512})
 		this.cubemapTexture = cubemapTexture
 
 
 		this.cubePrg.use()
-		this.hdrTexture.bind(0)
+		this.hdrTexture.bind()
 
 		gl.viewport(0, 0, 512, 512)
 		let captureFrameBuffer = gl.createFramebuffer()
@@ -97,120 +88,94 @@ export default class IblFinal extends Pipeline {
 		for (let i = 0; i < 6; i++) {
 			mat4.lookAt(vMatrix, CAMERA_SETTINGS[i][0], CAMERA_SETTINGS[i][1], CAMERA_SETTINGS[i][2])
 			mat4.multiply(vpMatrix, pMatrix, vMatrix)
+			this.cubePrg.uniform('environmentMap', 'uniform1i', 0)
 			this.cubePrg.style({
-				equirectangularMap: 0,
 				vpMatrix,
-				mMatrix: mMatrix
+				mMatrix
 			})
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, this.cubemapTexture, 0);
+			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, this.cubemapTexture.texture, 0);
 			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 			GlTools.draw(this.cube)
 		}
+		this.cubemapTexture.bind()
 		gl.generateMipmap(gl.TEXTURE_CUBE_MAP) // has to be placed here，to generate each face data
 
-		const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
-		if (status != gl.FRAMEBUFFER_COMPLETE) {
-			console.log(`gl.checkFramebufferStatus() returned ${status.toString(16)}`);
-		}
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+		checkFrameBuffer()
 
 		// irradiance map
-		let irradianceMap = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap)
-		for (var i = 0; i < 6; i++) {
-			//r,l,u,d,b,f 为6个面指定空数据
-			gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA32F, 32, 32, 0, gl.RGBA, gl.FLOAT, null)
-		}
-		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		this.irradianceMap = irradianceMap
+		// let irradianceMap = gl.createTexture();
+		// gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap)
+		// for (var i = 0; i < 6; i++) {
+		// 	gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA32F, 32, 32, 0, gl.RGBA, gl.FLOAT, null)
+		// }
+		// this.irradianceMap = irradianceMap
 
-		gl.bindFramebuffer(gl.FRAMEBUFFER, captureFrameBuffer)
-		gl.viewport(0, 0, 32, 32);
-		this.irradiancePrg.use()
-		gl.activeTexture(gl.TEXTURE0)
-		gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubemapTexture); // 放在这，防止new cubeframebuffer时绑定了tetxure0到null
+		// gl.bindFramebuffer(gl.FRAMEBUFFER, captureFrameBuffer)
+		// gl.viewport(0, 0, 32, 32);
+		// this.irradiancePrg.use()
+		// this.cubemapTexture.bind() // 放在这，防止new cubeframebuffer时绑定了tetxure0到null
 
-		for (let i = 0; i < 6; i++) {
-			mat4.lookAt(vMatrix, CAMERA_SETTINGS[i][0], CAMERA_SETTINGS[i][1], CAMERA_SETTINGS[i][2])
-			mat4.multiply(vpMatrix, pMatrix, vMatrix)
-			this.irradiancePrg.style({
-				environmentMap: 0,
-				vpMatrix,
-				mMatrix: mMatrix
-			})
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, this.irradianceMap, 0);
-			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+		// for (let i = 0; i < 6; i++) {
+		// 	mat4.lookAt(vMatrix, CAMERA_SETTINGS[i][0], CAMERA_SETTINGS[i][1], CAMERA_SETTINGS[i][2])
+		// 	mat4.multiply(vpMatrix, pMatrix, vMatrix)
+		// 	this.irradiancePrg.uniform('environmentMap', 'uniform1i', 0)
+		// 	this.irradiancePrg.style({
+		// 		vpMatrix,
+		// 		mMatrix
+		// 	})
+		// 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, this.irradianceMap, 0);
+		// 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-			GlTools.draw(this.cube)
-		}
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+		// 	GlTools.draw(this.cube)
+		// }
+		// gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-		// prefilter map
-		this.prefilterMap = gl.createTexture();
-		let prefilterSize = 128
-		gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.prefilterMap);
+		// // prefilter map
 
-		for (var i = 0; i < 6; i++) {
-			//r,l,u,d,b,f 为6个面指定空数据
-			gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA32F, prefilterSize, prefilterSize, 0, gl.RGBA, gl.FLOAT, null)
-		}
-		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		gl.generateMipmap(gl.TEXTURE_CUBE_MAP)
+		// this.prefilterMap = new GLCubeTexture(null, { width: 128, height: 128})
+		// this.prefilterPrg.use()
+		// let maxMipLevels = 5
+		// this.cubemapTexture.bind() // 放在这，防止new cubeframebuffer时绑定了tetxure0到null
 
-		this.prefilterPrg.use()
-		let maxMipLevels = 5
-		gl.activeTexture(gl.TEXTURE0)
-		gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubemapTexture); // 放在这，防止new cubeframebuffer时绑定了tetxure0到null
+		// gl.bindFramebuffer(gl.FRAMEBUFFER, captureFrameBuffer)
+		// for (let mip = 0; mip < maxMipLevels; mip++) {
+		// 	let mipWidth = 128 * Math.pow(.5, mip)
+		// 	let mipHeight = mipWidth
+		// 	gl.viewport(0, 0, mipWidth, mipHeight)
+		// 	let roughness = mip / (maxMipLevels - 1)
+		// 	for (let i = 0; i < 6; i++) {
 
-		gl.bindFramebuffer(gl.FRAMEBUFFER, captureFrameBuffer)
-		for (let mip = 0; mip < maxMipLevels; mip++) {
-			let mipWidth = 128 * Math.pow(.5, mip)
-			let mipHeight = mipWidth
-			gl.viewport(0, 0, mipWidth, mipHeight)
-			let roughness = mip / (maxMipLevels - 1)
-			for (let i = 0; i < 6; i++) {
+		// 		mat4.lookAt(vMatrix, CAMERA_SETTINGS[i][0], CAMERA_SETTINGS[i][1], CAMERA_SETTINGS[i][2])
+		// 		mat4.multiply(vpMatrix, pMatrix, vMatrix)
+		// 		this.prefilterPrg.uniform('environmentMap', 'uniform1i', 0)
+		// 		this.prefilterPrg.style({
+		// 			vpMatrix,
+		// 			mMatrix,
+		// 			roughness
+		// 		})
+		// 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+		// 			gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, this.prefilterMap.texture, mip);
+		// 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-				mat4.lookAt(vMatrix, CAMERA_SETTINGS[i][0], CAMERA_SETTINGS[i][1], CAMERA_SETTINGS[i][2])
-				mat4.multiply(vpMatrix, pMatrix, vMatrix)
-				this.prefilterPrg.style({
-					environmentMap: 0,
-					vpMatrix,
-					mMatrix: mMatrix,
-					roughness
-				})
-				gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-					gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, this.prefilterMap, mip);
-				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+		// 		GlTools.draw(this.cube)
+		// 	}
+		// }
+		// gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-				GlTools.draw(this.cube)
-			}
-		}
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+		// //brdf lookup texture
+		// this.brdfLUTTexture = gl.createTexture()
+		// gl.bindTexture(gl.TEXTURE_2D, this.brdfLUTTexture);
+		// gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG32F, 512, 512, 0, gl.RG, gl.FLOAT, null)
 
-		//brdf lookup texture
-		this.brdfLUTTexture = gl.createTexture()
-		gl.bindTexture(gl.TEXTURE_2D, this.brdfLUTTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG32F, 512, 512, 0, gl.RG, gl.FLOAT, null)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		// gl.bindFramebuffer(gl.FRAMEBUFFER, captureFrameBuffer)
+		// gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.brdfLUTTexture, 0);
+		// gl.viewport(0, 0, 512, 512)
+		// this.brdfPrg.use()
+		// gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		// GlTools.draw(this.quad)
 
-		gl.bindFramebuffer(gl.FRAMEBUFFER, captureFrameBuffer)
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.brdfLUTTexture, 0);
-		gl.viewport(0, 0, 512, 512)
-		this.brdfPrg.use()
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		GlTools.draw(this.quad)
-
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+		// gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 	}
 	uniform() {
 
@@ -268,84 +233,62 @@ export default class IblFinal extends Pipeline {
 		GlTools.clear()
 
 		let mMatrix = mat4.create()
-		let baseUniforms = {
-			mMatrix,
-			lightPositions: [ // use flatten array for gl.uniform3fv
-				-10., 10., 10.,
-				10., 10., 10.,
-				-10., -10., 10.,
-				10., -10., 10.,
-			],
-			lightColors: new Array(12).fill(300.),
-			camPos: this.eyeDirection,
-			lambertDiffuse: this.params.lambertDiffuse,
-			irradianceMap: 0
-		}
+		// let baseUniforms = {
+		// 	mMatrix,
+		// 	lightPositions: [ // use flatten array for gl.uniform3fv
+		// 		-10., 10., 10.,
+		// 		10., 10., 10.,
+		// 		-10., -10., 10.,
+		// 		10., -10., 10.,
+		// 	],
+		// 	lightColors: new Array(12).fill(300.),
+		// 	lambertDiffuse: this.params.lambertDiffuse,
+		// }
 
-		if (this.params.map === 'none') {
-			this.prg.use()
-			gl.activeTexture(gl.TEXTURE0)
-			gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.irradianceMap)
-			gl.activeTexture(gl.TEXTURE1)
-			gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.prefilterMap)
-			gl.activeTexture(gl.TEXTURE2)
-			gl.bindTexture(gl.TEXTURE_2D, this.brdfLUTTexture);
-			this.prg.style({
-				...baseUniforms,
-				albedo: [.5, .0, .0],
-				roughness: this.params.roughness,
-				metallic: this.params.metallic,
-				ao: 1.,
-				irradianceMap: 0,
-				prefilterMap: 1,
-				brdfLUT: 2
-			})
-			this.sphere.bind(this.prg, ['position', 'normal'])
-		} else {
-			this.mapPrg.use()
+		// if (this.params.map === 'none') {
+		// 	this.prg.use()
+		// 	gl.activeTexture(gl.TEXTURE0)
+		// 	gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.irradianceMap)
+		// 	gl.activeTexture(gl.TEXTURE1)
+		// 	gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.prefilterMap.texture)
+		// 	gl.activeTexture(gl.TEXTURE2)
+		// 	gl.bindTexture(gl.TEXTURE_2D, this.brdfLUTTexture);
+		// 	this.prg.uniform('irradianceMap', 'uniform1i', 0)
+		// 	this.prg.uniform('prefilterMap', 'uniform1i', 1)
+		// 	this.prg.uniform('brdfLUT', 'uniform1i', 2)
+		// 	this.prg.style({
+		// 		...baseUniforms,
+		// 		albedo: [.5, .0, .0],
+		// 		roughness: this.params.roughness,
+		// 		metallic: this.params.metallic,
+		// 		ao: 1.
+		// 	})
+		// } else {
+		// 	this.mapPrg.use()
+		// 	this.mapPrg.style({
+		// 		...baseUniforms,
+		// 		albedoMap: this.texture0,
+		// 		roughnessMap: this.texture1,
+		// 		metallicMap: this.texture2,
+		// 		aoMap: this.texture3,
+		// 		normalMap: this.texture4
+		// 	})
 
+		// }
+		// GlTools.draw(this.sphere)
 
-			this.mapPrg.style({
-				...baseUniforms,
-				albedoMap: this.texture0,
-				roughnessMap: this.texture1,
-				metallicMap: this.texture2,
-				aoMap: this.texture3,
-				normalMap: this.texture4
-			})
-
-		}
-		GlTools.draw(this.sphere)
-
-		// this.cubePrg.use()
-		// this.hdrTexture.bind(0)
-		// this.cubePrg.style({
-		//   equirectangularMap: 0,
-		//   vpMatrix: this.tmpMatrix,
-		//   mMatrix: mMatrix
-		// })
-		// this.cube.bind(this.cubePrg, ['position', 'texCoord'])
-		// this.cube.draw()
-
-		// this.planeVao.bind()
-		// this.planeBuffer.drawTriangles()
-		// this.planeVao.unbind()
-
-		this.skyboxPrg.use()
-		gl.activeTexture(gl.TEXTURE0)
-		gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.prefilterMap)
-
-		this.skyboxPrg.style({
-			environmentMap: 0,
-			mMatrix,
+		this.cubePrg.use()
+		this.cubePrg.style({
+		  equirectangularMap: this.hdrTexture,
+		  mMatrix
 		})
-		this.cube.bind(this.skyboxPrg, ['position'])
-		this.cube.draw()
+		GlTools.draw(this.cube)
+
+		// this.skybox.draw(this.prefilterMap)
 
 		// brdf out为vec2，设置为vec4时显示正常
+		// GlTools.clear()
 		// this.brdfPrg.use()
-		// gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		// this.quad.bind(this.brdfPrg)
-		// this.quad.draw(gl.TRIANGLE_STRIP)
+		// GlTools.draw(this.quad)
 	}
 }

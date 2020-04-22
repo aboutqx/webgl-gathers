@@ -8,8 +8,18 @@ uniform float roughness;
 uniform float ao;
 
 uniform bool lambertDiffuse;
-uniform vec3 lightPositions[4];
-uniform vec3 lightColors[4];
+struct Light {
+    int Type;
+    vec3 Position;
+    vec3 Direction;
+    vec3 Color;
+
+    float Linear;
+    float Quadratic;
+};
+const int NR_LIGHTS = 4;
+
+uniform Light lights[NR_LIGHTS];
 uniform vec3 uCameraPos;
 
 in vec3 vNormal;
@@ -77,10 +87,16 @@ void main(void){
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < NR_LIGHTS; ++i)
     {
         // calculate per-light radiance
-        vec3 L = normalize(lightPositions[i] - vPosition);
+        vec3 L;
+        if(lights[i].Type == 0) { // point light
+            L = normalize(lights[i].Position - vPosition);
+        } else {
+            L = normalize(-lights[i].Direction);
+        }
+        
         vec3 H = normalize(V + L);
 
         // get all the usefull dot products and clamp them between 0 and 1 just to be safe
@@ -89,9 +105,16 @@ void main(void){
         float VoH				= saturate( dot( V, H ) );
         float NoH				= saturate( dot( N, H ) );
 
-        float distance = length(lightPositions[i] - vPosition);
-        float attenuation = 1.0 / (distance * distance);
-        vec3 radiance = lightColors[i] * attenuation;
+        vec3 radiance;
+        if(lights[i].Type == 0) {
+            float distance = length(lights[i].Position - vPosition);
+            float attenuation = 1.0 / (1.0 + lights[i].Linear * distance + lights[i].Quadratic * distance * distance);
+            radiance = lights[i].Color * attenuation;
+        } else {
+            radiance = lights[i].Color;
+        }
+
+        
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);

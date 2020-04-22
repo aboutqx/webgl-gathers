@@ -43,8 +43,7 @@ export default class Noise extends Pipeline {
         this.prg.style({
             mMatrix,
             color: [0. , .5 ,0.6],
-            terrainHeight: 0.3,
-            uTime: performance.now() / 50
+            terrainHeight: .6
         })
 
         GlTools.draw(this.plane)

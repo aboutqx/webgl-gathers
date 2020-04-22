@@ -3,12 +3,13 @@ precision highp float;
 
 in vec3 position;
 in vec3 normal;
-in vec4 color;
+in vec2 texCoord;
 uniform   mat4 mMatrix;
 uniform   mat4 vpMatrix;
 
 out   vec3 vNormal;
 out vec3 WorldPos;
+out vec2 vTexCoord;
 
 void main(void){
 
@@ -17,5 +18,5 @@ void main(void){
 
   vNormal = mat3(mMatrix) * normal;
   WorldPos = pos.xyz;
-
+  vTexCoord = texCoord;
 }

@@ -2,15 +2,12 @@ import Pipeline from '../PipeLine'
 import {
     gl,
     canvas,
-    toRadian
+    toRadian,
+    GlTools
 } from 'libs/GlTools'
-import vs from 'shaders/ibl_diffuse/pbr_ibl.vert'
 import fs from 'shaders/ibl_diffuse/pbr_ibl.frag'
 import mapFs from 'shaders/pbr/pbr_map.frag'
-import cubeVs from 'shaders/ibl_diffuse/cubemap.vert'
-import cubeFs from 'shaders/ibl_diffuse/equirectangular_to_cubemap.frag'
-import skyboxVs from 'shaders/ibl_diffuse/skybox.vert'
-import skyboxFs from 'shaders/ibl_diffuse/skybox.frag'
+import cubeFs from 'libs/glsl/equirectangular_to_cubemap.frag'
 import irradianceFs from 'shaders/ibl_diffuse/irradiance_convolution.frag'
 import {
     mat4,
@@ -18,8 +15,7 @@ import {
 } from 'gl-matrix'
 import Geom from 'libs/Geom'
 import CubeFrameBuffer from 'libs/CubeFrameBuffer'
-import { GlTools } from '../../../libs/GlTools'
-
+import { basicVert } from 'libs/shaders/CustomShaders'
 
 //ibl diffuse即irradiance，为normal正交的平面上半球内所有方向的平均颜色微分
 export default class IblDiffuse extends Pipeline {
@@ -30,11 +26,10 @@ export default class IblDiffuse extends Pipeline {
     }
     init() {
         GlTools.applyHdrExtension()
-        this.prg = this.compile(vs, fs)
-        this.mapPrg = this.compile(vs, mapFs)
-        this.cubePrg = this.compile(cubeVs, cubeFs)
-        this.skyboxPrg = this.compile(skyboxVs, skyboxFs)
-        this.irradiancePrg = this.compile(cubeVs, irradianceFs)
+        this.prg = this.compile(basicVert, fs)
+        this.mapPrg = this.compile(basicVert, mapFs)
+        this.cubePrg = this.compile(basicVert, cubeFs)
+        this.irradiancePrg = this.compile(basicVert, irradianceFs)
     }
     attrib() {
 
@@ -58,7 +53,7 @@ export default class IblDiffuse extends Pipeline {
 
         for (var i = 0; i < 6; i++) {
             //r,l,u,d,b,f 为6个面指定空数据
-            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA16F, 512, 512, 0, gl.RGBA, gl.FLOAT, null)
         }
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
@@ -192,7 +187,6 @@ export default class IblDiffuse extends Pipeline {
                 10., -10., 10.,
             ],
             lightColors: new Array(12).fill(300.),
-            camPos: this.eyeDirection,
             lambertDiffuse: this.params.lambertDiffuse,
             irradianceMap: 0
         }
@@ -222,17 +216,7 @@ export default class IblDiffuse extends Pipeline {
 
         }
 
-        GlTools.draw(this.sphere)
 
-        // this.cubePrg.use()
-        // this.hdrTexture.bind(0)
-        // this.cubePrg.style({
-        //   equirectangularMap: 0,
-        //   vpMatrix: this.tmpMatrix,
-        //   mMatrix: mMatrix
-        // })
-        // this.cube.bind(this.cubePrg, ['position', 'texCoord'])
-        // this.cube.draw()
 
         // this.planeVao.bind()
         // this.planeBuffer.drawTriangles()

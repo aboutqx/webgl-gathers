@@ -13,7 +13,7 @@ uniform vec3 lightColors[4];
 uniform vec3 uCameraPos;
 
 in vec3 vNormal;
-in vec3 WorldPos;
+in vec3 vPosition;
 in vec2 vTexCoord;
 out vec4 FragColor;
 #define saturate(x) clamp(x, 0.0, 1.0)
@@ -73,8 +73,8 @@ vec3 getNormalFromMap()
 {
     vec3 tangentNormal = texture(normalMap, vTexCoord).xyz * 2.0 - 1.0;
 
-    vec3 Q1  = dFdx(WorldPos);
-    vec3 Q2  = dFdy(WorldPos);
+    vec3 Q1  = dFdx(vPosition);
+    vec3 Q2  = dFdy(vPosition);
     vec2 st1 = dFdx(vTexCoord);
     vec2 st2 = dFdy(vTexCoord);
 
@@ -92,7 +92,7 @@ void main(void){
     float metallic  = texture(metallicMap, vTexCoord).r;
     float roughness = texture(roughnessMap, vTexCoord).r;
     float ao        = texture(aoMap, vTexCoord).r;
-    vec3 V = normalize(uCameraPos - WorldPos);
+    vec3 V = normalize(uCameraPos - vPosition);
 
     vec3 F0 = vec3(0.04);
     F0      = mix(F0, albedo, metallic);
@@ -102,7 +102,7 @@ void main(void){
     for(int i = 0; i < 4; ++i)
     {
         // calculate per-light radiance
-        vec3 L = normalize(lightPositions[i] - WorldPos);
+        vec3 L = normalize(lightPositions[i] - vPosition);
         vec3 H = normalize(V + L);
 
         // get all the usefull dot products and clamp them between 0 and 1 just to be safe
@@ -111,7 +111,7 @@ void main(void){
         float VoH				= saturate( dot( V, H ) );
         float NoH				= saturate( dot( N, H ) );
 
-        float distance = length(lightPositions[i] - WorldPos);
+        float distance = length(lightPositions[i] - vPosition);
         float attenuation = 1.0 / (distance * distance);
         vec3 radiance = lightColors[i] * attenuation;
 

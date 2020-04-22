@@ -13,17 +13,20 @@ const headerLengthInt = 31;
 
 class GLCubeTexture {
     constructor(mSource, mParameters = {}, isCubeTexture = false) {
+        
 
         if (isCubeTexture) {
             this.texture = mSource;
             return;
         }
 
-        let hasMipmaps = mSource.length > 6;
-        if (mSource[0].mipmapCount) {
+        let hasMipmaps = mSource ? mSource.length > 6 : false;
+        if (mSource && mSource[0].mipmapCount) {
             hasMipmaps = mSource[0].mipmapCount > 1;
         }
 
+        // webgl2 rgba16f is filterable, rgba32 not, means filter must set nearest or nearest_mipmap_nearest
+        // while hdr data current is float32
         this.texture = gl.createTexture();
         this.magFilter = mParameters.magFilter || gl.LINEAR;
         this.minFilter = mParameters.minFilter || gl.LINEAR_MIPMAP_LINEAR;
@@ -32,6 +35,11 @@ class GLCubeTexture {
 
         if (!hasMipmaps && this.minFilter == gl.LINEAR_MIPMAP_LINEAR) {
             this.minFilter = gl.LINEAR;
+        }
+
+        if(mSource === null) {
+            this.createTexture(mParameters)
+            return;
         }
 
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.texture);
@@ -107,6 +115,22 @@ class GLCubeTexture {
     }
 
     unbind() {
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+    }
+
+    createTexture(mParameters) {
+
+		gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.texture);
+
+		for (var i = 0; i < 6; i++) {
+			gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA32F, mParameters.width, mParameters.height, 0, gl.RGBA, gl.FLOAT, null)
+		}
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, this.wrapS);
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, this.wrapT);
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, this.magFilter);
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, this.minFilter);
+        gl.generateMipmap(gl.TEXTURE_CUBE_MAP)
+        
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
     }
 }

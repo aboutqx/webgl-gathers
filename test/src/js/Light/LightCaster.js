@@ -121,8 +121,7 @@ export default class LightCaster extends Pipeline {
 			'material.emission': this.emissionTexture,
 			'light.ambient': [.1, .1, .1],
 			'light.diffuse': lightColor,
-			'light.specular': [.3, .3, .3],
-			uTime: performance.now() / 180.
+			'light.specular': [.3, .3, .3]
 		}
 		if (this.params.directionalLight) {
 			this.lightPos = [0, 0, 1].map(v => v * 20)

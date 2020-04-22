@@ -84,9 +84,9 @@ class GLShader {
 
     bind() {
 
-        // if(GL.shader === this) {
-        // 	return;
-        // }
+        if(GlTools.shader === this) {
+        	return;
+        }
         gl.useProgram(this.shaderProgram);
         GlTools.useShader(this)
         // this.uniformTextures = [];
@@ -177,7 +177,7 @@ class GLShader {
 
     uniformObject(mUniformObj) {
         for (const uniformName in mUniformObj) {
-            if (mUniformObj[uniformName] === undefined || typeof mUniformObj[uniformName] === 'function') { console.error('uniform: ', mUniformName, 'undefined or function') }
+            if (mUniformObj[uniformName] === undefined || typeof mUniformObj[uniformName] === 'function') { console.error('uniform: ', uniformName, 'undefined or function') }
             if (mUniformObj[uniformName] instanceof GLTexture || mUniformObj[uniformName] instanceof GLCubeTexture) {
                 const texture = mUniformObj[uniformName];
 
@@ -280,6 +280,8 @@ class GLShader {
             return 'uniformMatrix4fv';
         } else if (mValue.length <= 4) {
             return `vec${mValue.length}`;
+        } else if (mValue.length === 12) {
+            return 'uniform3fv';
         } else {
 
             const uniformIndices = gl.getUniformIndices(this.shaderProgram, [mUniformName]);

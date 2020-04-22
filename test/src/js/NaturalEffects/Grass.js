@@ -85,6 +85,7 @@ export default class Grass extends Pipeline {
         this.prg.style({
             texture0: getAssets.ground
         })
+
         GlTools.draw(this.ground)
 
     }

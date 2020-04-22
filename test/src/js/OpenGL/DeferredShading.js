@@ -85,25 +85,24 @@ export default class DeferredShading extends Pipeline {
     }
 
     render() {
+        this.mrt.bind()
+            GlTools.clear()
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.mrt.frameBuffer)
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+            this.gBufferPrg.use()
 
-        this.gBufferPrg.use()
+            if (this.nanosuit) { // loaded
+                for (let i = 0; i < objectPositions.length; i++) {
+                    let mMatrix = mat4.create()
+                    mat4.translate(mMatrix, mMatrix, objectPositions[i])
+                    this.gBufferPrg.style({
+                        mMatrix
+                    })
 
-        if (this.nanosuit) { // loaded
-            for (let i = 0; i < objectPositions.length; i++) {
-                let mMatrix = mat4.create()
-                mat4.translate(mMatrix, mMatrix, objectPositions[i])
-                this.gBufferPrg.style({
-                    mMatrix
-                })
+                    GlTools.draw(this.nanosuit)
 
-                GlTools.draw(this.nanosuit)
-
+                }
             }
-        }
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        this.mrt.unbind()
 
         GlTools.clear()
 
