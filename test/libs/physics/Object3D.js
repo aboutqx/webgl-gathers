@@ -1,6 +1,8 @@
 // Object3D.js
 
 import { vec3, mat4, quat } from 'gl-matrix';
+import Mesh from 'libs/Mesh'
+import { AABB, OBB } from './Geometry3D'
 
 class Object3D {
     name = ''
@@ -96,6 +98,23 @@ class Object3D {
         this._children.splice(index, 1);
     }
 
+    getAABB() {
+        if(this instanceof Mesh) {
+            return AABB.fromVertices(this.vertices)
+        }
+    }
+
+    getOBB() {
+        const aabb = this.getAABB()
+        if(aabb) {
+            let obb = new OBB()
+            obb.size = aabb.size
+            let t = vec4.create()
+            vec4.transformMat4(t, vec4.fromVec3(obb.position), this.matrix)
+            obb.position = vec3.fromValues(t[0], t[1], t[2])
+            return obb
+        }
+    }
 
     get matrix() {
         this.updateMatrix();
@@ -165,7 +184,6 @@ class Object3D {
 
 
     get children() { return this._children; }
-
 }
 
 

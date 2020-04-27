@@ -41,19 +41,12 @@ export default class Mask extends Pipeline {
 
         this.cube = Geom.cube(1)
         this.torus = Torus(64, 64, .1, .4)
-        /* bounding mesh
-            let torusAABB = this.intersect.boundingVolume(pos)
-            this.torusFrame = new Mesh()
-            this.torusFrame.bufferVertex(torusAABB.position)
-            this.torusFrame.bufferTexCoord(torusAABB.texCoord)
-            this.torusFrame.bufferIndex(torusAABB.index)
 
-            let cubeAABB = this.intersect.boundingVolume(spliceCube(CubeData))
-            this.cubeFrame = new Mesh()
-            this.cubeFrame.bufferVertex(cubeAABB.position)
-            this.cubeFrame.bufferTexCoord(cubeAABB.texCoord)
-            this.cubeFrame.bufferIndex(cubeAABB.index)
-        */
+
+        this.cubeFrame = this.cube.getAABB().getFrame()
+        this.torusFrame = this.torus.getAABB().getFrame()
+
+
         this.texture = getAssets.flower
         this.texture.bind()
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -138,8 +131,7 @@ export default class Mask extends Pipeline {
               texture: 0,
               lod: this.params.lod
             })
-            this.torusFrame.bind(this.prg, ['position', 'texCoord'])
-            this.torusFrame.draw(3)
+            GlTools.draw(this.torusFrame, gl.LINES)
 
             mMatrix = mat4.create()
             mat4.scale(mMatrix, mMatrix, [.6, .6, .6])
@@ -150,8 +142,7 @@ export default class Mask extends Pipeline {
               texture: 0,
               lod: this.params.lod
             })
-            this.cubeFrame.bind(this.prg, ['position', 'texCoord'])
-            this.cubeFrame.draw(3)
+            GlTools.draw(this.cubeFrame, gl.LINES)
         */
     }
     renderDefault(mMatrix, draw) {

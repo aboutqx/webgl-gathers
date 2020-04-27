@@ -42,25 +42,18 @@ export default class Intersect {
 
 
     boundingVolume(vertices, type = 'AABB') {
-        let minX, maxX, minY, maxY, minZ, maxZ
-        let sphereCenter, sphereRadius, boundMin, boundMax
-        for (let i = 0; i < vertices.length; i++) {
-            if (vertices[i][0] > maxX || !maxX) maxX = vertices[i][0]
-            if (vertices[i][0] < minX || !minX) minX = vertices[i][0]
-            if (vertices[i][1] > maxY || !maxY) maxY = vertices[i][1]
-            if (vertices[i][1] < minY || !minY) minY = vertices[i][1]
-            if (vertices[i][2] > maxZ || !maxZ) maxZ = vertices[i][2]
-            if (vertices[i][2] < minZ || !minZ) minZ = vertices[i][2]
-        }
-        sphereCenter = [minX + (maxX - minX) / 2, minY + (maxY - minY) / 2, minZ + (maxZ - minZ) / 2]
-        sphereRadius = Math.max((maxX - minX) / 2, (maxY - minY) / 2, (maxZ - minZ) / 2)
-        boundMin = vec3.fromValues(minX, minY, minZ)
-        boundMax = vec3.fromValues(maxX, maxY, maxZ)
+
+        let box = AABB.fromVertices(vertices)
+        const min = box.getMin()
+        const max = box.getMax()
+        const sphereCenter = [min[0] + (max[0] - min[0]) / 2, min[1] + (max[1] - min[1]) / 2, min[2] + (max[2] - min[2]) / 2]
+        const sphereRadius = Math.max((max[0] - min[0]) / 2, (max[1] - min[1]) / 2, (max[2] - min[2]) / 2)
+
 
         if (type == 'sphere') {
 
         } else if (type == 'AABB') {
-            let box = new AABB().fromMinMax(boundMin, boundMax)
+            
             this.aabb = box
             return {
                 position: box.position,

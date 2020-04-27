@@ -4,51 +4,74 @@ import {
 import MouseMove from './MouseMove'
 
 const importLists = {
-    reflection: 'Light/Reflection',
-    lightcaster: 'Light/LightCaster',
-    instance: 'OpenGL/Instance',
-    gpgpu: 'OpenGL/Gpgpu',
-    material: 'Light/Material',
-    shadow: 'Light/Shadow',
-    deferredshading: 'OpenGL/DeferredShading',
-    mask: 'OpenGL/Mask',
-    ssao: 'OpenGL/SSAO',
-    noise: 'OpenGL/Noise',
-    normalMapping: 'Texturing/NormalMapping',
-    heightMapping: 'Texturing/HeightMapping',
-    reliefMapping: 'Texturing/ReliefMapping', // can also provide self-shadowing.
-    envMapping: 'Texturing/EnvironmentMapping',
-    billboard: 'ImageBasedEffects/Billboard',
-    bloom: 'ImageBasedEffects/Bloom',
-    pbr: 'Pbr/Pbr',
-    ibldiffuse: 'Pbr/IblDiffuse',
-    iblfinal: 'Pbr/iblFinal',
-    gltf: 'Model/Gltf',
-    water: 'NaturalEffects/Water',
-    grass: 'NaturalEffects/Grass'
+    Light: [
+        'Reflection',
+        'LightCaster',
+        'Material',
+        'Shadow',
+    ],
+    Shading:[
+        'Instance',
+        'Gpgpu',
+
+        'DeferredShading',
+        'Mask',
+        'SSAO',
+        'Noise'
+    ],
+    Texturing: [
+        'NormalMapping',
+        'HeightMapping',
+        'ReliefMapping', // can also provide self-shadowing.
+        'EnvironmentMapping',
+    ],
+    ImageBasedEffects: [
+        'Billboard',
+        'Bloom',
+    ],
+    Pbr: [
+        'Pbr',
+        'IblDiffuse',
+        'iblFinal',
+    ],
+    Optimization: [
+        'Gltf',
+        'FrustumCulling',
+        'OcclusionCulling',
+        'LOD'
+    ],
+    NaturalEffects: [
+        'Water',
+        'Grass'
+    ]
 }
 
 function addList() {
     let list = document.querySelector('.list')
-    for (let key in importLists) {
-        let link = document.createElement('a')
-        link.innerHTML = key
-        link.setAttribute('href', '?' + key)
-        list.appendChild(link)
-        let br = document.createElement('br')
-        list.appendChild(br)
+    for (let dir in importLists) {
+        list.innerHTML+= `
+            <div>${dir}</div>
+        `
+        importLists[dir].forEach(name =>
+            list.innerHTML+= `
+                
+                <div><a href="?${dir}/${name}">${name}</a></div>
+
+            `
+        )
     }
 }
 
 let obj
-const dynamicImport = (name) => {
-    import(`./${importLists[name]}`).then((foo) => {
+const dynamicImport = (nameSplit) => {
+    const dir = nameSplit[0]
+    const module = nameSplit[1]
+    import(`./${dir}/${module}`).then((foo) => {
 
         obj = new foo.default()
 
         canvas.addEventListener('mousemove', (e) => {
             let t = MouseMove(e, canvas)
-            obj.rotateQ = t.q
             obj.mousePos = t.mousePos
         })
         obj.play()
@@ -56,7 +79,7 @@ const dynamicImport = (name) => {
 }
 
 let name = location.search.replace('?', '')
-if (name) dynamicImport(name)
+if (name) dynamicImport(name.split('/'))
 else addList()
 
 

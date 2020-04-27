@@ -147,21 +147,22 @@ const Assets = {
 
 }
 const mapAssets = {
-    reflection: { ...Assets.statue, ...Assets.venus },
-    lightcaster: { ...Assets.materialMaps },
-    material: { ...Assets.nanosuit },
-    normalMapping: { ...Assets.brickwall },
-    heightMapping: { ...Assets.bricks2 },
-    reliefMapping: { ...Assets.toyBox },
-    pbr: { ...Assets.ballMaps },
-    ibldiffuse: { ...Assets.hdrSkybox },
+    Reflection: { ...Assets.statue, ...Assets.venus },
+    LightCaster: { ...Assets.materialMaps },
+    Material: { ...Assets.nanosuit },
+    NormalMapping: { ...Assets.brickwall },
+    HeightMapping: { ...Assets.bricks2 },
+    ReliefMapping: { ...Assets.toyBox },
+    Pbr: { ...Assets.ballMaps },
+    Ibldiffuse: { ...Assets.hdrSkybox },
     iblfinal: { ...Assets.hdrSkybox },
-    deferredshading: { ...Assets.nanosuit },
-    ssao: { ...Assets.nanosuit },
-    envMapping: { ...Assets.skyboxLake, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue },
-    gltf: { ...Assets.skybox, ...Assets.gltf },
-    bloom: { ...Assets.statue, ...Assets.venus },
-    water: { ...Assets.water, ...Assets.skybox, },
-    grass: { ...Assets.grass }
+    Deferredshading: { ...Assets.nanosuit },
+    Ssao: { ...Assets.nanosuit },
+    EnvMapping: { ...Assets.skyboxLake, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue },
+    Gltf: { ...Assets.skybox, ...Assets.gltf },
+    Bloom: { ...Assets.statue, ...Assets.venus },
+    Water: { ...Assets.water, ...Assets.skybox, },
+    Grass: { ...Assets.grass },
+    FrustumCulling: { ...Assets.statue }
 }
 export default mapAssets

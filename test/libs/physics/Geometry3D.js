@@ -1,4 +1,7 @@
-import { vec3, vec4, mat4 } from 'gl-matrix'
+import { vec3, vec4, mat4, mat3 } from 'gl-matrix'
+import Mesh from 'libs/Mesh'
+import { gl } from 'libs/GlTools'
+
 export class Ray {
     origin = vec3.create()
     direction = vec3.create()
@@ -10,17 +13,33 @@ export class Ray {
 
 }
 export class AABB {
-    origin = vec3.create()
-    size = vec3.create()//half size
+    origin
+    size //half size
     constructor(origin, size) {
-        this.origin = origin
-        this.size = size
+        this.origin = origin || vec3.create()
+        this.size = size || vec3.create()
     }
-    fromMinMax(min, max) {
+
+    static fromVertices(vertices) {
+        let min = vec3.create()
+        let max = vec3.create()
+        for (let i = 0; i < vertices.length; i++) {
+            if (vertices[i][0] > max[0] || !max[0]) max[0] = vertices[i][0]
+            if (vertices[i][0] < min[0] || !min[0]) min[0] = vertices[i][0]
+            if (vertices[i][1] > max[1] || !max[1]) max[1] = vertices[i][1]
+            if (vertices[i][1] < min[1] || !min[1]) min[1] = vertices[i][1]
+            if (vertices[i][2] > max[2] || !max[2]) max[2] = vertices[i][2]
+            if (vertices[i][2] < min[2] || !min[2]) min[2] = vertices[i][2]
+        }
+        return this.fromMinMax(min, max)
+    }
+
+    static fromMinMax(min, max) {
         return new AABB([(min[0] + max[0]) * .5, (min[1] + max[1]) * .5, (min[2] + max[2]) * .5],
             [(max[0] - min[0]) * .5, (max[1] - min[1]) * .5, (max[2] - min[2]) * .5]
         )
     }
+
     getMin() {
         let p1, p2
         p1 = vec3.create()
@@ -41,6 +60,14 @@ export class AABB {
         let t = vec3.create()
         vec3.max(t, p1, p2)
         return t
+    }
+
+    getFrame() {
+        const wireFrame = new Mesh(gl.LINE_STRIP, 'aabb-wireframe')
+        wireFrame.bufferFlattenData(this.position, 'position', 3)
+        wireFrame.bufferFlattenData(this.texCoord, 'texCoord', 2)
+        wireFrame.bufferIndex(this.index)
+        return wireFrame
     }
 
     get position() {
@@ -78,6 +105,18 @@ export class AABB {
             0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0] // top face
     }
 }
+
+export class OBB{
+    position
+    size //half size
+    orientation
+    constructor(position, size, orientation){
+        this.position = position || vec3.create()
+        this.size = size || vec3.create()
+        this.orientation = orientation || mat3.create()
+    }
+}
+
 export class RayCast {
     rayAABB(aabb, ray) {
         let min = aabb.getMin()
@@ -113,12 +152,36 @@ export class RayCast {
         return true
     }
 
+    rayOBB(obb, ray) {
+
+    }
+
     raySphere() {
 
     }
 
 }
 
-export class Frustum {
+export class Plane {
+    normal
+    distance
 
+    constructor(normal, distance){
+
+        this.normal = normal || vec3.create()
+        this.distance = distance || 0.
+    }
+
+    planeEquation(point) {
+        // ==0 point is on plane
+        return vec3.dot(point, this.normal) - this.distance
+    }
+}
+
+export class Frustum {
+    planes
+
+    constructor(){
+
+    }
 }

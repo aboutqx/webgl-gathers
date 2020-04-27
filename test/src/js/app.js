@@ -9,7 +9,7 @@ let assets = {
 let name = location.search.replace('?', '')
 
 for (let key in mapAssets) {
-  if (name === key) Object.assign(assets, mapAssets[key])
+  if (name.split('/')[1] === key) Object.assign(assets, mapAssets[key])
 }
 async function loadScene() {
   let files = await load.any(assets, ({
