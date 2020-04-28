@@ -1,5 +1,4 @@
 import Pipeline from '../PipeLine'
-import vs from 'shaders/bloom/bloom.vert'
 import fs from 'shaders/bloom/bloom.frag'
 import blurFs from 'shaders/bloom/blur.frag'
 import finalFs from 'shaders/bloom/bloom_final.frag'
@@ -12,7 +11,7 @@ import {
     canvas
 } from 'libs/GlTools'
 import Geom from 'libs/Geom'
-import { bigTriangleVert } from 'libs/shaders/CustomShaders'
+import { bigTriangleVert } from 'CustomShaders'
 import FrameBuffer from 'libs/FrameBuffer'
 import FboPingPong from 'libs/FboPingPong'
 
@@ -23,7 +22,7 @@ export default class Bloom extends Pipeline {
     }
     init() {
         GlTools.applyHdrExtension()
-        this.prg = this.compile(vs, fs)
+        this.prg = this.basicVert(fs)
         this.blurPrg = this.compile(bigTriangleVert, blurFs)
         this.finalPrg = this.compile(bigTriangleVert, finalFs)
     }
@@ -60,10 +59,13 @@ export default class Bloom extends Pipeline {
     }
 
     _renderScene() {
+        let mMatrix = mat4.create()
+        mat4.rotateY(mMatrix, mMatrix, .3)
         let a = [10, 20, 10]
         let b = a.map(x => x * this.params.lightScale)
         this.prg.use()
         this.prg.style({
+            mMatrix,
             'lights[0].Position': [1.5, 0, 0],
             'lights[0].Color': b,
             'lights[1].Position': [-1.5, 0, 0],

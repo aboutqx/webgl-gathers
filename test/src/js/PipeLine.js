@@ -4,7 +4,7 @@ import OrbitalControls from 'libs/controls/OrbitalControls'
 import { gl, GlTools, canvas } from 'libs/GlTools'
 import FrameBufferGUI from 'libs/helpers/FrameBufferGUI'
 import * as dat from 'dat.gui'
-
+import { basicColorFrag } from 'CustomShaders'
 
 export default class Pipeline {
     mousePos = { x: 0, y: 0 }
@@ -33,9 +33,19 @@ export default class Pipeline {
     }
     compile(vs, fs) {
         let prg = new Program(vs, fs)
-
         return prg
     }
+
+    basicVert(fs) {
+        let prg = new Program(null, fs)
+        return prg
+    }
+
+    basicColor() {
+        let prg = new Program(null, basicColorFrag)
+        return prg
+    }
+
     attrib() {
 
     }

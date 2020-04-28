@@ -1,11 +1,9 @@
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
-import { basicVert } from 'CustomShaders'
 import fs from 'shaders/light_caster/directionalLight.frag'
 import pointFs from 'shaders/light_caster/pointLight.frag'
 import spotFs from 'shaders/light_caster/spotLight.frag'
-import lampFs from 'shaders/light_caster/lamp.frag'
-import lampVs from 'shaders/light_caster/lamp.vert'
+
 import {
 	mat4, vec3
 } from 'gl-matrix'
@@ -35,10 +33,10 @@ export default class LightCaster extends Pipeline {
 
 	}
 	init() {
-		this.prg = this.compile(basicVert, fs)
-		this.pointPrg = this.compile(basicVert, pointFs)
-		this.spotPrg = this.compile(basicVert, spotFs)
-		this.lampPrg = this.compile(lampVs, lampFs)
+		this.prg = this.basicVert(fs)
+		this.pointPrg = this.basicVert(pointFs)
+		this.spotPrg = this.basicVert(spotFs)
+		this.lampPrg = this.basicColor()
 	}
 	attrib() {
 
@@ -93,7 +91,7 @@ export default class LightCaster extends Pipeline {
 		this.lampPrg.use()
 		this.lampPrg.style({
 			mMatrix,
-			lightColor
+			color: lightColor
 		})
 		GlTools.draw(this.lamp)
 	}

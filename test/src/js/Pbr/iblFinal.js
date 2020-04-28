@@ -13,7 +13,7 @@ import BatchSkyBox from 'libs/helpers/BatchSkyBox'
 import prefilterFs from 'shaders/ibl_final/prefilter.frag'
 import brdfFs from 'shaders/ibl_final/brdf.frag'
 import irradianceFs from 'shaders/ibl_final/irradiance_convolution.frag'
-import { bigTriangleVert, basicVert } from 'libs/shaders/CustomShaders'
+import { bigTriangleVert, basicVert } from 'CustomShaders'
 import Geom from 'libs/Geom'
 import {
 	mat4,

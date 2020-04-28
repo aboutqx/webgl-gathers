@@ -4,12 +4,10 @@ import {
     canvas,
     GlTools
 } from 'libs/GlTools'
-import { bigTriangleVert } from 'libs/shaders/CustomShaders'
+import { bigTriangleVert } from 'CustomShaders'
 import fs from 'shaders/deferred_shading/finalQuad.frag'
 import gBufferVs from 'shaders/deferred_shading/gBuffer.vert'
 import gBufferFs from 'shaders/deferred_shading/gBuffer.frag'
-import lampVs from 'shaders/light_caster/lamp.vert'
-import lampFs from 'shaders/light_caster/lamp.frag'
 import Geom from 'libs/Geom'
 import {
     mat4
@@ -56,7 +54,7 @@ export default class DeferredShading extends Pipeline {
         GlTools.applyHdrExtension()
         this.prg = this.compile(bigTriangleVert, fs)
         this.gBufferPrg = this.compile(gBufferVs, gBufferFs)
-        this.lampPrg = this.compile(lampVs, lampFs)
+        this.lampPrg = this.basicColor()
 
     }
     async attrib() {

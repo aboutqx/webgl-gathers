@@ -5,7 +5,7 @@ import loadImages from './loadImages';
 import Material from '../Material';
 import Mesh from '../Mesh';
 
-import { gltfVert, gltfFrag } from 'libs/shaders/CustomShaders'
+import { gltfVert, gltfFrag } from 'CustomShaders'
 
 
 import GLTexture from '../GLTexture';

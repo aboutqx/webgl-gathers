@@ -4,7 +4,7 @@ import {
     canvas,
     GlTools
 } from 'libs/GlTools'
-import { bigTriangleVert } from 'libs/shaders/CustomShaders'
+import { bigTriangleVert } from 'CustomShaders'
 import gBufferVs from 'shaders/ssao/ssao_geometry.vert'
 import gBufferFs from 'shaders/ssao/ssao_geometry.frag'
 import ssaoFs from 'shaders/ssao/ssao.frag'

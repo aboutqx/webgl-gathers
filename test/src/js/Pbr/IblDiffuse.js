@@ -15,7 +15,6 @@ import {
 } from 'gl-matrix'
 import Geom from 'libs/Geom'
 import CubeFrameBuffer from 'libs/CubeFrameBuffer'
-import { basicVert } from 'libs/shaders/CustomShaders'
 
 //ibl diffuse即irradiance，为normal正交的平面上半球内所有方向的平均颜色微分
 export default class IblDiffuse extends Pipeline {
@@ -26,10 +25,10 @@ export default class IblDiffuse extends Pipeline {
     }
     init() {
         GlTools.applyHdrExtension()
-        this.prg = this.compile(basicVert, fs)
-        this.mapPrg = this.compile(basicVert, mapFs)
-        this.cubePrg = this.compile(basicVert, cubeFs)
-        this.irradiancePrg = this.compile(basicVert, irradianceFs)
+        this.prg = this.basicVert(fs)
+        this.mapPrg = this.basicVert(mapFs)
+        this.cubePrg = this.basicVert(cubeFs)
+        this.irradiancePrg = this.basicVert(irradianceFs)
     }
     attrib() {
 

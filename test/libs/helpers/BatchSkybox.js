@@ -1,4 +1,4 @@
-import { skyboxVert, skyboxFrag } from 'libs/shaders/CustomShaders'
+import { skyboxVert, skyboxFrag } from 'CustomShaders'
 import Program from 'libs/GLShader'
 import Geom from 'libs/Geom'
 import {

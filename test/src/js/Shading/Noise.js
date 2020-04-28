@@ -1,7 +1,7 @@
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
 import vs from 'shaders/noise/noise.vert'
-import { basicColorFrag } from 'libs/shaders/CustomShaders'
+import { basicColorFrag } from 'CustomShaders'
 import {
     mat4,
 } from 'gl-matrix'

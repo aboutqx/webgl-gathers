@@ -1,4 +1,4 @@
-import { bigTriangleVert, copyFrag } from 'libs/shaders/CustomShaders'
+import { bigTriangleVert, copyFrag } from 'CustomShaders'
 import Program from 'libs/GLShader'
 import Geom from 'libs/Geom'
 import Batch from './Batch'

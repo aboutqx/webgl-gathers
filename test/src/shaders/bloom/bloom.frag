@@ -5,7 +5,7 @@ layout (location = 1) out vec4 BrightColor;
 
 
 in  vec3 vPosition;
-in  vec3 Normal;
+in  vec3 vNormal;
 in  vec2 vTexCoord;
 
 
@@ -21,7 +21,7 @@ uniform float uAlpha;
 
 void main()
 {           
-    vec3 normal = normalize(Normal);
+    vec3 normal = normalize(vNormal);
     // ambient
     vec3 ambient = 0.0 * baseColor;
     // lighting

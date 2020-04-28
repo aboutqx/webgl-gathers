@@ -11,7 +11,7 @@ import {
   mat4
 } from 'gl-matrix'
 import Geom from 'libs/Geom'
-import { bigTriangleVert } from 'libs/shaders/CustomShaders'
+import { bigTriangleVert } from 'CustomShaders'
 import FrameBuffer from 'libs/FrameBuffer'
 
 const shadowWidth = 1024

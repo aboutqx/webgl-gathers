@@ -62,15 +62,15 @@ const mapping = {
 
 class GLShader {
     constructor(strVertexShader = defaultVertexShader, strFragmentShader = defaultFragmentShader, mVaryings) {
-        this._name = strVertexShader.split('//')[1]
-        this._name = !this._name ? '' : this.name.split('\n')[0]
-
         this.parameters = [];
         this._uniformTextures = [];
         this._varyings = mVaryings;
 
         if (!strVertexShader) { strVertexShader = defaultVertexShader; }
         if (!strFragmentShader) { strFragmentShader = defaultVertexShader; }
+
+        this._name = strVertexShader.split('//')[1]
+        this._name = !this._name ? '' : this.name.split('\n')[0]
 
         const vsShader = this._createShaderProgram(strVertexShader, true);
         const fsShader = this._createShaderProgram(strFragmentShader, false);
