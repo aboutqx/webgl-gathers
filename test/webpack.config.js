@@ -129,6 +129,7 @@ const config = {
             'helpers': path.resolve(__dirname, './libs/helpers'),
             'loaders': path.resolve(__dirname, './libs/loaders'),
             'utils': path.resolve(__dirname, './libs/utils'),
+            'CustomShaders': path.resolve(__dirname, './libs/shaders/CustomShaders'),
         }
     },
     optimization: {

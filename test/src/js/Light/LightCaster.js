@@ -1,6 +1,6 @@
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
-import vs from 'shaders/basic.vert'
+import { basicVert } from 'CustomShaders'
 import fs from 'shaders/light_caster/directionalLight.frag'
 import pointFs from 'shaders/light_caster/pointLight.frag'
 import spotFs from 'shaders/light_caster/spotLight.frag'
@@ -35,9 +35,9 @@ export default class LightCaster extends Pipeline {
 
 	}
 	init() {
-		this.prg = this.compile(vs, fs)
-		this.pointPrg = this.compile(vs, pointFs)
-		this.spotPrg = this.compile(vs, spotFs)
+		this.prg = this.compile(basicVert, fs)
+		this.pointPrg = this.compile(basicVert, pointFs)
+		this.spotPrg = this.compile(basicVert, spotFs)
 		this.lampPrg = this.compile(lampVs, lampFs)
 	}
 	attrib() {

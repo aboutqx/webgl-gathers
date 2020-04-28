@@ -4,7 +4,7 @@ layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 
 
-in  vec3 FragPos;
+in  vec3 vPosition;
 in  vec3 Normal;
 in  vec2 vTexCoord;
 
@@ -26,15 +26,15 @@ void main()
     vec3 ambient = 0.0 * baseColor;
     // lighting
     vec3 lighting = vec3(0.0);
-    vec3 viewDir = normalize(uCameraPos - FragPos);
+    vec3 viewDir = normalize(uCameraPos - vPosition);
     for(int i = 0; i < 5; i++)
     {
         // diffuse
-        vec3 lightDir = normalize(lights[i].Position - FragPos);
+        vec3 lightDir = normalize(lights[i].Position - vPosition);
         float diff = max(dot(lightDir, normal), 0.0);
         vec3 result = lights[i].Color * diff * baseColor;      
         // attenuation (use quadratic as we have gamma correction)
-        float distance = length(FragPos - lights[i].Position);
+        float distance = length(vPosition - lights[i].Position);
         result *= 1.0 / (distance * distance);
         lighting += result;
                 

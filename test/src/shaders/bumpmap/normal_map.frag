@@ -2,7 +2,7 @@
 precision highp float;
 out vec4 FragColor;
 
-in vec3 FragPos;
+in vec3 vPosition;
 in vec2 vTexCoord;
 in vec3 TangentLightPos;
 in vec3 TangentViewPos;

@@ -3,7 +3,7 @@ precision highp float;
 out vec4 FragColor;
 in vec3 Normal;
 
-in vec3 FragPos;
+in vec3 vPosition;
 
 uniform vec3 objectColor;
 
@@ -18,5 +18,5 @@ void main()
     //     FragColor = vec4(0., 0., 0., 1.0);
     // }
     FragColor = vec4( unsigedNormal, 1.);
-    FragColor = vec4( unsigedNormal, 1.);
+    FragColor = vec4( objectColor, 1.);
 }

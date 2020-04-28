@@ -2,7 +2,7 @@
 precision highp float;
 out vec4 FragColor;
 in vec3 Normal;
-in vec3 FragPos;
+in vec3 vPosition;
 in vec2 vTexCoord;
 
 uniform sampler2D texture0;

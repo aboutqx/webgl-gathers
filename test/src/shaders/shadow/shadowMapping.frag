@@ -2,7 +2,7 @@
 precision highp float;
 out vec4 FragColor;
 
-in vec3 FragPos;
+in vec3 vPosition;
 in vec3 Normal;
 in vec2 vTexCoord;
 in vec4 FragPosLightSpace;
@@ -48,11 +48,11 @@ void main(){
     // Ambient
     vec3 ambient = 0.15 * color;
     // Diffuse
-    vec3 lightDir = normalize(lightPos - FragPos);
+    vec3 lightDir = normalize(lightPos - vPosition);
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * lightColor;
     // Specular
-    vec3 viewDir = normalize(uCameraPos - FragPos);
+    vec3 viewDir = normalize(uCameraPos - vPosition);
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = 0.0;
     vec3 halfwayDir = normalize(lightDir + viewDir);

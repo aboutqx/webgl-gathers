@@ -9,12 +9,12 @@ uniform mat4 uProjectionMatrix;
 
 out vec3 Normal;
 out vec2 TexCoord;
-out vec3 FragPos;
+out vec3 vPosition;
 void main()
 {
   Normal = mat3(transpose(inverse(instanceMatrix))) * normal; // 法线矩阵 修复不等比缩放
   TexCoord = texCoord;
-  FragPos = vec3(instanceMatrix * vec4(position, 1.0));
+  vPosition = vec3(instanceMatrix * vec4(position, 1.0));
   gl_Position = uProjectionMatrix * uViewMatrix * instanceMatrix * vec4(position, 1.0);
 
 }

@@ -9,7 +9,7 @@ layout (location = 3) in vec3 tangent;
 layout (location = 4) in vec3 bitangent;
 
 
-out vec3 FragPos;
+out vec3 vPosition;
 out vec2 vTexCoord;
 out vec3 TangentLightPos;
 out vec3 TangentViewPos;
@@ -24,7 +24,7 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 
 void main() {
-  FragPos = vec3(mMatrix * vec4(position, 1.));
+  vPosition = vec3(mMatrix * vec4(position, 1.));
   vTexCoord = texCoord;
 
   mat3 normalMatrix = transpose(inverse(mat3(mMatrix)));
@@ -36,7 +36,7 @@ void main() {
   mat3 TBN = transpose(mat3(T, B, N));
   TangentLightPos = TBN * lightPos;
   TangentViewPos  = TBN * viewPos;
-  TangentFragPos  = TBN * FragPos;
+  TangentFragPos  = TBN * vPosition;
 
   gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(position, 1.0);
 }
