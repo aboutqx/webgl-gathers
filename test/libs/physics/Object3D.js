@@ -1,6 +1,6 @@
 // Object3D.js
 
-import { vec3, mat4, quat } from 'gl-matrix';
+import { vec3, mat4, quat, mat3 } from 'gl-matrix';
 import Mesh from 'libs/Mesh'
 import { AABB, OBB } from './Geometry3D'
 
@@ -112,6 +112,9 @@ class Object3D {
             let t = vec4.create()
             vec4.transformMat4(t, vec4.fromVec3(obb.position), this.matrix)
             obb.position = vec3.fromValues(t[0], t[1], t[2])
+            obb.orientation = mat3.create()
+            obb.orientation = mat4.cut(obb.orientation, this.matrix, 3, 3)
+            
             return obb
         }
     }

@@ -2,6 +2,12 @@ import { vec3, vec4, mat4, mat3 } from 'gl-matrix'
 import Mesh from 'libs/Mesh'
 import { gl } from 'libs/GlTools'
 
+export class Point {
+    constructor(x, y ,z) {
+        return new vec3(x, y, z)
+    }
+}
+
 export class Ray {
     origin = vec3.create()
     direction = vec3.create()
@@ -117,56 +123,12 @@ export class OBB{
     }
 }
 
-export class RayCast {
-    rayAABB(aabb, ray) {
-        let min = aabb.getMin()
-        let max = aabb.getMax()
-
-        let t1 = (min[0] - ray.origin[0]) / (ray.direction[0] == 0 ? 0.00001 : ray.direction[0])
-        let t2 = (max[0] - ray.origin[0]) / (ray.direction[0] == 0 ? 0.00001 : ray.direction[0])
-        let t3 = (min[1] - ray.origin[1]) / (ray.direction[1] == 0 ? 0.00001 : ray.direction[1])
-        let t4 = (max[1] - ray.origin[1]) / (ray.direction[1] == 0 ? 0.00001 : ray.direction[1])
-        let t5 = (min[2] - ray.origin[2]) / (ray.direction[2] == 0 ? 0.00001 : ray.direction[2])
-        let t6 = (max[2] - ray.origin[2]) / (ray.direction[2] == 0 ? 0.00001 : ray.direction[2])
-
-        let tmin = Math.max(Math.max(Math.min(t1, t2), Math.min(t3, t4)), Math.min(t5, t6))
-        let tmax = Math.min(Math.min(Math.max(t1, t2), Math.max(t3, t4)), Math.max(t5, t6))
-
-        // if tmax < 0, ray is intersecting AABB
-        // but entire AABB is behing it's origin
-        if (tmax < 0) {
-            return false
-        }
-
-        // if tmin > tmax, ray doesn't intersect AABB
-        if (tmin > tmax) {
-            return false
-        }
-
-        let rayT = tmin
-
-        // If tmin is < 0, tmax is closer
-        if (tmin < 0.0) {
-            rayT = tmax
-        }
-        return true
-    }
-
-    rayOBB(obb, ray) {
-
-    }
-
-    raySphere() {
-
-    }
-
-}
 
 export class Plane {
     normal
     distance
 
-    constructor(normal, distance){
+    constructor(normal, distance) {
 
         this.normal = normal || vec3.create()
         this.distance = distance || 0.
@@ -179,9 +141,56 @@ export class Plane {
 }
 
 export class Frustum {
-    planes
+    
+    left= new Plane()
+    right= new Plane()
+    top= new Plane()
+    bottom= new Plane()
+    near= new Plane()
+    far= new Plane()
+    planes = [this.left, this.right, this.top, this.bottom, this.near, this.far]
 
-    constructor(){
+    constructor() {
+
+    }
+
+    // the Hartmann/Gribbs method of extracting the Frustum planes
+    fromMatrix(vMatrix, pMatrix) {
+        const vpMatrix = mat4.create()
+        mat4.multiply(vpMatrix, pMatrix, vMatrix)
+        const col1 = vec3.fromValues(vpMatrix[0], vpMatrix[1], vpMatrix[2])
+        const col2 = vec3.fromValues(vpMatrix[4], vpMatrix[5], vpMatrix[6])
+        const col3 = vec3.fromValues(vpMatrix[8], vpMatrix[9], vpMatrix[10])
+        const col4 = vec3.fromValues(vpMatrix[12], vpMatrix[13], vpMatrix[14])
+        vec3.add(this.left.normal, col4, col1)
+        vec3.subtract(this.right.normal, col4, col1)
+        vec3.add(this.bottom.normal, col4, col12)
+        vec3.subtract(this.top.normal, col4, col2)
+        vec3.add(this.near.normal, col4, col3)
+        vec3.subtract(this.far.normal, col4, col3)
+
+        this.left.distance = vpMatrix[15] + vpMatrix[3]
+        this.right.distance = vpMatrix[15] - vpMatrix[3]
+        this.bottom.distance = vpMatrix[15] + vpMatrix[7]
+        this.top.distance = vpMatrix[15] + vpMatrix[7]
+        this.near.distance = vpMatrix[15] + vpMatrix[11]
+        this.far.distance = vpMatrix[15] + vpMatrix[11]
+
+        for(let i = 0; i < 6; ++i) {
+            let magnitude = 1 / vec3.length(this.planes[i].normal)
+            vec3.mul(this.planes[i].normal, magnitude)
+            this.planes[i].distance *= magnitude
+        }
+        
+    }
+
+    //use Cramer's Rule get planeEquation answer
+    intersectPlanes() {
+
+    }
+
+    getCorners() {
+        let corners = []
 
     }
 }

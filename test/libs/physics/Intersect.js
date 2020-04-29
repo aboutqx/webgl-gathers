@@ -1,4 +1,4 @@
-import { Ray, AABB, RayCast } from './Geometry3D'
+import { Ray, AABB, Point, Frustum } from './Geometry3D'
 import {
     canvas
 } from 'libs/GlTools'
@@ -8,7 +8,7 @@ export default class Intersect {
     ray
     aabb
     constructor() {
-        this.rayCast = new RayCast()
+
     }
     setRay(mouseX, mouseY, pMatrix, vMatrix, cameraPos) {
         mouseX = mouseX - canvas.getBoundingClientRect().left
@@ -35,7 +35,7 @@ export default class Intersect {
         let result = false
         if (type == 'AABB') {
             this.boundingVolume(vertices)
-            result = this.rayCast.rayAABB(this.aabb, this.ray)
+            result = this.rayAABB(this.aabb, this.ray)
         }
         return result
     }
@@ -63,5 +63,62 @@ export default class Intersect {
         }
     }
 
+    rayAABB(aabb, ray) {
+        let min = aabb.getMin()
+        let max = aabb.getMax()
+
+        let t1 = (min[0] - ray.origin[0]) / (ray.direction[0] == 0 ? 0.00001 : ray.direction[0])
+        let t2 = (max[0] - ray.origin[0]) / (ray.direction[0] == 0 ? 0.00001 : ray.direction[0])
+        let t3 = (min[1] - ray.origin[1]) / (ray.direction[1] == 0 ? 0.00001 : ray.direction[1])
+        let t4 = (max[1] - ray.origin[1]) / (ray.direction[1] == 0 ? 0.00001 : ray.direction[1])
+        let t5 = (min[2] - ray.origin[2]) / (ray.direction[2] == 0 ? 0.00001 : ray.direction[2])
+        let t6 = (max[2] - ray.origin[2]) / (ray.direction[2] == 0 ? 0.00001 : ray.direction[2])
+
+        let tmin = Math.max(Math.max(Math.min(t1, t2), Math.min(t3, t4)), Math.min(t5, t6))
+        let tmax = Math.min(Math.min(Math.max(t1, t2), Math.max(t3, t4)), Math.max(t5, t6))
+
+        // if tmax < 0, ray is intersecting AABB
+        // but entire AABB is behing it's origin
+        if (tmax < 0) {
+            return false
+        }
+
+        // if tmin > tmax, ray doesn't intersect AABB
+        if (tmin > tmax) {
+            return false
+        }
+
+        let rayT = tmin
+
+        // If tmin is < 0, tmax is closer
+        if (tmin < 0.0) {
+            rayT = tmax
+        }
+        return true
+    }
+
+    rayOBB(obb, ray) {
+
+    }
+
+    raySphere() {
+
+    }
+
+    frustumPoint() {
+
+    }
+
+    frustumSphere() {
+
+    }
+
+    frustumAABB() {
+
+    }
+
+    frustumOBB() {
+
+    }
 
 }

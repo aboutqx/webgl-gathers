@@ -62,26 +62,22 @@ function addList() {
     }
 }
 
-let obj
-const dynamicImport = (nameSplit) => {
+
+async function dynamicImport(nameSplit) {
     const dir = nameSplit[0]
     const module = nameSplit[1]
-    import(`./${dir}/${module}`).then((foo) => {
+    let scene = await import(`./${dir}/${module}`) 
 
-        obj = new foo.default()
+    let obj = new scene.default()
 
-        canvas.addEventListener('mousemove', (e) => {
-            let t = MouseMove(e, canvas)
-            obj.mousePos = t.mousePos
-        })
-        obj.play()
+    canvas.addEventListener('mousemove', (e) => {
+        let t = MouseMove(e, canvas)
+        obj.mousePos = t.mousePos
     })
+    obj.play()
+
 }
 
 let name = location.search.replace('?', '')
 if (name) dynamicImport(name.split('/'))
 else addList()
-
-
-
-

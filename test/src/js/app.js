@@ -1,6 +1,7 @@
 import load from 'load-asset'
 import mapAssets from './Assets'
 import AssetsInit from './AssetsInit'
+import ConsoleLog from 'utils/ConsoleLog'
 
 let assets = {
   wood: './assets/wood.jpg',

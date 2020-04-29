@@ -4,12 +4,14 @@ import vs from 'shaders/instance/instance.vert'
 import fs from 'shaders/instance/instance.frag'
 
 import {
-    mat4,
+    mat4, mat3
 } from 'gl-matrix'
 import {
     gl,
     GlTools
 } from 'libs/GlTools'
+import Mesh from 'libs/Mesh'
+import { Frustum } from 'physics/Geometry3D'
 
 const random = function (min, max) { return min + Math.random() * (max - min); }
 
@@ -24,9 +26,17 @@ export default class FrustumCulling extends Pipeline {
     }
     attrib() {
 
-        this.mesh = Geom.singleLine([0, 0, 0], [1, 1, 1])
+        this.mesh = new Mesh(gl.LINES)
+        this.mesh.bufferVertex([[0,0,0], [.1,.1,.1], [.2,.3,.4], [.3,.4,.5]])
+        this.mesh.bufferIndex([0, 1, 2, 3])
 
         this.mesh.bufferInstance(this._caculateMatrix(), 'instanceMatrix', gl.DYNAMIC_DRAW)
+
+        let i = mat4.create()
+        let t = mat3.create()
+        t = mat4.cut(t, i , 1, 3)
+        console.logMatrix(i, t)
+        new Frustum()
     }
 
     _caculateMatrix() {
