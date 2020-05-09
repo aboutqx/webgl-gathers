@@ -127,8 +127,6 @@ export default class IblDiffuse extends Pipeline {
         this.addGUIParams({
             roughness: 0.2,
             metallic: 6 / 7,
-            lambertDiffuse: true,
-            orenNayarDiffuse: false,
             map: 'none',
         })
 
@@ -137,14 +135,7 @@ export default class IblDiffuse extends Pipeline {
         folder.add(this.params, 'metallic', 0, 6 / 7).step(0.01)
         folder.open()
 
-        let folder1 = this.gui.addFolder('diffuse model')
-        folder1.add(this.params, 'lambertDiffuse').listen().onChange(() => {
-            this.setChecked('lambertDiffuse')
-        })
-        folder1.add(this.params, 'orenNayarDiffuse').listen().onChange(() => {
-            this.setChecked('orenNayarDiffuse')
-        })
-        folder1.open()
+        this.setRadio('lambertDiffuse', ['lambertDiffuse', 'orenNayarDiffuse'], 'diffuse model')
 
         let folder2 = this.gui.addFolder('material map')
         folder2.add(this.params, 'map', ['none', 'plastic', 'wall', 'gold', 'grass', 'rusted_iron', 'wood']).listen().onChange(() => {
@@ -152,12 +143,6 @@ export default class IblDiffuse extends Pipeline {
         })
         folder2.open()
 
-    }
-
-    setChecked(prop) {
-        this.params.lambertDiffuse = false
-        this.params.orenNayarDiffuse = false
-        this.params[prop] = true
     }
 
     setTexture() {

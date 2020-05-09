@@ -13,7 +13,7 @@ import {
 
 const random = function (min, max) { return min + Math.random() * (max - min); }
 
-export default class Instance extends Pipeline {
+export default class Bezier extends Pipeline {
     count = 0
     constructor() {
         super()
@@ -24,22 +24,14 @@ export default class Instance extends Pipeline {
     }
     attrib() {
 
-        this.line = Geom.singleLine([0, 0, 0], [1, 1, 1])
-        this.bezier = Geom.bezier([
-            [-130,  90, 0],
-            [ -55, -90, 0],
-            [  75, -60, 0],
-            [ 100,  80, 0]
-        ], .01)
+        this.mesh = Geom.singleLine([0, 0, 0], [1, 1, 1])
 
-        this.mesh = this.line
         this.mesh.bufferInstance(this._caculateMatrix(), 'instanceMatrix', gl.DYNAMIC_DRAW)
-        this.bezier.bufferInstance(this._caculateMatrix(), 'instanceMatrix', gl.DYNAMIC_DRAW)
     }
 
     _caculateMatrix() {
         const num = 1000
-        const instanceMatrix = []
+        let instanceMatrix = []
         let x, y, z
         for (let i = 0; i < num; i++) {
             const scale = random(.1, 10)
@@ -63,11 +55,6 @@ export default class Instance extends Pipeline {
         this.orbital.radius = 60
         //this.orbital.offset = [60, 60, 0]
     }
-
-    _setGUI() {
-        this.setRadio('bezier', ['singleLine', 'bezier'], 'mesh type')
-    }
-
     uniform() {
 
 
@@ -78,15 +65,10 @@ export default class Instance extends Pipeline {
     }
     render() {
         GlTools.clear(0, 0, 0)
-        if(this.params.singleLine) {
-            this.mesh = this.line
-        } else {
-            this.mesh = this.bezier
-        }
-        
+
         FrameInterval(100, () => {
             const matrix = this._caculateMatrix()
-            // this.mesh.bufferSubData('instanceMatrix', matrix)
+            this.mesh.bufferSubData('instanceMatrix', matrix)
         })
 
         GlTools.draw(this.mesh)

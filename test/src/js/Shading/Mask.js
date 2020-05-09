@@ -43,8 +43,8 @@ export default class Mask extends Pipeline {
         this.torus = Torus(64, 64, .1, .4)
 
 
-        this.cubeFrame = this.cube.getAABB().getFrame()
-        this.torusFrame = this.torus.getAABB().getFrame()
+        this.cubeFrame = this.cube.boundingAABB().getFrame()
+        this.torusFrame = this.torus.boundingAABB().getFrame()
 
 
         this.texture = getAssets.flower
@@ -56,33 +56,16 @@ export default class Mask extends Pipeline {
     }
     _setGUI() {
         this.addGUIParams({
-            lod: 1.,
-            LINEAR_MIPMAP_LINEAR: false,
-            NEAREST_MIPMAP_NEAREST: true
+            lod: 1.
         })
 
         let folder = this.gui.addFolder('tetxureLod lod param')
         folder.add(this.params, 'lod', 1., Math.log2(512)).step(1.)
         folder.open()
 
-        let folder1 = this.gui.addFolder('TEXTURE_MIN_FILTER')
-        folder1.add(this.params, 'LINEAR_MIPMAP_LINEAR').listen().onChange(() => {
-            this.setChecked('LINEAR_MIPMAP_LINEAR')
-        })
-        folder1.add(this.params, 'NEAREST_MIPMAP_NEAREST').listen().onChange(() => {
-            this.setChecked('NEAREST_MIPMAP_NEAREST')
-        })
-        folder1.open()
+        this.setRadio('NEAREST_MIPMAP_NEAREST', ['NEAREST_MIPMAP_NEAREST', 'LINEAR_MIPMAP_LINEAR'], 'filter type')
     }
-    setChecked(val) {
 
-        this.texture.bind()
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl[val]);
-        this.params.LINEAR_MIPMAP_LINEAR = false
-        this.params.NEAREST_MIPMAP_NEAREST = false
-        this.params[val] = true
-
-    }
     prepare() {
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LESS);
@@ -99,6 +82,10 @@ export default class Mask extends Pipeline {
         let vMatrix = mat4.clone(this.camera.viewMatrix)
         this.intersect.setRay(this.mousePos.x, this.mousePos.y, pMatrix, vMatrix, this.camera.position)
 
+        this.texture.bind()
+        if(this.params.LINEAR_MIPMAP_LINEAR)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        else gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
     }
     render() {
 
@@ -125,24 +112,22 @@ export default class Mask extends Pipeline {
             mMatrix = mat4.create()
             mat4.translate(mMatrix, mMatrix, [1.5, 0, 0])
             this.prg.use()
-            mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
             this.prg.style({
-              mvpMatrix: this.mvpMatrix,
+              uModelMatrix: mMatrix,
               texture: 0,
               lod: this.params.lod
             })
-            GlTools.draw(this.torusFrame, gl.LINES)
+            GlTools.draw(this.torusFrame)
 
             mMatrix = mat4.create()
             mat4.scale(mMatrix, mMatrix, [.6, .6, .6])
             mat4.translate(mMatrix, mMatrix, [-2.05, 0, 0])
-            mat4.multiply(this.mvpMatrix, this.tmpMatrix, mMatrix)
             this.prg.style({
-              mvpMatrix: this.mvpMatrix,
+              uModelMatrix: mMatrix,
               texture: 0,
               lod: this.params.lod
             })
-            GlTools.draw(this.cubeFrame, gl.LINES)
+            GlTools.draw(this.cubeFrame)
         */
     }
     renderDefault(mMatrix, draw) {

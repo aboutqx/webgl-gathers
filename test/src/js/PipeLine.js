@@ -13,6 +13,7 @@ export default class Pipeline {
     gui = new dat.GUI({
         width: 300
     })
+    radioProps = []
 
     constructor() {
         this.orbital = new OrbitalControls(this.camera)
@@ -86,6 +87,28 @@ export default class Pipeline {
     addGUIParams(o) {
         return Object.assign(this._params, o)
     }
+
+    
+    
+    setRadio(prop, props, name = 'radio') {
+        if(props) {
+            let folder = this.gui.addFolder(name)
+            props.forEach(prop => {
+                this.addGUIParams({
+                    [prop]: false
+                })
+                folder.add(this.params, prop).listen().onChange(() => {
+                this.setRadio(prop)
+                })
+            folder.open()
+            this.radioProps.push(prop)
+            })
+        }
+        
+        this.radioProps.forEach(v => this.params[v] = false)
+        if(prop) this.params[prop] = true
+    }
+
     get params() {
         return this._params
     }

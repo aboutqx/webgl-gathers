@@ -1,17 +1,19 @@
-import Octree from './Octree' 
+import OctreeNode from './Octree' 
 
 export class Scene3D {
     meshList = []
+    octree = new OctreeNode()
     constructor() {
 
     }
 
-    addMesh() {
-
+    addMesh(mMesh) {
+        if(this.meshList.includes(mMesh)) return
+        this.meshList.push(mMesh)
     }
 
-    removeMesh() {
-        
+    removeMesh(mMesh) {
+        this.meshList = this.meshList.filter((v) => v !== mMesh)
     }
 
     constructBVH(type = 'octree') {

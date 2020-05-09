@@ -11,7 +11,8 @@ import {
     GlTools
 } from 'libs/GlTools'
 import Mesh from 'libs/Mesh'
-import { Frustum } from 'physics/Geometry3D'
+import { Sphere, Frustum } from 'physics/Geometry3D'
+import Intersect from 'physics/Intersect'
 
 const random = function (min, max) { return min + Math.random() * (max - min); }
 
@@ -23,24 +24,20 @@ export default class FrustumCulling extends Pipeline {
     }
     init() {
         this.prg = this.compile(vs, fs)
+        this.orbital.radius = 600
     }
     attrib() {
 
-        this.mesh = new Mesh(gl.LINES)
-        this.mesh.bufferVertex([[0,0,0], [.1,.1,.1], [.2,.3,.4], [.3,.4,.5]])
-        this.mesh.bufferIndex([0, 1, 2, 3])
+        this.mesh = Geom.sphere(1.5, 30)
 
         this.mesh.bufferInstance(this._caculateMatrix(), 'instanceMatrix', gl.DYNAMIC_DRAW)
 
-        let i = mat4.create()
-        let t = mat3.create()
-        t = mat4.cut(t, i , 1, 3)
-        console.logMatrix(i, t)
-        new Frustum()
     }
 
     _caculateMatrix() {
-        const num = 1000
+        this.orbital.updateMatrix()
+        const frustum = new Frustum().fromMatrix(this.camera.viewMatrix, this.camera.projectionMatrix)
+        const num = 100
         let instanceMatrix = []
         let x, y, z
         for (let i = 0; i < num; i++) {
@@ -56,14 +53,20 @@ export default class FrustumCulling extends Pipeline {
             mat4.translate(mMatrix, mMatrix, [x, y, z])
             mat4.scale(mMatrix, mMatrix, [scale, scale, scale])
             instanceMatrix.push(mMatrix)
+
+
+            let e = Intersect.frustumSphere(frustum, Sphere.fromVertices(this.mesh.vertices, mMatrix))
+            console.log(e)
+
         }
         return instanceMatrix
     }
 
     prepare() {
 
-        this.orbital.radius = 60
+        
         //this.orbital.offset = [60, 60, 0]
+
     }
     uniform() {
 

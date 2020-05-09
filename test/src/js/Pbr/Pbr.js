@@ -48,21 +48,15 @@ export default class Pbr extends Pipeline {
     }
     _setGUI() {
         this.addGUIParams({
-            lambertDiffuse: true,
-            orenNayarDiffuse: false,
             metallic: .5,
             roughness: .5,
             map: 'none',
         })
 
 
-        let folder1 = this.gui.addFolder('diffuse model')
-        folder1.add(this.params, 'lambertDiffuse').listen().onChange(() => {
-            this.setChecked('lambertDiffuse')
-        })
-        folder1.add(this.params, 'orenNayarDiffuse').listen().onChange(() => {
-            this.setChecked('orenNayarDiffuse')
-        })
+        this.setRadio('lambertDiffuse', ['lambertDiffuse', 'orenNayarDiffuse'], 'diffuse model')
+
+        let folder1 = this.gui.addFolder('material factor')
         folder1.add(this.params, 'metallic', 0, 1).step(.1)
         folder1.add(this.params, 'roughness', 0, 1).step(.1)
         folder1.open()
@@ -73,12 +67,6 @@ export default class Pbr extends Pipeline {
         })
         folder2.open()
 
-    }
-
-    setChecked(prop) {
-        this.params.lambertDiffuse = false
-        this.params.orenNayarDiffuse = false
-        this.params[prop] = true
     }
 
     setTexture() {

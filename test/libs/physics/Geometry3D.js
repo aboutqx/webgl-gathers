@@ -2,9 +2,22 @@ import { vec3, vec4, mat4, mat3 } from 'gl-matrix'
 import Mesh from 'libs/Mesh'
 import { gl } from 'libs/GlTools'
 
+
+function transformVertices(vertices, mMatrix) {
+    let t1
+    let result = []
+    let t = vec4.create()
+    for (let i = 0; i < vertices.length; i++) {
+        t1 = vec4.fromPoint(vertices[i])
+        vec4.transformMat4(t, t1, mMatrix)
+        result.push([t[0], t[1], t[2]])
+    }
+    return result
+}
+
 export class Point {
     constructor(x, y ,z) {
-        return new vec3(x, y, z)
+        return vec3.fromValues(x, y, z)
     }
 }
 
@@ -18,15 +31,13 @@ export class Ray {
     }
 
 }
-export class AABB {
-    origin
-    size //half size
-    constructor(origin, size) {
-        this.origin = origin || vec3.create()
-        this.size = size || vec3.create()
+
+class BoundingVolume {
+    constructor() {
+
     }
 
-    static fromVertices(vertices) {
+    static getMinMax(vertices) {
         let min = vec3.create()
         let max = vec3.create()
         for (let i = 0; i < vertices.length; i++) {
@@ -37,6 +48,31 @@ export class AABB {
             if (vertices[i][2] > max[2] || !max[2]) max[2] = vertices[i][2]
             if (vertices[i][2] < min[2] || !min[2]) min[2] = vertices[i][2]
         }
+        return { min, max }
+    }
+
+    getFrame() {
+        const wireFrame = new Mesh(gl.LINE_STRIP, `${this.name}-wireframe`)
+        wireFrame.bufferFlattenData(this.position, 'position', 3)
+        wireFrame.bufferFlattenData(this.texCoord, 'texCoord', 2)
+        wireFrame.bufferIndex(this.index)
+        return wireFrame
+    }
+}
+
+export class AABB extends BoundingVolume{
+    origin
+    size //half size
+    constructor(origin, size) {
+        super()
+        this.origin = origin || vec3.create()
+        this.size = size || vec3.create()
+        this.name = 'aabb'
+    }
+
+    static fromVertices(vertices, mMatrix) {
+        if(mMatrix) vertices = transformVertices(vertices, mMatrix)
+        const { min, max } = this.getMinMax(vertices)
         return this.fromMinMax(min, max)
     }
 
@@ -66,14 +102,6 @@ export class AABB {
         let t = vec3.create()
         vec3.max(t, p1, p2)
         return t
-    }
-
-    getFrame() {
-        const wireFrame = new Mesh(gl.LINE_STRIP, 'aabb-wireframe')
-        wireFrame.bufferFlattenData(this.position, 'position', 3)
-        wireFrame.bufferFlattenData(this.texCoord, 'texCoord', 2)
-        wireFrame.bufferIndex(this.index)
-        return wireFrame
     }
 
     get position() {
@@ -112,17 +140,39 @@ export class AABB {
     }
 }
 
-export class OBB{
+export class OBB extends BoundingVolume{
     position
     size //half size
     orientation
     constructor(position, size, orientation){
+        super()
         this.position = position || vec3.create()
         this.size = size || vec3.create()
         this.orientation = orientation || mat3.create()
     }
 }
 
+export class Sphere extends BoundingVolume{
+    origin
+    radius
+    constructor(origin, radius) {
+        super()
+        this.origin = origin || vec3.create()
+        this.radius = radius || 1.
+    }
+
+    static fromVertices(vertices, mMatrix) {
+        if(mMatrix) vertices = transformVertices(vertices, mMatrix)
+        const { min, max } = this.getMinMax(vertices)
+        return this.fromMinMax(min, max)
+    }
+
+    static fromMinMax(min, max) {
+        const center = [min[0] + (max[0] - min[0]) / 2, min[1] + (max[1] - min[1]) / 2, min[2] + (max[2] - min[2]) / 2]
+        const radius = Math.max((max[0] - min[0]) / 2, (max[1] - min[1]) / 2, (max[2] - min[2]) / 2)
+        return new Sphere(center, radius)
+    }
+}
 
 export class Plane {
     normal
@@ -135,8 +185,9 @@ export class Plane {
     }
 
     planeEquation(point) {
-        // ==0 point is on plane
-        return vec3.dot(point, this.normal) - this.distance
+        // == 0 point is on plane
+        const side = vec3.dot(point, this.normal) - this.distance
+        return side
     }
 }
 
@@ -148,40 +199,41 @@ export class Frustum {
     bottom= new Plane()
     near= new Plane()
     far= new Plane()
-    planes = [this.left, this.right, this.top, this.bottom, this.near, this.far]
+    planes = [this.left, this.right, this.bottom, this.top, this.near, this.far]
 
     constructor() {
 
     }
 
     // the Hartmann/Gribbs method of extracting the Frustum planes
+    // http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
     fromMatrix(vMatrix, pMatrix) {
         const vpMatrix = mat4.create()
         mat4.multiply(vpMatrix, pMatrix, vMatrix)
-        const col1 = vec3.fromValues(vpMatrix[0], vpMatrix[1], vpMatrix[2])
-        const col2 = vec3.fromValues(vpMatrix[4], vpMatrix[5], vpMatrix[6])
-        const col3 = vec3.fromValues(vpMatrix[8], vpMatrix[9], vpMatrix[10])
-        const col4 = vec3.fromValues(vpMatrix[12], vpMatrix[13], vpMatrix[14])
-        vec3.add(this.left.normal, col4, col1)
-        vec3.subtract(this.right.normal, col4, col1)
-        vec3.add(this.bottom.normal, col4, col12)
-        vec3.subtract(this.top.normal, col4, col2)
-        vec3.add(this.near.normal, col4, col3)
-        vec3.subtract(this.far.normal, col4, col3)
+        const row1 = vec3.fromValues(vpMatrix[0], vpMatrix[4], vpMatrix[8]) //12
+        const row2 = vec3.fromValues(vpMatrix[1], vpMatrix[5], vpMatrix[9]) //13
+        const row3 = vec3.fromValues(vpMatrix[2], vpMatrix[6], vpMatrix[10]) //14
+        const row4 = vec3.fromValues(vpMatrix[3], vpMatrix[7], vpMatrix[11]) //15
+        vec3.add(this.left.normal, row4, row1)
+        vec3.subtract(this.right.normal, row4, row1)
+        vec3.add(this.bottom.normal, row4, row2)
+        vec3.subtract(this.top.normal, row4, row2)
+        vec3.add(this.near.normal, row4, row3)
+        vec3.subtract(this.far.normal, row4, row3)
 
-        this.left.distance = vpMatrix[15] + vpMatrix[3]
-        this.right.distance = vpMatrix[15] - vpMatrix[3]
-        this.bottom.distance = vpMatrix[15] + vpMatrix[7]
-        this.top.distance = vpMatrix[15] + vpMatrix[7]
-        this.near.distance = vpMatrix[15] + vpMatrix[11]
-        this.far.distance = vpMatrix[15] + vpMatrix[11]
+        this.left.distance = vpMatrix[15] + vpMatrix[12]
+        this.right.distance = vpMatrix[15] - vpMatrix[12]
+        this.bottom.distance = vpMatrix[15] + vpMatrix[13]
+        this.top.distance = vpMatrix[15] - vpMatrix[13]
+        this.near.distance = vpMatrix[15] + vpMatrix[14]
+        this.far.distance = vpMatrix[15] - vpMatrix[14]
 
         for(let i = 0; i < 6; ++i) {
             let magnitude = 1 / vec3.length(this.planes[i].normal)
-            vec3.mul(this.planes[i].normal, magnitude)
+            vec3.scale(this.planes[i].normal, this.planes[i].normal, magnitude)
             this.planes[i].distance *= magnitude
         }
-        
+        return this
     }
 
     //use Cramer's Rule get planeEquation answer

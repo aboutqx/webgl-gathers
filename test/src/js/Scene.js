@@ -13,7 +13,7 @@ const importLists = {
     Shading:[
         'Instance',
         'Gpgpu',
-
+        'Bezier',
         'DeferredShading',
         'Mask',
         'SSAO',
@@ -25,9 +25,10 @@ const importLists = {
         'ReliefMapping', // can also provide self-shadowing.
         'EnvironmentMapping',
     ],
-    ImageBasedEffects: [
+    ImageSpaceEffects: [
         'Billboard',
         'Bloom',
+        'Fog'
     ],
     Pbr: [
         'Pbr',

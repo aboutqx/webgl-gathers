@@ -156,7 +156,7 @@ const mapAssets = {
     Pbr: { ...Assets.ballMaps },
     Ibldiffuse: { ...Assets.hdrSkybox },
     iblfinal: { ...Assets.hdrSkybox },
-    Deferredshading: { ...Assets.nanosuit },
+    DeferredShading: { ...Assets.nanosuit },
     Ssao: { ...Assets.nanosuit },
     EnvMapping: { ...Assets.skyboxLake, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue },
     Gltf: { ...Assets.skybox, ...Assets.gltf },

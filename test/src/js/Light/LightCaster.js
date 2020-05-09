@@ -52,31 +52,9 @@ export default class LightCaster extends Pipeline {
 
 		this.orbital.radius = 6
 	}
+	
 	_setGUI() {
-		this.addGUIParams({
-			directionalLight: false,
-			pointLight: true,
-			spotLight: false
-		})
-
-		let folder1 = this.gui.addFolder('diffuse model')
-		folder1.add(this.params, 'directionalLight').listen().onChange(() => {
-			this.setChecked('directionalLight')
-		})
-		folder1.add(this.params, 'pointLight').listen().onChange(() => {
-			this.setChecked('pointLight')
-		})
-		folder1.add(this.params, 'spotLight').listen().onChange(() => {
-			this.setChecked('spotLight')
-		})
-		folder1.open()
-	}
-
-	setChecked(prop) {
-		this.params.directionalLight = false
-		this.params.pointLight = false
-		this.params.spotLight = false
-		this.params[prop] = true
+		this.setRadio('pointLight', ['directionalLight', 'pointLight', 'spotLight'], 'light type')
 	}
 
 	uniform() {

@@ -1,4 +1,4 @@
-import { Ray, AABB, Point, Frustum } from './Geometry3D'
+import { Ray, AABB, Point, Frustum, Sphere } from './Geometry3D'
 import {
     canvas
 } from 'libs/GlTools'
@@ -34,36 +34,14 @@ export default class Intersect {
     castRay(vertices, type = 'AABB') {
         let result = false
         if (type == 'AABB') {
-            this.boundingVolume(vertices)
+            this.aabb = AABB.fromVertices(vertices)
             result = this.rayAABB(this.aabb, this.ray)
         }
         return result
     }
 
 
-    boundingVolume(vertices, type = 'AABB') {
-
-        let box = AABB.fromVertices(vertices)
-        const min = box.getMin()
-        const max = box.getMax()
-        const sphereCenter = [min[0] + (max[0] - min[0]) / 2, min[1] + (max[1] - min[1]) / 2, min[2] + (max[2] - min[2]) / 2]
-        const sphereRadius = Math.max((max[0] - min[0]) / 2, (max[1] - min[1]) / 2, (max[2] - min[2]) / 2)
-
-
-        if (type == 'sphere') {
-
-        } else if (type == 'AABB') {
-            
-            this.aabb = box
-            return {
-                position: box.position,
-                index: box.index,
-                texCoord: box.texCoord
-            }
-        }
-    }
-
-    rayAABB(aabb, ray) {
+    static rayAABB(aabb, ray) {
         let min = aabb.getMin()
         let max = aabb.getMax()
 
@@ -97,28 +75,57 @@ export default class Intersect {
         return true
     }
 
-    rayOBB(obb, ray) {
+    static rayOBB(obb, ray) {
 
     }
 
-    raySphere() {
+    static raySphere() {
 
     }
 
-    frustumPoint() {
+    static frustumPoint(frustum, point) {
+        //plane normal 朝里的，为此negate point
+        let pointNegate = vec3.create()
+        vec3.negate(pointNegate, point)
+        for(let i = 0; i < 6; i++) {
+            let side = frustum.planes[i].planeEquation(pointNegate)
+            if(side > 0.) {
+                return false
+            }
+        }
+        return true
+    }
+
+    static frustumSphere(frustum, sphere) {
+        let pointNegate = vec3.create()
+        vec3.negate(pointNegate, sphere.origin)
+        for(let i = 0; i < 6; i++) {
+            let side = frustum.planes[i].planeEquation(pointNegate)
+            if(side - sphere.radius > 0.) {
+                console.log(i, pointNegate, frustum.planes[i])
+                return false
+            }
+        }
+        return true
+    }
+
+    static frustumAABB(frustum, aabb) {
 
     }
 
-    frustumSphere() {
-
+    static frustumOBB(frustum, obb) {
+        for(let i = 0; i < 6; i++) {
+            if(side - sphere.radius > 0.) {
+                return false
+            }
+        }
+        return true
     }
 
-    frustumAABB() {
+    static boxPlane(box, plane) {
+        if(box instanceof OBB) {
+
+        }
 
     }
-
-    frustumOBB() {
-
-    }
-
 }

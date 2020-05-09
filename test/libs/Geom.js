@@ -4,7 +4,7 @@
 
 import Mesh from './Mesh';
 import { gl } from './GlTools'
-
+import { binomial } from 'utils/Math'
 const Geom = {};
 let meshTri;
 
@@ -543,6 +543,61 @@ Geom.singleLine = function singleLine(positionA, positionB) {
     mesh.bufferIndex(indices);
 
     return mesh;
+}
+
+// c(u) = E(i=0 - n)B(u)Pi 0<= u <= 1
+// 0 < offset < 1, points are at least 2 points
+Geom.bezier = (points, offset) => {
+    const vertices = []
+    const indices = []
+    
+    const n = points.length - 1 // 0-n
+
+    for(let u = 0; u <= 1; u += offset){
+        let t = []
+        for(let i = 0; i <= n; i++){
+            
+        
+            const Bu = binomial(n, i) * Math.pow(u, i) * Math.pow(1-u, n-i)
+            const Pi = points[i]
+            if(!t.length) {
+                t = [Pi[0]* Bu, Pi[1]* Bu, Pi[2]* Bu]
+            }
+            else {
+                t[0] += Pi[0]* Bu
+                t[1] += Pi[1]* Bu
+                t[2] += Pi[2]* Bu
+            }
+
+            vertices.push(t)
+        }
+    }
+
+    const coords = [[0, 0], [1, 1]]
+    for(let i = 0; i < vertices.length; i++) {
+        indices.push(i)
+    }
+
+    const mesh = new Mesh(gl.POINTS);
+    mesh.bufferVertex(vertices);
+    mesh.bufferTexCoord(coords);
+    mesh.bufferIndex(indices);
+
+    return mesh;
+
+}
+
+//连接线起始点和被连接线的倒数2个点在一条直线上，这样保证tagent一样
+Geom.joinBezier = () => {
+    
+}
+
+Geom.bezierSurface = () => {
+
+}
+
+Geom.bSplines= () => {
+
 }
 
 //选中plane中的一个点为中心点，以此进行triangle_fan

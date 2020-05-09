@@ -1,5 +1,6 @@
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
+import vs from 'shaders/instance/instance.vert'
 import fs from 'shaders/instance/instance.frag'
 
 import {

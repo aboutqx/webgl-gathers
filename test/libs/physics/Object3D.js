@@ -98,19 +98,19 @@ class Object3D {
         this._children.splice(index, 1);
     }
 
-    getAABB() {
+    boundingAABB() {
         if(this instanceof Mesh) {
             return AABB.fromVertices(this.vertices)
         }
     }
 
-    getOBB() {
-        const aabb = this.getAABB()
+    boundingOBB() {
+        const aabb = this.boundingAABB()
         if(aabb) {
             let obb = new OBB()
             obb.size = aabb.size
             let t = vec4.create()
-            vec4.transformMat4(t, vec4.fromVec3(obb.position), this.matrix)
+            vec4.transformMat4(t, vec4.fromVec3(aabb.position), this.matrix)
             obb.position = vec3.fromValues(t[0], t[1], t[2])
             obb.orientation = mat3.create()
             obb.orientation = mat4.cut(obb.orientation, this.matrix, 3, 3)
