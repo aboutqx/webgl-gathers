@@ -18,7 +18,6 @@ import {
 } from 'libs/GlTools'
 
 export default class Color extends Pipeline {
-    count = 0
     constructor() {
         super()
 

@@ -35,7 +35,6 @@ for (let i = 0; i < NR_LIGHTS; i++) {
     lightColors.push([rColor, gColor, bColor]);
 }
 export default class Color extends Pipeline {
-    count = 0
     constructor() {
         super()
 

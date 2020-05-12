@@ -14,7 +14,6 @@ import {
 const random = function (min, max) { return min + Math.random() * (max - min); }
 
 export default class Instance extends Pipeline {
-    count = 0
     constructor() {
         super()
 

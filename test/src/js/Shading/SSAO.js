@@ -43,7 +43,6 @@ const generateNoise = () => {
     }
 }
 export default class SSAO extends Pipeline {
-    count = 0
     constructor() {
         super()
 

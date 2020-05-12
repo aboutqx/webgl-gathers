@@ -1,7 +1,5 @@
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
-import vs from 'shaders/instance/instance.vert'
-import fs from 'shaders/instance/instance.frag'
 
 import {
     mat4, mat3
@@ -17,28 +15,24 @@ import Intersect from 'physics/Intersect'
 const random = function (min, max) { return min + Math.random() * (max - min); }
 
 export default class FrustumCulling extends Pipeline {
-    count = 0
     constructor() {
         super()
 
     }
     init() {
-        this.prg = this.compile(vs, fs)
-        this.orbital.radius = 600
+        this.prg = this.basicColor()
+        this.orbital.radius = 1000
     }
     attrib() {
 
         this.mesh = Geom.sphere(1.5, 30)
-
-        this.mesh.bufferInstance(this._caculateMatrix(), 'instanceMatrix', gl.DYNAMIC_DRAW)
-
+        this._caculateMatrix()
     }
 
     _caculateMatrix() {
-        this.orbital.updateMatrix()
-        const frustum = new Frustum().fromMatrix(this.camera.viewMatrix, this.camera.projectionMatrix)
-        const num = 100
-        let instanceMatrix = []
+        const num = 10
+        const instanceMatrix = []
+        const inFrustum = []
         let x, y, z
         for (let i = 0; i < num; i++) {
             const scale = random(.1, 10)
@@ -54,33 +48,53 @@ export default class FrustumCulling extends Pipeline {
             mat4.scale(mMatrix, mMatrix, [scale, scale, scale])
             instanceMatrix.push(mMatrix)
 
-
-            let e = Intersect.frustumSphere(frustum, Sphere.fromVertices(this.mesh.vertices, mMatrix))
-            console.log(e)
-
         }
-        return instanceMatrix
+        this.instanceMatrix = {
+            instanceMatrix,
+            inFrustum
+        }
+        this.num = num
+    }
+
+    _inFrustum() {
+        this.orbital.updateMatrix()
+        const frustum = new Frustum().fromMatrix(this.camera.viewMatrix, this.camera.projectionMatrix)
+        this.count = 0
+        this.instanceMatrix.instanceMatrix.forEach((v,i) => {
+            let e = Intersect.frustumSphere(frustum, Sphere.fromVertices(this.mesh.vertices, v))
+            this.instanceMatrix.inFrustum[i] = e
+
+            if(e) this.count++
+        })
+        console.log(`actual num: ${this.num}, draw num: ${this.count}`)
     }
 
     prepare() {
 
         
         //this.orbital.offset = [60, 60, 0]
-
+        
     }
     uniform() {
 
 
         this.prg.use()
         this.prg.style({
-            objectColor: [0.1, 0.1, .8]
+            color: [0.1, 0.1, .8]
         })
     }
     render() {
         GlTools.clear(0, 0, 0)
         
-        GlTools.draw(this.mesh)
+        this._inFrustum()
+        this.instanceMatrix.instanceMatrix.forEach((v,i) => {
+            if(!this.instanceMatrix.inFrustum[i]) return
+            this.prg.style({
+                mMatrix: v
+            })
+            GlTools.draw(this.mesh)
 
+        })
 
     }
 }

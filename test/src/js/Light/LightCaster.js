@@ -26,7 +26,6 @@ const cubePosition = [
 	[-0.9, 1.0, -1.5]
 ]
 export default class LightCaster extends Pipeline {
-	count = 0
 	lightPos
 	constructor() {
 		super()

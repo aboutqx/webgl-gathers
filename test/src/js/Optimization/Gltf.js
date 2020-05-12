@@ -11,7 +11,6 @@ function ObjectPropertyMax(objectes, property) {
 	return max
 }
 export default class GLTF extends Pipeline {
-	count = 0
 	constructor() {
 		super()
 

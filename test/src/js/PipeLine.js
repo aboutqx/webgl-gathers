@@ -7,6 +7,7 @@ import * as dat from 'dat.gui'
 import { basicColorFrag } from 'CustomShaders'
 
 export default class Pipeline {
+    count = 0
     mousePos = { x: 0, y: 0 }
     camera = new CameraPers(45, canvas.width / canvas.height, .1, 1000)
     _params = {}

@@ -45,7 +45,6 @@ for (let i = 0; i < NR_LIGHTS; i++) {
 }
 
 export default class DeferredShading extends Pipeline {
-    count = 0
     constructor() {
         super()
 

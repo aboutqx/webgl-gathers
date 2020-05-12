@@ -123,7 +123,6 @@ const caculateTBN = (N) => {
 const lightPos = [0, 0, 3]
 // Parallax Occlusion Mapping
 export default class ReliefMapping extends Pipeline {
-    count = 0
     constructor() {
         super()
 

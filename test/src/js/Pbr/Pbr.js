@@ -24,7 +24,6 @@ const lightColors = [ // use flatten array for gl.uniform3fv
     [10., 10., 10.],
 ]
 export default class Pbr extends Pipeline {
-    count = 0
     constructor() {
         super()
 

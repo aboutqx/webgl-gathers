@@ -20,7 +20,6 @@ const lightPos = [0, 4, -1]
 
 
 export default class Shadow extends Pipeline {
-  count = 0
   constructor() {
     super()
   }

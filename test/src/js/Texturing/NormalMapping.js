@@ -121,7 +121,6 @@ const caculateTBN = (N) => {
 }
 const lightPos = [0, 3, 0]
 export default class NormalMap extends Pipeline {
-    count = 0
     constructor() {
         super()
 

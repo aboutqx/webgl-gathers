@@ -1,5 +1,6 @@
 import { canvas, toRadian } from 'libs/GlTools'
-
+import { vec3 } from 'gl-matrix'
+import Scheduler from 'scheduling'
 // cameraFront = -(cameraPos - camraTarget)
 const getMouse = function (mEvent, mTarget, finger2) {
 
@@ -46,6 +47,7 @@ export default class OrbitalControls {
         this.cameraPers = cameraPers
 
         this._addEvents()
+        
     }
 
 
@@ -115,7 +117,7 @@ export default class OrbitalControls {
         this.position[0] = Math.cos(this._rx + Math.PI * 0.5) * tr
         this.position[2] = Math.sin(this._rx + Math.PI * 0.5) * tr
 
-        this.position = [this.position[0] + this.offset[0], this.position[1] + this.offset[1], this.position[2] + this.offset[2]]
+        vec3.add(this.position, this.position, this.offset)
 
         this.cameraPers.lookAt(this.position, this.target, this.up)
 

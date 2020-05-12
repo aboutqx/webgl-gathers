@@ -102,7 +102,6 @@ export default class Intersect {
         for(let i = 0; i < 6; i++) {
             let side = frustum.planes[i].planeEquation(pointNegate)
             if(side - sphere.radius > 0.) {
-                console.log(i, pointNegate, frustum.planes[i])
                 return false
             }
         }

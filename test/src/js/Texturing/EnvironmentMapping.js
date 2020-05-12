@@ -17,7 +17,6 @@ import {
 } from 'libs/GlTools'
 
 export default class EnvMap extends Pipeline {
-    count = 0
     constructor() {
         super()
 

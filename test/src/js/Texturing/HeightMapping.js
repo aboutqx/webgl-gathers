@@ -123,7 +123,6 @@ const caculateTBN = (N) => {
 const lightPos = [0, 0, 3]
 // https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 export default class HeightMapping extends Pipeline {
-    count = 0
     constructor() {
         super()
 

@@ -16,7 +16,6 @@ import FrameBuffer from 'libs/FrameBuffer'
 import FboPingPong from 'libs/FboPingPong'
 
 export default class Bloom extends Pipeline {
-    count = 0
     constructor() {
         super()
     }

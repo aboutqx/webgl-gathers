@@ -30,7 +30,6 @@ const checkFrameBuffer = () => {
 }
 
 export default class IblFinal extends Pipeline {
-	count = 0
 	constructor() {
 		super()
 

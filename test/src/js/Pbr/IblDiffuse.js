@@ -18,7 +18,6 @@ import CubeFrameBuffer from 'libs/CubeFrameBuffer'
 
 //ibl diffuse即irradiance，为normal正交的平面上半球内所有方向的平均颜色微分
 export default class IblDiffuse extends Pipeline {
-    count = 0
     constructor() {
         super()
 

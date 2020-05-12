@@ -10,7 +10,6 @@ import {
 } from 'libs/GlTools'
 
 export default class Reflection extends Pipeline {
-    count = 0
     constructor() {
         super()
 
