@@ -14,7 +14,7 @@ uniform mat4 uProjectionMatrix;
 uniform float terrainHeight;
 uniform float uTime;
 
-out vec2 vTextureCoord;
+out vec2 vTexCoord;
 out vec3 vNormal;
 
 float random(float _x) {
@@ -57,6 +57,6 @@ void main(void) {
     Position = vec3(position.x, noise(position.xz - vec2(cos(uTime*0.15/50.),sin(uTime*0.1/50.))) * terrainHeight, position.z);
 
     gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(Position, 1.0);
-    vTextureCoord = texCoord;
+    vTexCoord = texCoord;
     vNormal = normal;
 }

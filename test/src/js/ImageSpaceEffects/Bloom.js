@@ -58,7 +58,7 @@ export default class Bloom extends Pipeline {
     }
 
     _renderScene() {
-        let mMatrix = mat4.create()
+        const mMatrix = mat4.create()
         mat4.rotateY(mMatrix, mMatrix, .3)
         let a = [10, 20, 10]
         let b = a.map(x => x * this.params.lightScale)

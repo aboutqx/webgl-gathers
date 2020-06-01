@@ -24,27 +24,30 @@ export default class Pipeline {
         this.prepare()
         this._setGUI()
 
-        this._animate = this.animate.bind(this)
         this.frameBufferGUI = new FrameBufferGUI()
 
         GlTools.customGlState()
+
+        this._resize()
+        window.addEventListener('resize', this._resize.bind(this), false);
+
     }
 
     init() {
 
     }
     compile(vs, fs) {
-        let prg = new Program(vs, fs)
+        const prg = new Program(vs, fs)
         return prg
     }
 
     basicVert(fs) {
-        let prg = new Program(null, fs)
+        const prg = new Program(null, fs)
         return prg
     }
 
     basicColor() {
-        let prg = new Program(null, basicColorFrag)
+        const prg = new Program(null, basicColorFrag)
         return prg
     }
 
@@ -57,8 +60,8 @@ export default class Pipeline {
     prepare() {
 
     }
-    animate() {
-        requestAnimationFrame(this._animate)
+    _animate() {
+        requestAnimationFrame(this._animate.bind(this))
 
         this.orbital.updateMatrix()
         this.uniform()
@@ -69,7 +72,21 @@ export default class Pipeline {
 
     }
     play() {
-        this.animate()
+        this._animate()
+    }
+
+    resize() {
+        
+    }
+
+    _resize() {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+        GlTools.aspectRatio = canvas.width / canvas.height
+
+        this.camera.setAspectRatio(GlTools.aspectRatio);
+
+        this.resize()
     }
 
     _setGUI() {
@@ -78,7 +95,7 @@ export default class Pipeline {
         //   gt: 0.98,
         //   clamp: false
         // })
-        // let folder = gui.addFolder('grayFocus')
+        // cconst folder = gui.addFolder('grayFocus')
         // folder.add(this.params, 'lt', 0, 1).step(0.01)
         // folder.add(this.params, 'gt', 0, 1).step(0.01)
         // folder.add(this.params, 'clamp')
@@ -93,7 +110,7 @@ export default class Pipeline {
     
     setRadio(prop, props, name = 'radio') {
         if(props) {
-            let folder = this.gui.addFolder(name)
+            const folder = this.gui.addFolder(name)
             props.forEach(prop => {
                 this.addGUIParams({
                     [prop]: false

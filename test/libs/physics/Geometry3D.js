@@ -5,7 +5,7 @@ import { gl } from 'libs/GlTools'
 
 function transformVertices(vertices, mMatrix) {
     let t1
-    let result = []
+    const result = []
     let t = vec4.create()
     for (let i = 0; i < vertices.length; i++) {
         t1 = vec4.fromPoint(vertices[i])
@@ -38,8 +38,8 @@ class BoundingVolume {
     }
 
     static getMinMax(vertices) {
-        let min = vec3.create()
-        let max = vec3.create()
+        const min = vec3.create()
+        const max = vec3.create()
         for (let i = 0; i < vertices.length; i++) {
             if (vertices[i][0] > max[0] || !max[0]) max[0] = vertices[i][0]
             if (vertices[i][0] < min[0] || !min[0]) min[0] = vertices[i][0]
@@ -105,7 +105,7 @@ export class AABB extends BoundingVolume{
     }
 
     get position() {
-        let position = []
+        const position = []
         let origin = this.origin
         let size = this.size
         position.push(origin[0] - size[0], origin[1] + size[1], origin[2] + size[2])

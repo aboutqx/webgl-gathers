@@ -1,6 +1,7 @@
 import { canvas, toRadian } from 'libs/GlTools'
 import { vec3 } from 'gl-matrix'
-import Scheduler from 'scheduling'
+import EaseNumber from '../utils/EaseNumber';
+
 // cameraFront = -(cameraPos - camraTarget)
 const getMouse = function (mEvent, mTarget, finger2) {
 
@@ -19,28 +20,24 @@ const getMouse = function (mEvent, mTarget, finger2) {
 
     return o;
 }
-const MIN_DIFF = 0.0001;
 
 export default class OrbitalControls {
-    position
     up = [0, 1, 0]
     cameraFront = [0, 0, -1]
     _mouse = {}
     _preMouse = {}
     _mousedown = false
-    _rx = 0
-    _ry = 0
+    _rx = new EaseNumber(0)
+    _ry = new EaseNumber(0)
     _preRx = 0
     _preRy = 0
-    _targetRx = 0
-    _targetRy = 0
     _width = canvas.width
     _height = canvas.height
     sensitivity = 1.
     position = [0, 0, 0]
     target = [0, 0, 0]
     offset = [0, 0, 0]
-    radius = 5
+    _radius = new EaseNumber(5)
     _targetRadius = 5
     _updateWheel = false
     constructor(cameraPers) {
@@ -65,8 +62,8 @@ export default class OrbitalControls {
         getMouse(mEvent, this._mouse)
         getMouse(mEvent, this._preMouse)
         // reset 重新开始计算
-        this._preRx = this._targetRx
-        this._preRy = this._targetRy
+        this._preRx = this._rx.targetValue;
+        this._preRy = this._rx.targetValue;
     }
 
     _move(mEvent) {
@@ -75,8 +72,8 @@ export default class OrbitalControls {
             let diffX = (this._mouse.x - this._preMouse.x) / this._width
             let diffY = (this._mouse.y - this._preMouse.y) / this._height
 
-            this._targetRx = this._preRx + diffX * Math.PI * 2 * this.sensitivity
-            this._targetRy = this._preRy + diffY * Math.PI * this.sensitivity
+            this._rx.value = this._preRx + diffX * Math.PI * 2 * this.sensitivity
+            this._ry.value = this._preRy + diffY * Math.PI * this.sensitivity
 
         }
 
@@ -95,27 +92,16 @@ export default class OrbitalControls {
     }
 
     updateMatrix() {
-        this._rx += (this._targetRx - this._rx) * 0.1 //ease out
-        if (Math.abs(this._targetRx - this._rx) < MIN_DIFF) {
-            this._rx = this._targetRx
-        }
 
-        this._ry += (this._targetRy - this._ry) * 0.1 //ease out
-        if (Math.abs(this._targetRy - this._ry) < MIN_DIFF) {
-            this._ry = this._targetRy
-        }
         // or use scheduling to add EF
         if (this._updateWheel) {
-            this.radius += (this._targetRadius - this.radius) * 0.1 //ease out
-            if (Math.abs(this._targetRadius - this.radius) < MIN_DIFF) {
-                this.radius = this._targetRadius
-            }
+            this._radius.value = this._targetRadius
         }
 
-        this.position[1] = Math.sin(this._ry) * this.radius
-        let tr = Math.abs(Math.cos(this._ry) * this.radius) // 防止y突然从1变成-1，x，z的象限变化
-        this.position[0] = Math.cos(this._rx + Math.PI * 0.5) * tr
-        this.position[2] = Math.sin(this._rx + Math.PI * 0.5) * tr
+        this.position[1] = Math.sin(this._ry.value) * this._radius.value
+        let tr = Math.abs(Math.cos(this._ry.value) * this._radius.value) // 防止y突然从1变成-1，x，z的象限变化
+        this.position[0] = Math.cos(this._rx.value + Math.PI * 0.5) * tr
+        this.position[2] = Math.sin(this._rx.value + Math.PI * 0.5) * tr
 
         vec3.add(this.position, this.position, this.offset)
 
@@ -137,7 +123,7 @@ export default class OrbitalControls {
             value = w / 120;
         }
 
-        this._targetRadius = this.radius + (-value * 1)
+        this._targetRadius = this._radius.value + (-value * 1)
         if (this._targetRadius <= 1) this._targetRadius = 1
         this._updateWheel = true
     }
@@ -146,8 +132,15 @@ export default class OrbitalControls {
         return this._viewMatrix
     }
 
-    // 设置旋转角度
-    set rx(value) {
-        this._targetRx = value
+    get rx() {
+        return this._rx
+    }
+
+    get ry() {
+        return this._ry
+    }
+
+    set radius(value) {
+        this._radius.value = value
     }
 }

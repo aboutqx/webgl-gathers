@@ -26,7 +26,8 @@ class GlTool {
     _normalMatrix = mat3.create()
     _inverseModelViewMatrix = mat3.create()
     _modelMatrix
-
+    aspectRatio
+    
     clear(r = .3, g = .3, b = .3, a = 1) {
         gl.clearColor(r, g, b, a)
         gl.clearDepth(1.0);

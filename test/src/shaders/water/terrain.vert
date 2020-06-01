@@ -14,7 +14,7 @@ uniform mat4 uProjectionMatrix;
 uniform float waterRadius;
 uniform float terrainHeight;
 
-out vec2 vTextureCoord;
+out vec2 vTexCoord;
 out vec3 vNormal;
 
 float rand(float _x) {
@@ -33,6 +33,6 @@ void main(void) {
     else 
         Position = vec3(position.x, -.1, position.z);
     gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(Position, 1.0);
-    vTextureCoord = texCoord;
+    vTexCoord = texCoord;
     vNormal = normal;
 }

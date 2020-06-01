@@ -42,8 +42,6 @@ const formBuffer = function (mData, mNum) {
 
 export default class Mesh extends Object3D {
     iBuffer = null
-    _useVao = false
-    _hasVao = false
     _isInstanced = false
     _bufferChanged = []
     _attributes = [];

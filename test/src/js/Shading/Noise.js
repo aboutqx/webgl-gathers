@@ -37,7 +37,7 @@ export default class Noise extends Pipeline {
     render() {
         GlTools.clear()
 
-        let mMatrix = mat4.create()
+        const mMatrix = mat4.create()
         this.prg.use()
         this.prg.style({
             mMatrix,

@@ -21,7 +21,7 @@ uniform mat3 uModelViewMatrixInverse;
 
 
 out vec3 vPosition;
-out vec2 vTextureCoord;
+out vec2 vTexCoord;
 
 #ifdef HAS_NORMALS
 out vec3 vNormal;
@@ -34,9 +34,9 @@ void main(void) {
 	vPosition     = tPosition.xyz / tPosition.w;
 
 	#ifdef HAS_UV
-	vTextureCoord = vec2(texCoord.x, texCoord.y);
+	vTexCoord = vec2(texCoord.x, texCoord.y);
 	#else
-	vTextureCoord = vec2(0.,0.);
+	vTexCoord = vec2(0.,0.);
 	#endif
 
 	#ifdef HAS_NORMALS

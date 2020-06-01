@@ -23,7 +23,7 @@ varying vec3        vPosition;
 varying vec3		vEyePosition;
 varying vec3		vWsNormal;
 varying vec3		vWsPosition;
-varying vec2 		vTextureCoord;
+varying vec2 		vTexCoord;
 
 #define saturate(x) clamp(x, 0.0, 1.0)
 #define PI 3.1415926535897932384626433832795
@@ -100,11 +100,11 @@ vec3 getPbr(vec3 N, vec3 V, vec3 baseColor, float roughness, float metallic, flo
 void main() {
 	vec3 N 				= normalize( vWsNormal );
 	vec3 V 				= normalize( vEyePosition );
-	vec3 baseColor		= texture2D( uColorMap, vTextureCoord).rgb;
+	vec3 baseColor		= texture2D( uColorMap, vTexCoord).rgb;
 
 	vec3 color 			= getPbr(N, V, baseColor, uRoughness, uMetallic, uSpecular);
 
-	vec3 ao 			= texture2D(uAoMap, vTextureCoord).rgb;
+	vec3 ao 			= texture2D(uAoMap, vTexCoord).rgb;
 	color 				*= ao;
 
 	// apply the tone-mapping

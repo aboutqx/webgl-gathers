@@ -153,7 +153,7 @@ const mapAssets = {
     NormalMapping: { ...Assets.brickwall },
     HeightMapping: { ...Assets.bricks2 },
     ReliefMapping: { ...Assets.toyBox },
-    Pbr: { ...Assets.ballMaps },
+    Pbr: { ...Assets.ballMaps,  ...Assets.venus},
     Ibldiffuse: { ...Assets.hdrSkybox },
     iblfinal: { ...Assets.hdrSkybox },
     DeferredShading: { ...Assets.nanosuit },

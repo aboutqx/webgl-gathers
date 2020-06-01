@@ -11,13 +11,13 @@ import {
 } from 'gl-matrix'
 import Geom from 'libs/Geom'
 
-const lightPositions = [ // use flatten array for gl.uniform3fv
+const lightPositions = [
     [-10., 10., 10.],
     [10., 10., 10.],
     [-10., -10., 10.],
     [10., -10., 10.],
 ]
-const lightColors = [ // use flatten array for gl.uniform3fv
+const lightColors = [
     [10., 10., 10.],
     [10., 10., 10.],
     [10., 10., 10.],
@@ -34,12 +34,12 @@ export default class Pbr extends Pipeline {
     }
     attrib() {
 
-        this.sphere = Geom.sphere(2, 100)
+        this.mesh = getAssets.venus
 
     }
     prepare() {
-        this.orbital.radius = 12
-
+        this.orbital.radius = 16
+        this.orbital.target = [0, 5, 0]
     }
     uniform() {
 
@@ -47,17 +47,19 @@ export default class Pbr extends Pipeline {
     }
     _setGUI() {
         this.addGUIParams({
-            metallic: .5,
-            roughness: .5,
+            metallic: .88,
+            roughness: .26,
+            color: [230,206, 24],
             map: 'none',
         })
 
 
-        this.setRadio('lambertDiffuse', ['lambertDiffuse', 'orenNayarDiffuse'], 'diffuse model')
+        this.setRadio('orenNayar', ['lambert', 'orenNayar'], 'diffuse model')
 
         let folder1 = this.gui.addFolder('material factor')
-        folder1.add(this.params, 'metallic', 0, 1).step(.1)
-        folder1.add(this.params, 'roughness', 0, 1).step(.1)
+        folder1.add(this.params, 'metallic', 0, 1).step(.01)
+        folder1.add(this.params, 'roughness', 0, 1).step(.01)
+        folder1.addColor(this.params, 'color')
         folder1.open()
 
         let folder2 = this.gui.addFolder('material map')
@@ -86,7 +88,7 @@ export default class Pbr extends Pipeline {
         let mMatrix = mat4.create()
         let baseUniforms = {
 
-            lambertDiffuse: this.params.lambertDiffuse,
+            lambertDiffuse: this.params.lambert,
         }
 
         if (this.params.map === 'none') {
@@ -95,12 +97,12 @@ export default class Pbr extends Pipeline {
                 this.prg.uniform(`lights[${i}].Type`, 'uniform1i', 1)
                 this.prg.style({
                     [`lights[${i}].Position`]: lightPositions[i],
-                    [`lights[${i}].Direction`]: [-this.camera.position[0], -this.camera.position[1], -this.camera.position[2]],
+                    [`lights[${i}].Direction`]: this.camera.position.map(v => -v),
                     [`lights[${i}].Color`]: lightColors[i],
                     [`lights[${i}].Linear`]: .1,
                     [`lights[${i}].Quadratic`]: .12,
                     ...baseUniforms,
-                    albedo: [.1, .3, .3],
+                    albedo: this.params.color.map(v => v/255),
                     ao: .1,
                     metallic: this.params.metallic,
                     roughness: this.params.roughness,
@@ -108,7 +110,7 @@ export default class Pbr extends Pipeline {
                 })
     
             }
-            GlTools.draw(this.sphere)
+            GlTools.draw(this.mesh)
 
         } else {
             this.mapPrg.use()
@@ -121,7 +123,7 @@ export default class Pbr extends Pipeline {
                 aoMap: this.texture3,
                 normalMap: this.texture4
             })
-            GlTools.draw(this.sphere)
+            GlTools.draw(this.mesh)
         }
     }
 }

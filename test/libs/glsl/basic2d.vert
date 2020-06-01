@@ -11,11 +11,11 @@ in vec3 normal;
 uniform mat4 mMatrix;
 
 
-out vec2 vTextureCoord;
+out vec2 vTexCoord;
 out vec3 vNormal;
 
 void main(void) {
     gl_Position =  mMatrix * vec4(position, 1.0);
-    vTextureCoord = texCoord;
+    vTexCoord = texCoord;
     vNormal = normal;
 }

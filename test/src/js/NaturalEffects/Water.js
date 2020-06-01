@@ -17,7 +17,7 @@ import {
     toRadian
 } from 'libs/GlTools'
 
-export default class Color extends Pipeline {
+export default class Water extends Pipeline {
     constructor() {
         super()
 

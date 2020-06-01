@@ -35,7 +35,7 @@ export default class FrameBufferGUI {
             v.position = v.position || this._position
             let mMatrix = mat4.create()
             mat4.translate(mMatrix, mMatrix, this._translate[i])
-            mat4.scale(mMatrix, mMatrix, [v.size[0], v.size[1], 1])
+            mat4.scale(mMatrix, mMatrix, [v.size[0], v.size[1] * GlTools.aspectRatio, 1])
 
             const flipY = v.flipY || false
             if (!(v.texture instanceof GLTexture)) {

@@ -32,15 +32,15 @@ const lightPositions = []
 const lightColors = []
 for (let i = 0; i < NR_LIGHTS; i++) {
     // calculate slightly random offsets
-    let xPos = Math.random() * 33 - 16.0;
-    let yPos = Math.random() * 10 - 2.0;
-    let zPos = Math.random() * 20 - 4.0;
+    const xPos = Math.random() * 33 - 16.0;
+    const yPos = Math.random() * 10 - 2.0;
+    const zPos = Math.random() * 20 - 4.0;
     lightPositions.push([xPos, yPos, zPos]);
     // lightPositions.push()
     // also calculate random color
-    let rColor = (Math.random() / 2.0) + 0.5; // between 0.5 and 1.0
-    let gColor = (Math.random() / 2.0) + 0.5; // between 0.5 and 1.0
-    let bColor = (Math.random() / 2.0) + 0.5; // between 0.5 and 1.0
+    const rColor = (Math.random() / 2.0) + 0.5; // between 0.5 and 1.0
+    const gColor = (Math.random() / 2.0) + 0.5; // between 0.5 and 1.0
+    const bColor = (Math.random() / 2.0) + 0.5; // between 0.5 and 1.0
     lightColors.push([rColor, gColor, bColor]);
 }
 

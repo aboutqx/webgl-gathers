@@ -16,7 +16,7 @@ uniform mat3 uModelViewMatrixInverse;
 uniform vec3 uPosition;
 uniform vec3 uScale;
 
-varying vec2 vTextureCoord;
+varying vec2 vTexCoord;
 
 varying vec3 vNormal;
 varying vec3 vPosition;
@@ -40,5 +40,5 @@ void main(void) {
 
     gl_Position				= uProjectionMatrix * viewSpacePosition;
 
-	vTextureCoord			= aTextureCoord;
+	vTexCoord			= aTextureCoord;
 }

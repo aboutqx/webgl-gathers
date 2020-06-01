@@ -1,24 +1,13 @@
 #version 300 es
-//grass.frag
-
-
 #define SHADER_NAME SIMPLE_TEXTURE
 
 precision highp float;
-in vec2 vTexCoord;
-in vec2 vUV;
-in vec3 vPosition;
-in float vHeight;
-in vec3 vGrassNormal;
-in vec3 vColor;
-
-uniform sampler2D texture0;
-uniform float uTerrainSize;
+in vec2 vTextureCoord;
+uniform sampler2D textureNormal;
+uniform vec3 uBaseColor;
 uniform vec2 uUVWolf;
 uniform float uLightIntensity;
-
 out vec4 FragColor;
-#define EDGE 2.0
 
 float diffuse(vec3 N, vec3 L) {
 	return max(dot(N, normalize(L)), 0.0);
@@ -46,25 +35,15 @@ float getShadow(vec2 uv) {
 }
 
 void main(void) {
+	vec3 N 		= texture(textureNormal, vTextureCoord).rgb * 2.0 - 1.0;
+	float d 	= diffuse(N, vec3(1.0));
+	d 			= mix(d, 1.0, .6);
+	vec3 color 	= uBaseColor * d;
 
-	float opacity 	= 1.0;
-	float absz 		= abs(vPosition.z);
-	opacity 		= smoothstep(uTerrainSize, uTerrainSize - EDGE, absz);
-	
-	vec4 color 		= texture(texture0, vTexCoord);
-	color.a 		*= opacity;
-	
-	if(color.a < 0.75) discard;
-	//color.rgb		*= vColor*1.4;
-
-	float d 		= diffuse(vGrassNormal, vec3(1.0));
-	d 				= mix(d, 1.0, .56);
-	color.rgb 		*= d * uLightIntensity;
-
-	float shadowWolf = getShadow(vUV);
+	float shadowWolf = getShadow(vTextureCoord);
 	color -= shadowWolf;
 
-    FragColor 	= color;
+	color 		*= uLightIntensity;
 
-    // FragColor.rgb *= vHeight;
+    FragColor = vec4(color, 1.0);
 }

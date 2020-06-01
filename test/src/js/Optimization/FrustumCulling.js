@@ -37,7 +37,7 @@ export default class FrustumCulling extends Pipeline {
         for (let i = 0; i < num; i++) {
             const scale = random(.1, 10)
 
-            let mMatrix = mat4.create()
+            const mMatrix = mat4.create()
             let displacement = (Math.random() * 2 - 1) * 50
             x = displacement
             displacement = (Math.random() * 2 - 1) * 50
@@ -61,7 +61,7 @@ export default class FrustumCulling extends Pipeline {
         const frustum = new Frustum().fromMatrix(this.camera.viewMatrix, this.camera.projectionMatrix)
         this.count = 0
         this.instanceMatrix.instanceMatrix.forEach((v,i) => {
-            let e = Intersect.frustumSphere(frustum, Sphere.fromVertices(this.mesh.vertices, v))
+            const e = Intersect.frustumSphere(frustum, Sphere.fromVertices(this.mesh.vertices, v))
             this.instanceMatrix.inFrustum[i] = e
 
             if(e) this.count++

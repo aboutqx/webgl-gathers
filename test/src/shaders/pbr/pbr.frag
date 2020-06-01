@@ -39,8 +39,23 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
 
-    return nom / denom;//max(denom, 0.001); // prevent divide by zero for roughness=0.0 and NdotH=1.0
+    return nom / max(denom, 0.001); // prevent divide by zero for roughness=0.0 and NdotH=1.0
 }
+
+float AnisotropicDis(float x, float y, vec3 N, vec3 wh)
+{
+    float ex = x;
+    float ey = y;
+    if(ex > 1000.) ex = 1000.;
+    if(ey > 1000.) ey = 1000.;
+    float cosTheta = max(dot(N, wh), 0.0);
+    float d = 1. - cosTheta * cosTheta;
+    if(d == 0.) return 0.;
+    float e = (ex * wh.x * wh.x + ey * wh.y * wh.y) / d;
+    float INV_TWOPI = .5 * PI;
+    return sqrt((ex + 2.) * (ey + 2.)) * INV_TWOPI * pow(cosTheta, e);
+}
+
 // ----------------------------------------------------------------------------
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
@@ -118,6 +133,7 @@ void main(void){
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);
+        // float NDF = AnisotropicDis(20. ,1000., N, H);
         float G   = GeometrySmith(N, V, L, roughness);
         vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0); //反射百分比
 
