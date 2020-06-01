@@ -10,13 +10,14 @@ import GLTexture from 'libs/GLTexture'
 
 export default class FrameBufferGUI {
     _position = [0, 0]
-    _translate = [[.85, .85, 0], [.55, .85, 0]]
+    _translate = [[-.85, .85], [.55, .85]]
     _size = [.3, .3]
     _texturelist = []
 
     constructor() {
         this.texturePrg = new Program(basic2dVert)
         this.quad = Geom.plane(1, 1, 1) // size(.5, .5)
+        
     }
 
     set textureList(value) {
@@ -34,7 +35,7 @@ export default class FrameBufferGUI {
             v.size = v.size || this._size
             v.position = v.position || this._position
             let mMatrix = mat4.create()
-            mat4.translate(mMatrix, mMatrix, this._translate[i])
+            mat4.translate(mMatrix, mMatrix, [this._translate[i][0], 1. - (1. - this._translate[i][1]) * GlTools.aspectRatio, 0])
             mat4.scale(mMatrix, mMatrix, [v.size[0], v.size[1] * GlTools.aspectRatio, 1])
 
             const flipY = v.flipY || false

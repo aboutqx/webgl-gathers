@@ -54,8 +54,8 @@ void main(void) {
 	vec4 color 		= texture(texture0, vTexCoord);
 	color.a 		*= opacity;
 	
-	if(color.a < 0.75) discard;
-	//color.rgb		*= vColor*1.4;
+	if(color.a < 1.) discard;
+	// color.rgb		*= vColor*1.4;
 
 	float d 		= diffuse(vGrassNormal, vec3(1.0));
 	d 				= mix(d, 1.0, .56);

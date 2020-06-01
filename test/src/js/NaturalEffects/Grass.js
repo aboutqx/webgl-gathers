@@ -35,10 +35,11 @@ const distance = function(a, b) {
 	let dz = a[2] - b[2];
 	return Math.sqrt( dx * dx + dz * dz);
 }
+const grasses = ['grass', 'grass1', 'grass2', 'grass3']
 
 export default class Grass extends Pipeline {
 	_traveled = 0
-	_lightIntensity = new EaseNumber(1, 0.01)
+	_lightIntensity = new EaseNumber(1., 0.01)
 	_speed = new EaseNumber(0.01, 0.005)
 
     constructor() {
@@ -60,7 +61,7 @@ export default class Grass extends Pipeline {
             time:0,
             noiseScale:2.5,
             isOne:false,
-            numGrass:700,
+            numGrass: 600,
             grassColor:[98, 152, 83]
         };
 
@@ -70,8 +71,15 @@ export default class Grass extends Pipeline {
 
 		let u = this.position[0] / terrainSize * .5 + .5;
 		let v = 1.0 - (this.position[2] / terrainSize * .5 + .5);
-        this.uvOffset = [u, v];
+		this.uvOffset = [u, v];		
+		
+
+	}
+	
+	_setGUI() {
+        this.setRadio('grass3', grasses, 'grass type', this.attrib.bind(this))
     }
+
     attrib() {
 
         if(this.mesh) {
@@ -82,14 +90,29 @@ export default class Grass extends Pipeline {
 		const coords = [];
 		const indices = [];
 		const normals = [];
-		const NUM_GRASS = params.numGrass;
+		let NUM_GRASS
+		
+		for(let i = 0; i < grasses.length; i++) {
+			if(this.params[grasses[i]] && grasses[i] === 'grass') {
+				NUM_GRASS = params.numGrass * 1.5
+				this.orbital.radius = 17
+				break;
+			} else {
+				NUM_GRASS = params.numGrass
+				this.orbital.radius = 20
+				
+				break;
+			}
+		}
+		if(this.params['grass'] === undefined) NUM_GRASS = params.numGrass * 2
+
 		const RANGE = params.terrainSize/2 * .8;
 
 		this.range = RANGE;
 
 		let index = 0;
 
-		const W = 1.5;
+		const W = 2.5;
 		const H = W;
 		const m = mat4.create();
 
@@ -103,7 +126,7 @@ export default class Grass extends Pipeline {
 		}
 
 		function addPlane(angle) {
-			const yOffset = -1.5;
+			const yOffset = -W;
 			positions.push(rotate([-W, 0+yOffset, 0], angle));
 			positions.push(rotate([ W, 0+yOffset, 0], angle));
 			positions.push(rotate([ W, H+yOffset, 0], angle));
@@ -189,20 +212,20 @@ export default class Grass extends Pipeline {
 
 		this.mesh = getMesh(NUM_GRASS);
 
-		this._textureGrass = getAssets.grass
 
-		this.floor = Geom.plane(terrainSize, terrainSize, 125, 'xz');
+		this.floor = Geom.plane(terrainSize, terrainSize, 1225, 'xz');
 		this.floorColor = [64.0/255.0, 122.0/255.0, 42.0/255.0];
     }
 
 
     prepare() {
 
-		this.orbital.radius = 17
+		this.orbital.radius = 27
 		this.orbital.rx.value = Math.PI - 0.1;
-		this.orbital.ry.value = .15;
-		this.orbital.ry.limit(.2, .26);
-        //this.orbital.offset = [60, 60, 0]
+		this.orbital.ry.value = .25;
+		this.orbital.ry.limit(.2, .3);
+        this.orbital.offset = [0, 3, 0]
+		this.orbital.target = [0, 3, 0]
 
 		const noiseSize = 64;
         this._fboNoise = new FrameBuffer(noiseSize, noiseSize, { }, 3)
@@ -229,6 +252,11 @@ export default class Grass extends Pipeline {
 	}
 
     _renderGrass(textureHeight, textureNormal, textureNoise) {
+		grasses.map(v => {
+
+			if(this.params[v]) this._textureGrass = getAssets[v]
+		})
+
         const { maxHeight, terrainSize, speed, noiseScale, isOne } = params;
 		const totalDist = terrainSize / noiseScale;
 		this._traveled += speed;
@@ -269,7 +297,7 @@ export default class Grass extends Pipeline {
 		gl.enable(gl.CULL_FACE);
 		this._renderFloor(textureHeight, textureNormal)
 
-		this.frameBufferGUI.textureList = [{ texture: textureHeight}]
+		this.frameBufferGUI.textureList = [{ texture: this._textureGrass}]
 		
     }
 }

@@ -1,4 +1,11 @@
-const Assets = {
+let Assets = {
+    addCustom: function(folder, name) {
+        const names = Array.prototype.slice.call(arguments, 1)
+        this[folder] = {}
+        names.forEach(v => {
+            this[folder][v.split('.')[0]] = `./assets/${folder}/${v}`
+        })
+    },
     materialMaps: {
         cubeDiffuse: './assets/cubeDiffuse.png',
         cubeSpecular: './assets/cubeSpecular.png',
@@ -133,19 +140,12 @@ const Assets = {
         studio9_radiance: { "url": "assets/img/studio9_radiance.dds", "type": "binary" },
         vatican_irradiance: { "url": "assets/img/vatican_irradiance.dds", "type": "binary" },
         vatican_radiance: { "url": "assets/img/vatican_radiance.dds", "type": "binary" }
-    },
-    water: {
-        terrain: { url: './assets/water/terrain.jpg' },
-        dudvMap: { url: './assets/water/dudv.png'},
-        normalMap: { url: './assets/water/normalMap.png' },
-        matchingNormalMap: { url: './assets/water/matchingNormalMap.png' },
-    },
-    grass: {
-        grass: { url: './assets/grass.png' },
-        ground: { url: './assets/ground.jpg' }
     }
-
 }
+
+Assets.addCustom('water', 'terrain.jpg', 'dudvMap.png', 'normalMap.png', 'matchingNormalMap.png')
+Assets.addCustom('grass', 'grass.png', 'grass1.png', 'grass2.png', 'grass3.png', 'grass4.png')
+
 const mapAssets = {
     Reflection: { ...Assets.statue, ...Assets.venus },
     LightCaster: { ...Assets.materialMaps },

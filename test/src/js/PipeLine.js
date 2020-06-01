@@ -108,7 +108,7 @@ export default class Pipeline {
 
     
     
-    setRadio(prop, props, name = 'radio') {
+    setRadio(prop, props, name = 'radio', callback = function() {}) {
         if(props) {
             const folder = this.gui.addFolder(name)
             props.forEach(prop => {
@@ -116,7 +116,8 @@ export default class Pipeline {
                     [prop]: false
                 })
                 folder.add(this.params, prop).listen().onChange(() => {
-                this.setRadio(prop)
+                    this.setRadio(prop)
+                    callback()
                 })
             folder.open()
             this.radioProps.push(prop)
