@@ -166,6 +166,12 @@ class Object3D {
         this._sz = mValue;
     }
 
+    set scale(mValue) {
+        this._needUpdate = true;
+        this._sx = mValue;
+        this._sy = mValue;
+        this._sz = mValue;
+    }
 
     get rotationX() { return this._rx; }
     set rotationX(mValue) {

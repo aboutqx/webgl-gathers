@@ -33,12 +33,10 @@ export default class Bloom extends Pipeline {
         GlTools.srcBlend()
 
         this.orbital.radius = 3.5
-        let fbo = new FrameBuffer(canvas.width, canvas.height, { hdr: true }, 2)
+        this.fbo = new FrameBuffer(canvas.width, canvas.height, { hdr: true }, 2)
+        this.textures = this.fbo.textures
 
-        this.hdrFb = fbo.frameBuffer
-        this.textures = fbo.textures
-
-        this.pingpongFbo = new FboPingPong(canvas.width, canvas.height, { hdr: true })
+        this.pingpongFbo = new FboPingPong(128, 128, { hdr: true })
 
     }
     _setGUI() {
@@ -84,14 +82,14 @@ export default class Bloom extends Pipeline {
 
     render() {
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.hdrFb)
+        this.fbo.bind()
         GlTools.clear(0, 0, 0)
         gl.cullFace(gl.FRONT)
         this._renderScene()
         gl.cullFace(gl.BACK)
         this._renderScene()
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        this.fbo.unbind()
 
 
         this.blurPrg.use()
@@ -108,7 +106,7 @@ export default class Bloom extends Pipeline {
             horizontal = !horizontal;
             this.pingpongFbo.swap()
         }
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        this.pingpongFbo.write.unbind()
 
         GlTools.clear(0, 0, 0)
         this.finalPrg.use()

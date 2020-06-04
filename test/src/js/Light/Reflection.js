@@ -36,10 +36,10 @@ export default class Reflection extends Pipeline {
     }
     uniform() {
 
-        let mMatrix = mat4.create()
+        const mMatrix = mat4.create()
         // mat4.translate(mMatrix, mMatrix, [-2, 0, 0])
 
-        let invMatrix = mat4.create()
+        const invMatrix = mat4.create()
         mat4.invert(invMatrix, mMatrix)
 
         this.prg.use()

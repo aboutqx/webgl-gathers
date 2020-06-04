@@ -359,7 +359,7 @@ export function ObjectPropertyMax(objectes, property) {
     return max
 }
 
-function clamp(value, min, max) {
+export function clamp(value, min, max) {
     if (min > max) {
         return clamp(value, max, min);
     }
@@ -368,3 +368,5 @@ function clamp(value, min, max) {
     else if (value > max) return max;
     else return value;
 }
+
+export const deepclone = (items) => items.map(item => Array.isArray(item) ? clone(item) : item);

@@ -13,6 +13,10 @@ in vec3 normal;
 in vec3 aTangent;
 #endif
 
+#ifdef HAS_COLOR
+in vec3 color;
+#endif
+
 uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
@@ -22,6 +26,7 @@ uniform mat3 uModelViewMatrixInverse;
 
 out vec3 vPosition;
 out vec2 vTexCoord;
+out vec3 vColor;
 
 #ifdef HAS_NORMALS
 out vec3 vNormal;
@@ -44,5 +49,8 @@ void main(void) {
 	vTangent = normalize(vec3(uModelMatrix * vec4(aTangent, 0.0)));
 	#endif
 
+	#ifdef HAS_COLOR
+	vColor = color;
+	#endif
 	gl_Position   = uProjectionMatrix * uViewMatrix * tPosition;
 }

@@ -22,7 +22,7 @@ export default class Noise extends Pipeline {
     }
     attrib() {
 
-        this.plane = Geom.plane(8, 8, 30, 'xz', gl.LINES)
+        this.plane = Geom.plane(8, 8, 125, 'xz', gl.LINES)
 
     }
 

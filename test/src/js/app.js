@@ -20,7 +20,7 @@ async function loadScene() {
     // progressbar.innerHTML = 'Loading...' + (progress * 100).toFixed() + '%';
     if (error) console.error(error)
   })
-  window.getAssets = AssetsInit(assets, files)
+  window.getAssets = await AssetsInit(assets, files)
   import('./Scene')
 
 }

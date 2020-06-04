@@ -17,8 +17,10 @@ export default class Pipeline {
     radioProps = []
 
     constructor() {
-        this.orbital = new OrbitalControls(this.camera)
+
         GlTools.setCamera(this.camera)
+        this._resize() // set canvas width
+        this.orbital = new OrbitalControls(this.camera)
         this.init()
         this.attrib()
         this.prepare()
@@ -28,7 +30,7 @@ export default class Pipeline {
 
         GlTools.customGlState()
 
-        this._resize()
+
         window.addEventListener('resize', this._resize.bind(this), false);
 
     }
@@ -85,6 +87,8 @@ export default class Pipeline {
         GlTools.aspectRatio = canvas.width / canvas.height
 
         this.camera.setAspectRatio(GlTools.aspectRatio);
+
+        gl.viewport(0, 0, canvas.width, canvas.height);	
 
         this.resize()
     }

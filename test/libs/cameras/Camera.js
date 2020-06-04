@@ -53,6 +53,12 @@ export default class Camera {
         this.setProjection(mProj);
     }
 
+    splitFrustum(clipSpaceNear, clipSpaceFar, viewProjInverse) {
+        const splitCorners = [
+            [-1, 1, clipSpaceNear]
+        ]
+    }
+
     //	GETTERS
 
     get matrix() {

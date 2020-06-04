@@ -21,7 +21,7 @@ export default class GLTF extends Pipeline {
 	}
 	attrib() {
 
-		this.orbital.radius = 7
+		this.orbital.radius = 15
 		this.orbital.offset = [0, 2, 0]
 		this.orbital.target = [0, 2, 0]
 
@@ -36,7 +36,7 @@ export default class GLTF extends Pipeline {
 		const skySize = 40
 		this.skybox = new BatchSkyBox(skySize, this.textureRad)
 
-		const gltfList = ['jiangx','hebe', 'trees_and_foliage', 'chinatown_lion', 'BoomBox', 'FlightHelmet', 'horse_statuette', 'swan_sculpture', 'triton_on_a_frieze']
+		const gltfList = ['one_ring', 'hebe', 'trees_and_foliage', 'chinatown_lion', 'BoomBox', 'FlightHelmet', 'horse_statuette', 'swan_sculpture', 'triton_on_a_frieze']
 		const index = 0
 		const url = `assets/gltf/${gltfList[index]}/scene.gltf`
 		GLTFLoader.load(url)
@@ -52,14 +52,12 @@ export default class GLTF extends Pipeline {
 				});
 
 				this.gltfPrg = meshes[0].material.shader
-				this.meshes = meshes
 
-				
 				const scale = skySize / ObjectPropertyMax(meshes, 'maxLength') *.2
 				console.log(ObjectPropertyMax(meshes, 'maxLength'), meshes, scale)
 				this.scenes.forEach(scene => {
 					if (scene.scaleX === 1 && scene.children[0].scaleX === 1)
-						scene.scaleX = scene.scaleY = scene.scaleZ = scale
+						scene.scale = scale
 				})
 			})
 			.catch(e => {

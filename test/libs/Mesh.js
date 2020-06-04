@@ -25,21 +25,6 @@ const getBuffer = function (attr) {
     return buffer;
 }
 
-const formBuffer = function (mData, mNum) {
-    const ary = [];
-
-    for (let i = 0; i < mData.length; i += mNum) {
-        const o = [];
-        for (let j = 0; j < mNum; j++) {
-            o.push(mData[i + j]);
-        }
-
-        ary.push(o);
-    }
-
-    return ary;
-};
-
 export default class Mesh extends Object3D {
     iBuffer = null
     _isInstanced = false
@@ -84,8 +69,23 @@ export default class Mesh extends Object3D {
         this.bufferData(mData, 'color', 4)
     }
 
+    formBuffer(mData, mNum) {
+        const ary = [];
+    
+        for (let i = 0; i < mData.length; i += mNum) {
+            const o = [];
+            for (let j = 0; j < mNum; j++) {
+                o.push(mData[i + j]);
+            }
+    
+            ary.push(o);
+        }
+    
+        return ary;
+    }
+
     bufferFlattenData(mData, mName, mItemSize, mDrawType = STATIC_DRAW, isInstanced = false) {
-        const data = formBuffer(mData, mItemSize);
+        const data = this.formBuffer(mData, mItemSize);
         this.bufferData(data, mName, mItemSize, mDrawType = STATIC_DRAW, isInstanced = false);
         return this;
 
@@ -455,12 +455,4 @@ export default class Mesh extends Object3D {
         vec3.subtract(maxSubMin, this._vertexMax, this._vertexMin)
         return vec3.length(maxSubMin)
     }
-}
-
-function has(arr, key, value) { // array child object has key-value
-    if (!arr || !arr.length) return -1
-    for (let i = 0; i < arr.length; i++) {
-        if (arr[i][key] === value) return i
-    }
-    return -1
 }

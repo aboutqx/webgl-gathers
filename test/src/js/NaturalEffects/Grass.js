@@ -53,7 +53,7 @@ export default class Grass extends Pipeline {
         window.params = {
             gamma:5.2,
             exposure:5,
-            terrainSize:55,
+            terrainSize:175,
             maxHeight:1,
             grassRange:20,
             pushStrength:0,
@@ -61,7 +61,7 @@ export default class Grass extends Pipeline {
             time:0,
             noiseScale:2.5,
             isOne:false,
-            numGrass: 600,
+            numGrass: 800,
             grassColor:[98, 152, 83]
         };
 
@@ -213,24 +213,43 @@ export default class Grass extends Pipeline {
 		this.mesh = getMesh(NUM_GRASS);
 
 
-		this.floor = Geom.plane(terrainSize, terrainSize, 1225, 'xz');
+		this.floor = Geom.plane(terrainSize, terrainSize, 125, 'xz');
 		this.floorColor = [64.0/255.0, 122.0/255.0, 42.0/255.0];
     }
 
 
     prepare() {
 
-		this.orbital.radius = 27
-		this.orbital.rx.value = Math.PI - 0.1;
+		this.orbital.radius = 57
+		// this.orbital.rx.value = Math.PI - 0.1;
 		this.orbital.ry.value = .25;
 		this.orbital.ry.limit(.2, .3);
-        this.orbital.offset = [0, 3, 0]
-		this.orbital.target = [0, 3, 0]
+        this.orbital.offset = [0, 5, 0]
+		this.orbital.target = [0, 5, 0]
 
 		const noiseSize = 64;
         this._fboNoise = new FrameBuffer(noiseSize, noiseSize, { }, 3)
 		this._vNoise = new BatchNoise()
 		GlTools.srcBlend()
+
+		this.env = 'studio9'
+		this.textureIrr = getAssets[`${this.env}_irradiance`];
+		this.textureRad = getAssets[`${this.env}_radiance`];
+		this.textureBrdf = getAssets['brdfLUT']
+
+		const { gltfInfo } = getAssets.horse
+		const { meshes } = gltfInfo.output
+		meshes.forEach(mesh => {
+			const { uniforms } = mesh.material
+			uniforms.uBRDFMap = this.textureBrdf;
+			uniforms.uIrradianceMap = this.textureIrr;
+			uniforms.uRadianceMap = this.textureRad;
+			uniforms.uLightColor = [1.8, 1.8, 1.8]
+			uniforms.uLightDirection = [0, 0, -1.8]
+
+			mesh.scale = .08
+			this.horse = mesh
+		})
 	}
 	
 	_renderFloor(textureHeight, textureNormal) {
@@ -278,8 +297,14 @@ export default class Grass extends Pipeline {
 		GlTools.draw(this.mesh)
     }
 
+	_renderHorse() {
+		this.horse.material.shader.bind()
+		if(this.horse.animate) this.horse.animate()
+		GlTools.draw(this.horse)
+	}
+
     render() {
-		params.speed = - this._speed.value;
+		params.speed = 0//- this._speed.value;
 		params.time += params.speed;
 
         GlTools.clear()
@@ -297,6 +322,7 @@ export default class Grass extends Pipeline {
 		gl.enable(gl.CULL_FACE);
 		this._renderFloor(textureHeight, textureNormal)
 
+		this._renderHorse()
 		this.frameBufferGUI.textureList = [{ texture: this._textureGrass}]
 		
     }

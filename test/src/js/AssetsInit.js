@@ -2,13 +2,14 @@ import GLTexture from 'libs/GLTexture'
 import GLCubeTexture from 'libs/GLCubeTexture'
 import HDRParser from 'loaders/HDRParser'
 import ObjLoader from 'loaders/ObjLoader'
+import GLTFLoader from 'loaders/GLTFLoader'
 
 const getExtension = function (mFile) {
     const ary = mFile.split('.');
     return ary[ary.length - 1];
 }
 
-export default function AssetsInit(assets, files) {
+export default async function AssetsInit(assets, files) {
     let hdrCubemaps = {}
     let result = {}
     let texture
@@ -67,6 +68,9 @@ export default function AssetsInit(assets, files) {
             case 'obj':
                 const mesh = ObjLoader.parse(file);
                 result[name] = mesh
+                break;
+            case 'gltf':
+                result[name] = { gltfInfo : await GLTFLoader.load(url) }
                 break;
             default:
                 result[name] = file

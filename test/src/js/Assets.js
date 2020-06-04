@@ -140,6 +140,9 @@ let Assets = {
         studio9_radiance: { "url": "assets/img/studio9_radiance.dds", "type": "binary" },
         vatican_irradiance: { "url": "assets/img/vatican_irradiance.dds", "type": "binary" },
         vatican_radiance: { "url": "assets/img/vatican_radiance.dds", "type": "binary" }
+    },
+    horse:{
+        horse: { url: './assets/animate/Horse.gltf', type: 'text' }
     }
 }
 
@@ -162,7 +165,7 @@ const mapAssets = {
     Gltf: { ...Assets.skybox, ...Assets.gltf },
     Bloom: { ...Assets.statue, ...Assets.venus },
     Water: { ...Assets.water, ...Assets.skybox, },
-    Grass: { ...Assets.grass },
+    Grass: { ...Assets.grass, ...Assets.horse, ...Assets.gltf },
     FrustumCulling: { ...Assets.statue }
 }
 export default mapAssets

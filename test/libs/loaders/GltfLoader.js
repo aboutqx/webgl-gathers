@@ -4,7 +4,6 @@ import xhr from './xhr';
 import loadImages from './loadImages';
 import Material from '../Material';
 import Mesh from '../Mesh';
-
 import { gltfVert, gltfFrag } from 'CustomShaders'
 
 
@@ -40,7 +39,7 @@ const semanticAttributeMap = {
     // TEXCOORD_1: 'aTextureCoord1',
     WEIGHTS_0: 'aWeight',
     JOINTS_0: 'aJoint',
-    COLOR: 'color'
+    COLOR_0: 'color'
 };
 
 let base;
@@ -59,6 +58,7 @@ const load = (mSource) => new Promise((resolve, reject) => {
         .then(_parseMaterials)
         .then(_parseMesh)
         .then(_parseNodes)
+        .then(_parseAnimation)
         .then((gltfInfo) => {
             resolve(gltfInfo);
         })
@@ -148,6 +148,9 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
                 if (semantic === 'NORMAL') {
                     defines.HAS_NORMALS = 1;
                 }
+                if (semantic.indexOf('COLOR') > -1) {
+                    defines.HAS_COLOR = 1;
+                }
                 if (semantic.indexOf('TEXCOORD') > -1) {
                     defines.HAS_UV = 1;
                 }
@@ -171,7 +174,7 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
                     value: attributeArray,
                     size,
                 };
-                // console.log('attribute', attributeName, geometryInfo[attributeName]);
+                console.log('attribute', attributeName, geometryInfo[attributeName]);
             });
 
             //	parse index
@@ -324,6 +327,7 @@ const _loadTextures = (gltfInfo) => new Promise((resolve, reject) => {
     const { textures, images, samplers } = gltfInfo;
     if (!images) {
         resolve(gltfInfo);
+        return
     }
 
     const imagesToLoad = images.map(img => `${base}${img.uri}`);
@@ -384,6 +388,110 @@ const _parseMaterials = (gltfInfo) => new Promise((resolve, reject) => {
 
     resolve(gltfInfo);
 });
+
+//renderedPrimitive.POSITION = primitive.POSITION + weights[0] * primitive.targets[0].POSITION +weights[1] * primitive.targets[1].POSITION;
+const _parseAnimation = (gltfInfo) => new Promise((resolve, reject) => {
+    const { nodes, animations } = gltfInfo
+    const meshesInfo = gltfInfo.meshes
+    const { meshes } = gltfInfo.output
+
+    if(!animations) {
+        resolve(gltfInfo)
+        return
+    }
+
+    animations.forEach(animation => {
+        const { samplers } = animation
+        animation.channels.forEach(channel => {
+            const { node, path } = channel.target
+            const meshIndex = nodes[node].mesh
+            const meshInfo = meshesInfo[meshIndex]
+            const mesh = meshes[meshIndex]
+            const sampler = samplers[channel.sampler]
+            const { input, output, interpolation } = sampler
+            const time = _getAccessorData(gltfInfo, input)
+            const transform = _getAccessorData(gltfInfo, output)
+            
+            if(path === 'weights') { // morph target
+                const weights = []
+                const targetPos = []
+                const { primitives } = meshInfo
+                
+                const weightLength = meshInfo.weights.length
+                for(let i = 0; i < transform.length / weightLength; i++) {
+                    const weight = []
+                    for(let j = 0 ;j < weightLength; j++){
+                        weight.push(transform[i * weightLength + j])
+                    }
+                    weights.push(weight)
+                }
+
+                const { targets } = primitives[meshIndex]
+                
+                targets.forEach(v => {
+                    const typedPos = _getAccessorData(gltfInfo, v.POSITION)
+                    targetPos.push(mesh.formBuffer(typedPos, 3))
+                })
+                const deepclone = (items) => items.map(item => Array.isArray(item) ? deepclone(item) : item);
+                const originalPos = deepclone(mesh.vertices)
+
+                mesh.animate = _morphTarget(mesh, originalPos, targetPos, weights, time, interpolation)
+            }
+        })
+    })
+
+    resolve(gltfInfo);
+})
+
+// linear
+const _morphTarget = (mesh, originalPos, targetPos, weights, time, interpolation) => {
+    
+    return function anim() {
+
+        //caculate wights from time
+        if(!mesh.startTime) mesh.startTime = performance.now()
+
+        const timeSecond = time[time.length - 1] - time[0]
+        const pastSecond = (performance.now() - mesh.startTime) / 1000
+        const fractTime = pastSecond % timeSecond
+        const weightCurrent = []
+        for(let k = 0; k < time.length; k++) {
+            
+            if(fractTime <= time[k]) {
+                if(interpolation == 'LINEAR') {
+                    const percent = (fractTime - time[k-1]) / (time[k] - time[k-1])
+                    for(let j = 0; j < weights[0].length; j++) {
+                        const change = weights[k][j]- weights[k-1][j]
+                        if(change === 0) {
+                            weightCurrent[j] = weights[k][j]
+                        } else {
+                            weightCurrent[j] = percent  * change + weights[k-1][j]
+                        }
+                    }
+                }
+                break;
+            }
+                
+        }
+
+        const newPos = mesh.vertices.map((v,j) => {
+            const move = [0, 0 ,0]
+            for(let i = 0 ;i < weightCurrent.length; i++){
+                if(weightCurrent[i] !== 0){
+                    move[0] += weightCurrent[i] * targetPos[i][j][0]
+                    move[1] += weightCurrent[i] * targetPos[i][j][1]
+                    move[2] += weightCurrent[i] * targetPos[i][j][2]
+                }
+            }
+            v[0] = originalPos[j][0] + move[0]
+            v[1] = originalPos[j][1] + move[1]
+            v[2] = originalPos[j][2] + move[2]
+            return v 
+        })
+        mesh.bufferVertex(newPos)
+
+    }
+}
 
 const parse = (mGltfInfo, mBin) => new Promise((resolve, reject) => {
     resolve(mSource);

@@ -13,7 +13,6 @@ const importLists = {
     Shading:[
         'Instance',
         'Gpgpu',
-        'Bezier',
         'DeferredShading',
         'Mask',
         'SSAO',

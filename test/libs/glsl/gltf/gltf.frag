@@ -54,6 +54,11 @@ in vec3 vPosition;
 #ifdef HAS_NORMALS
 in vec3 vNormal;
 #endif
+
+#ifdef HAS_COLOR
+in vec3 vColor;
+#endif
+
 out vec4 FragColor;
 
 //	From GLTF WebGL PBR :
@@ -197,8 +202,10 @@ void main() {
 
 #ifdef HAS_BASECOLORMAP
 	vec4 baseColor = SRGBtoLINEAR(texture(uColorMap, vTexCoord));
-#else
-	vec4 baseColor              = vec4(uBaseColor, 1.0);
+#elif HAS_COLOR
+	vec4 baseColor = vec4(vColor, 1.);
+#else 
+	vec4 baseColor = vec4(uBaseColor, 1.0);
 #endif
 
 	vec3 f0                     = vec3(0.04);
@@ -285,6 +292,8 @@ void main() {
 #endif
 	// output the fragment color
 	FragColor        = vec4(pow(color,vec3(1.0/uGamma)), baseColor.a);
+
+
 	//FragColor        = vec4(vec3(baseColor), 1.0);
 
 }
