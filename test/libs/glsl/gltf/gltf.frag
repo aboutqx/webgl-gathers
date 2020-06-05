@@ -224,7 +224,7 @@ void main() {
 
 	vec3 n                      = getNormal();                             // normal at surface point
 	vec3 v                      = normalize(uCameraPos - vPosition);        // Vector from surface point to camera
-	vec3 l                      = normalize(uLightDirection);             // Vector from surface point to light
+	vec3 l                      = normalize(-uLightDirection);             // Vector from surface point to light
 	vec3 h                      = normalize(l+v);                          // Half vector between both l and v
 	vec3 reflection             = -normalize(reflect(v, n));
 
@@ -290,6 +290,7 @@ void main() {
 	if(baseColor.a < uAlphaCutoff) discard;
 	else baseColor.a = 1.;
 #endif
+
 	// output the fragment color
 	FragColor        = vec4(pow(color,vec3(1.0/uGamma)), baseColor.a);
 

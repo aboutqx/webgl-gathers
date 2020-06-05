@@ -31,10 +31,6 @@ export default class Mask extends Pipeline {
         this.outlinePrg = this.compile(vs, outlineFs)
         this.prg = this.compile(vs, fs)
 
-        gl.cullFace(gl.BACK)
-
-        this._drawCube = this._drawCube.bind(this)
-        this._drawTorus = this._drawTorus.bind(this)
         this.intersect = new Intersect()
     }
     attrib() {
@@ -48,11 +44,9 @@ export default class Mask extends Pipeline {
 
 
         this.texture = getAssets.flower
-        this.texture.bind()
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.bindTexture(gl.TEXTURE_2D, null)
+        this.texture.magFilter =  gl.LINEAR
+        this.texture.minFilter =  gl.NEAREST_MIPMAP_NEAREST
+
     }
     _setGUI() {
         this.addGUIParams({
@@ -73,8 +67,6 @@ export default class Mask extends Pipeline {
         gl.stencilFunc(gl.NOTEQUAL, 1, 0xff);
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
-        //this.camera.setPerspective(90, .1, 100)
-
     }
     uniform() {
 
@@ -93,20 +85,20 @@ export default class Mask extends Pipeline {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
         gl.stencilMask(0x00) //写入0
 
-        const mMatrix = mat4.create()
         // translate 之后鼠标放在cube水平中心点很远的地方也能触发outline，这是个bug,原因是boundingbox计算有问题，初始minX，maxX这些值为0，0实际上已经是一个值了
         // 应该换成循环的第一个值为min和max，而不是0
+        const mMatrix = mat4.create()
         mat4.translate(mMatrix, mMatrix, [-2.5, 0, 0])
 
         if (this.intersect.castRay(transformPosition(this.cube.vertices, mMatrix))) {
-            this.renderOutline(mMatrix, this._drawCube)
-        } else this.renderDefault(mMatrix, this._drawCube)
+            this.renderOutline(mMatrix, this.cube)
+        } else this.renderDefault(mMatrix, this.cube)
 
         mat4.identity(mMatrix)
         mat4.translate(mMatrix, mMatrix, [2., 0, 0])
         if (this.intersect.castRay(transformPosition(this.torus.vertices, mMatrix))) {
-            this.renderOutline(mMatrix, this._drawTorus)
-        } else this.renderDefault(mMatrix, this._drawTorus)
+            this.renderOutline(mMatrix, this.torus)
+        } else this.renderDefault(mMatrix, this.torus)
 
         /*draw boundingVolume
             mMatrix = mat4.create()
@@ -130,19 +122,19 @@ export default class Mask extends Pipeline {
             GlTools.draw(this.cubeFrame)
         */
     }
-    renderDefault(mMatrix, draw) {
+    renderDefault(mMatrix, mesh) {
         this.prg.use()
         this.prg.style({
             texture: this.texture,
             uModelMatrix: mMatrix,
             lod: this.params.lod
         })
-        draw()
+        GlTools.draw(mesh, true)
     }
-    renderOutline(mMatrix, draw) {
+    renderOutline(mMatrix, mesh) {
         gl.stencilFunc(gl.ALWAYS, 1, 0xff)
         gl.stencilMask(0xff) //写入1
-        this.renderDefault(mMatrix, draw)
+        this.renderDefault(mMatrix, mesh)
 
         gl.stencilFunc(gl.NOTEQUAL, 1, 0xff);//不等于1的才能通过测试
         gl.stencilMask(0x00); //写入0
@@ -153,13 +145,7 @@ export default class Mask extends Pipeline {
         this.outlinePrg.style({
             uModelMatrix: mMatrix,
         })
-        draw()
-    }
-    _drawCube() {
-        GlTools.draw(this.cube, true)
-    }
-    _drawTorus() {
-        GlTools.draw(this.torus, true)
+        GlTools.draw(mesh, true)
     }
 
 }

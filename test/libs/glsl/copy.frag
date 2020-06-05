@@ -1,5 +1,5 @@
-// copy.frag
 #version 300 es
+// copy.frag
 #define SHADER_NAME COPY_FRAGMENT
 
 precision highp float;

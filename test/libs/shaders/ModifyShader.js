@@ -19,6 +19,27 @@ const injectDefines = function (mShader, mDefines) {
 
 };
 
+const addInstanceMatrix = (vs) => {
+	vs = vs.replace('#version 300 es', '')
+	if(vs.indexOf('instanceMatrix') == -1) {
+		vs = vs.replace('uModelMatrix', 'instanceMatrix')
+		vs = vs.replace('mMatrix', 'instanceMatrix')
+	}
+
+	return `#version 300 es
+			in mat4 instanceMatrix;
+			${vs}`;
+}
+
+const addPointSize = (vs, size = 1.) => {
+	String.prototype.splice = function(idx, rem, str) {
+		return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
+	};
+	const glPosIndex = vs.indexOf('gl_Position')
+	vs = vs.splice(glPosIndex, 0, `gl_PointSize = ${size};\n`);
+	return vs
+}
+
 const get = (vs, fs, defines = {}) => {
 	let _shader;
 	const _vs = injectDefines(vs, defines);
@@ -44,5 +65,6 @@ const get = (vs, fs, defines = {}) => {
 }
 
 export default {
-	get
+	get,
+	addInstanceMatrix
 }

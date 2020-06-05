@@ -174,7 +174,7 @@ const _parseMesh = (gltf) => new Promise((resolve, reject) => {
                     value: attributeArray,
                     size,
                 };
-                console.log('attribute', attributeName, geometryInfo[attributeName]);
+                // console.log('attribute', attributeName, geometryInfo[attributeName]);
             });
 
             //	parse index
@@ -452,7 +452,7 @@ const _morphTarget = (mesh, originalPos, targetPos, weights, time, interpolation
         if(!mesh.startTime) mesh.startTime = performance.now()
 
         const timeSecond = time[time.length - 1] - time[0]
-        const pastSecond = (performance.now() - mesh.startTime) / 1000
+        const pastSecond = (performance.now() - mesh.startTime) / 1000 * mesh.animateSpeed
         const fractTime = pastSecond % timeSecond
         const weightCurrent = []
         for(let k = 0; k < time.length; k++) {
@@ -461,7 +461,7 @@ const _morphTarget = (mesh, originalPos, targetPos, weights, time, interpolation
                 if(interpolation == 'LINEAR') {
                     const percent = (fractTime - time[k-1]) / (time[k] - time[k-1])
                     for(let j = 0; j < weights[0].length; j++) {
-                        const change = weights[k][j]- weights[k-1][j]
+                        const change = weights[k][j]- ( k == 0 ? 0 : weights[k-1][j])
                         if(change === 0) {
                             weightCurrent[j] = weights[k][j]
                         } else {

@@ -2,6 +2,7 @@
 // basic.vert
 
 #define SHADER_NAME BASIC_VERTEX
+#pragma glslify: fbm = require(../../../libs/glsl/noise/fbm.glsl)
 
 precision highp float;
 in vec3 position;
@@ -52,9 +53,11 @@ float noise (in vec2 st) {
 }
 
 void main(void) {
-    vec3 Position;
+    vec3 Position = position;
 
-    Position = vec3(position.x, noise(position.xz - vec2(cos(uTime*0.15/50.),sin(uTime*0.1/50.))) * terrainHeight, position.z);
+    // Position = vec3(position.x, noise(position.xz - vec2(cos(uTime*0.15/50.),sin(uTime*0.1/50.))) * terrainHeight, position.z);
+    float height = fbm(vec3(texCoord, uTime / 1000.));
+    Position.y += height * 2.;
 
     gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(Position, 1.0);
     vTexCoord = texCoord;

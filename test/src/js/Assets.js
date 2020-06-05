@@ -141,13 +141,14 @@ let Assets = {
         vatican_irradiance: { "url": "assets/img/vatican_irradiance.dds", "type": "binary" },
         vatican_radiance: { "url": "assets/img/vatican_radiance.dds", "type": "binary" }
     },
-    horse:{
+    horse: {
         horse: { url: './assets/animate/Horse.gltf', type: 'text' }
     }
 }
 
 Assets.addCustom('water', 'terrain.jpg', 'dudvMap.png', 'normalMap.png', 'matchingNormalMap.png')
 Assets.addCustom('grass', 'grass.png', 'grass1.png', 'grass2.png', 'grass3.png', 'grass4.png')
+Assets.addCustom('sky', 'nightSky.jpg')
 
 const mapAssets = {
     Reflection: { ...Assets.statue, ...Assets.venus },
@@ -165,7 +166,7 @@ const mapAssets = {
     Gltf: { ...Assets.skybox, ...Assets.gltf },
     Bloom: { ...Assets.statue, ...Assets.venus },
     Water: { ...Assets.water, ...Assets.skybox, },
-    Grass: { ...Assets.grass, ...Assets.horse, ...Assets.gltf },
+    Grass: { ...Assets.grass, ...Assets.horse, ...Assets.gltf, ...Assets.sky },
     FrustumCulling: { ...Assets.statue }
 }
 export default mapAssets

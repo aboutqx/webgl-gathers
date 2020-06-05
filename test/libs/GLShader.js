@@ -199,6 +199,10 @@ class GLShader {
 
                 this.uniform(uniformName, 'uniform1i', textureIndex);
                 texture.bind(textureIndex);
+            } else if(mUniformObj[uniformName] instanceof Object && !(mUniformObj[uniformName].includes)) {
+
+                console.error('uniform: ', uniformName, 'is a  object')
+
             } else {
                 let uniformValue = mUniformObj[uniformName];
                 const uniformType = this.getUniformType(uniformValue, uniformName);
@@ -260,7 +264,7 @@ class GLShader {
 
 
     getUniformType(mValue, mUniformName) {
-        const isArray = !!mValue.length
+        const isArray = Array.isArray(mValue) || mValue.includes
 
         if (!isArray) {
             return 'float';

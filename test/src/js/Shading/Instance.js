@@ -1,5 +1,6 @@
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
+import BatchInstance from 'helpers/BatchInstance'
 import vs from 'shaders/instance/instance.vert'
 import fs from 'shaders/instance/instance.frag'
 import FrameInterval from 'utils/FrameInterval'
@@ -19,21 +20,20 @@ export default class Instance extends Pipeline {
 
     }
     init() {
-        this.prg = this.compile(vs, fs)
+
     }
     attrib() {
 
-        this.line = Geom.singleLine([0, 0, 0], [1, 1, 1])
-        this.bezier = Geom.bezier([
+        const line = Geom.singleLine([0, 0, 0], [1, 1, 1])
+        const bezier = Geom.bezier([
             [-130,  90, 0],
             [ -55, -90, 0],
             [  75, -60, 0],
             [ 100,  80, 0]
         ], .01)
 
-        this.mesh = this.line
-        this.mesh.bufferInstance(this._caculateMatrix(), 'instanceMatrix', gl.DYNAMIC_DRAW)
-        this.bezier.bufferInstance(this._caculateMatrix(), 'instanceMatrix', gl.DYNAMIC_DRAW)
+        this.lineInstance = new BatchInstance(vs, fs, line, this._caculateMatrix())
+        this.bezierInstance = new BatchInstance(vs, fs, bezier, this._caculateMatrix())
     }
 
     _caculateMatrix() {
@@ -70,26 +70,24 @@ export default class Instance extends Pipeline {
     uniform() {
 
 
-        this.prg.use()
-        this.prg.style({
+        this.style = {
             objectColor: [0.1, 0.1, .8]
-        })
+        }
     }
     render() {
         GlTools.clear(0, 0, 0)
+        
         if(this.params.singleLine) {
-            this.mesh = this.line
+            this.instance = this.lineInstance
         } else {
-            this.mesh = this.bezier
+            this.instance = this.bezierInstance
         }
         
         FrameInterval(100, () => {
             const matrix = this._caculateMatrix()
-            // this.mesh.bufferSubData('instanceMatrix', matrix)
+            // this.instance.instanceMatrix = matrix
         })
 
-        GlTools.draw(this.mesh)
-
-
+        this.instance.draw(this.style)
     }
 }

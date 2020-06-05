@@ -16,6 +16,8 @@ import {
 } from 'libs/GlTools'
 import BatchNoise from 'helpers/BatchNoise'
 import EaseNumber from 'utils/EaseNumber'
+import BatchSky from 'helpers/BatchSky'
+import BatchInstance from 'helpers/BatchInstance'
 
 const random = function (min, max) { return min + Math.random() * (max - min); }
 const colours = [
@@ -90,21 +92,19 @@ export default class Grass extends Pipeline {
 		const coords = [];
 		const indices = [];
 		const normals = [];
+
 		let NUM_GRASS
-		
 		for(let i = 0; i < grasses.length; i++) {
 			if(this.params[grasses[i]] && grasses[i] === 'grass') {
-				NUM_GRASS = params.numGrass * 1.5
-				this.orbital.radius = 17
+				NUM_GRASS = params.numGrass * 2
 				break;
 			} else {
-				NUM_GRASS = params.numGrass
-				this.orbital.radius = 20
+				NUM_GRASS = params.numGrass * 2
 				
 				break;
 			}
 		}
-		if(this.params['grass'] === undefined) NUM_GRASS = params.numGrass * 2
+		if(this.params['grass'] === undefined)  NUM_GRASS = params.numGrass * 2
 
 		const RANGE = params.terrainSize/2 * .8;
 
@@ -215,12 +215,14 @@ export default class Grass extends Pipeline {
 
 		this.floor = Geom.plane(terrainSize, terrainSize, 125, 'xz');
 		this.floorColor = [64.0/255.0, 122.0/255.0, 42.0/255.0];
+
+		if(this.horse) this.horse.scale = .08
     }
 
 
     prepare() {
 
-		this.orbital.radius = 57
+		this.orbital.radius = 80
 		// this.orbital.rx.value = Math.PI - 0.1;
 		this.orbital.ry.value = .25;
 		this.orbital.ry.limit(.2, .3);
@@ -244,12 +246,35 @@ export default class Grass extends Pipeline {
 			uniforms.uBRDFMap = this.textureBrdf;
 			uniforms.uIrradianceMap = this.textureIrr;
 			uniforms.uRadianceMap = this.textureRad;
-			uniforms.uLightColor = [1.8, 1.8, 1.8]
-			uniforms.uLightDirection = [0, 0, -1.8]
+			uniforms.uLightColor = [15, 15, 15]
+			uniforms.uLightDirection = [0, -2.0, -1.8]
+			uniforms.uGamma = 2.4
 
 			mesh.scale = .08
 			this.horse = mesh
 		})
+
+		this.sky = new BatchSky(125)
+	}
+	
+	_caculateMatrix(num = 10) {
+        const instanceMatrix = []
+        let x, y, z
+        for (let i = 0; i < num; i++) {
+            const scale = random(.1, 10)
+
+            let mMatrix = mat4.create()
+            let displacement = (Math.random() * 2 - 1) * 50
+            x = displacement
+            displacement = (Math.random() * 2 - 1) * 50
+            y = displacement
+            displacement = (Math.random() * 2 - 1) * 50
+            z = displacement
+            mat4.translate(mMatrix, mMatrix, [x, y, z])
+            mat4.scale(mMatrix, mMatrix, [scale, scale, scale])
+            instanceMatrix.push(mMatrix)
+        }
+        return instanceMatrix
 	}
 	
 	_renderFloor(textureHeight, textureNormal) {
@@ -299,12 +324,15 @@ export default class Grass extends Pipeline {
 
 	_renderHorse() {
 		this.horse.material.shader.bind()
-		if(this.horse.animate) this.horse.animate()
+		if(this.horse.animate) {
+			this.horse.animateSpeed = 2.5
+			this.horse.animate()
+		}
 		GlTools.draw(this.horse)
 	}
 
     render() {
-		params.speed = 0//- this._speed.value;
+		params.speed = - this._speed.value;
 		params.time += params.speed;
 
         GlTools.clear()
@@ -323,7 +351,7 @@ export default class Grass extends Pipeline {
 		this._renderFloor(textureHeight, textureNormal)
 
 		this._renderHorse()
-		this.frameBufferGUI.textureList = [{ texture: this._textureGrass}]
-		
+
+		this.sky.draw(getAssets.nightSky)
     }
 }
