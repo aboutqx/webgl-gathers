@@ -22,13 +22,16 @@ const injectDefines = function (mShader, mDefines) {
 const addInstanceMatrix = (vs) => {
 	vs = vs.replace('#version 300 es', '')
 	if(vs.indexOf('instanceMatrix') == -1) {
-		vs = vs.replace('uModelMatrix', 'instanceMatrix')
-		vs = vs.replace('mMatrix', 'instanceMatrix')
-	}
+		vs = vs.replace('uniform mat4 uModelMatrix', 'in mat4 instanceMatrix')
+		vs = vs.replace('uniform mat4 mMatrix', 'in mat4 instanceMatrix')
+		vs = vs.replace(/uModelMatrix/g, 'instanceMatrix')
+		vs = vs.replace(/mMatrix/g, 'instanceMatrix')
 
+
+	}
 	return `#version 300 es
-			in mat4 instanceMatrix;
-			${vs}`;
+	${vs}`;
+
 }
 
 const addPointSize = (vs, size = 1.) => {
@@ -61,7 +64,11 @@ const get = (vs, fs, defines = {}) => {
 	}
 
 
-	return _shader;
+	return {
+		vs: _vs,
+		fs: _fs,
+		glShader: _shader
+	}
 }
 
 export default {

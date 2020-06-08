@@ -5,7 +5,10 @@ export default class Material {
 
     constructor(vs, fs, uniforms = {}, defines = {}, doubleSided = false) {
         this.doubleSided = doubleSided
-        this._shader = ModifyShader.get(vs, fs, defines);
+        const cache = ModifyShader.get(vs, fs, defines)
+        this._shader = cache.glShader;
+        this._vs = cache.vs
+        this._fs = cache.fs
         this.uniforms = Object.assign({}, uniforms);
     }
 
@@ -18,4 +21,13 @@ export default class Material {
     get shader() {
         return this._shader
     }
+
+    get vs() {
+        return this._vs
+    }
+
+    get fs() {
+        return this._fs
+    }
+
 }

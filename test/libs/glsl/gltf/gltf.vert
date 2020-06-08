@@ -1,4 +1,5 @@
 #version 300 es
+// gltf.vert
 #define SHADER_NAME gltf_vert
 
 precision highp float;

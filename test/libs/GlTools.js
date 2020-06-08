@@ -64,7 +64,8 @@ class GlTool {
 
     drawMesh(mMesh, modelMatrix) {
         const { material } = mMesh
-        if (material && material.update) {
+        // instancing use batchInstance shader
+        if (material && material.update && !(mMesh.isInstanced)) {
             material.update()
             if (material.doubleSided) {
                 gl.disable(gl.CULL_FACE)

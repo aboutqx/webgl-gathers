@@ -241,37 +241,41 @@ export default class Grass extends Pipeline {
 
 		const { gltfInfo } = getAssets.horse
 		const { meshes } = gltfInfo.output
-		meshes.forEach(mesh => {
-			const { uniforms } = mesh.material
-			uniforms.uBRDFMap = this.textureBrdf;
-			uniforms.uIrradianceMap = this.textureIrr;
-			uniforms.uRadianceMap = this.textureRad;
-			uniforms.uLightColor = [15, 15, 15]
-			uniforms.uLightDirection = [0, -2.0, -1.8]
-			uniforms.uGamma = 2.4
+		const mesh = meshes[0]
+		const { uniforms } = mesh.material
+		uniforms.uBRDFMap = this.textureBrdf;
+		uniforms.uIrradianceMap = this.textureIrr;
+		uniforms.uRadianceMap = this.textureRad;
+		uniforms.uLightColor = [15, 15, 15]
+		uniforms.uLightDirection = [0, -2.0, -1.8]
+		uniforms.uGamma = 2.4
 
-			mesh.scale = .08
-			this.horse = mesh
-		})
+		mesh.scale = .08
+		this.horse = mesh
+		
 
 		this.sky = new BatchSky(125)
+
+		this.horseInstance = new BatchInstance(mesh.material.vs, mesh.material.fs, mesh, this._caculateMatrix())
 	}
 	
 	_caculateMatrix(num = 10) {
         const instanceMatrix = []
         let x, y, z
         for (let i = 0; i < num; i++) {
-            const scale = random(.1, 10)
+            const scale = random(.06, .07)
 
             let mMatrix = mat4.create()
-            let displacement = (Math.random() * 2 - 1) * 50
+            let displacement = (Math.random() * 2 - 1) * 40
             x = displacement
-            displacement = (Math.random() * 2 - 1) * 50
+            displacement = Math.random() * 1.2
             y = displacement
-            displacement = (Math.random() * 2 - 1) * 50
+            displacement = (Math.random() * 2 - 1) * 40
             z = displacement
             mat4.translate(mMatrix, mMatrix, [x, y, z])
-            mat4.scale(mMatrix, mMatrix, [scale, scale, scale])
+			mat4.scale(mMatrix, mMatrix, [scale, scale, scale])
+			
+			console.log(x,y,z,scale)
             instanceMatrix.push(mMatrix)
         }
         return instanceMatrix
@@ -328,7 +332,9 @@ export default class Grass extends Pipeline {
 			this.horse.animateSpeed = 2.5
 			this.horse.animate()
 		}
-		GlTools.draw(this.horse)
+		this.horseInstance.draw(this.horse.material.uniforms)
+		console.log(this.horse)
+		// GlTools.draw(this.horse)
 	}
 
     render() {
