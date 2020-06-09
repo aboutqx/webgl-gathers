@@ -54,7 +54,7 @@ export default class Pbr extends Pipeline {
         })
 
 
-        this.setRadio('orenNayar', ['lambert', 'orenNayar'], 'diffuse model')
+        this.addRadio('orenNayar', ['lambert', 'orenNayar'], 'diffuse model')
 
         let folder1 = this.gui.addFolder('material factor')
         folder1.add(this.params, 'metallic', 0, 1).step(.01)

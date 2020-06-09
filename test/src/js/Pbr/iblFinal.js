@@ -192,7 +192,7 @@ export default class IblFinal extends Pipeline {
 		folder.add(this.params, 'metallic', 0, 6 / 7).step(0.01)
 		folder.open()
 
-        this.setRadio('lambertDiffuse', ['lambertDiffuse', 'orenNayarDiffuse'], 'diffuse model')
+        this.addRadio('lambertDiffuse', ['lambertDiffuse', 'orenNayarDiffuse'], 'diffuse model')
 
 		let folder2 = this.gui.addFolder('material map')
 		folder2.add(this.params, 'map', ['none', 'plastic', 'wall', 'gold', 'grass', 'rusted_iron', 'wood']).listen().onChange(() => {

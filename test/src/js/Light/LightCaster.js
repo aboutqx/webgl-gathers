@@ -53,7 +53,7 @@ export default class LightCaster extends Pipeline {
 	}
 	
 	_setGUI() {
-		this.setRadio('pointLight', ['directionalLight', 'pointLight', 'spotLight'], 'light type')
+		this.addRadio('pointLight', ['directionalLight', 'pointLight', 'spotLight'], 'light type')
 	}
 
 	uniform() {

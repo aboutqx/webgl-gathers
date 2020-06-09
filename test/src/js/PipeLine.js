@@ -38,18 +38,18 @@ export default class Pipeline {
     init() {
 
     }
-    compile(vs, fs) {
-        const prg = new Program(vs, fs)
+    compile(vs, fs, settings) {
+        const prg = new Program(vs, fs, settings)
         return prg
     }
 
-    basicVert(fs) {
-        const prg = new Program(null, fs)
+    basicVert(fs, settings) {
+        const prg = new Program(null, fs, settings)
         return prg
     }
 
-    basicColor() {
-        const prg = new Program(null, basicColorFrag)
+    basicColor(vs, settings) {
+        const prg = new Program(vs, basicColorFrag, settings)
         return prg
     }
 
@@ -82,13 +82,7 @@ export default class Pipeline {
     }
 
     _resize() {
-        canvas.width = window.innerWidth
-        canvas.height = window.innerHeight
-        GlTools.aspectRatio = canvas.width / canvas.height
-
-        this.camera.setAspectRatio(GlTools.aspectRatio);
-
-        gl.viewport(0, 0, canvas.width, canvas.height);	
+        GlTools.resize()
 
         this.resize()
     }
@@ -112,7 +106,7 @@ export default class Pipeline {
 
     
     
-    setRadio(prop, props, name = 'radio', callback = function() {}) {
+    addRadio(prop, props, name = 'radio', callback = function() {}) {
         if(props) {
             const folder = this.gui.addFolder(name)
             props.forEach(prop => {
@@ -120,7 +114,7 @@ export default class Pipeline {
                     [prop]: false
                 })
                 folder.add(this.params, prop).listen().onChange(() => {
-                    this.setRadio(prop)
+                    this.addRadio(prop)
                     callback()
                 })
             folder.open()

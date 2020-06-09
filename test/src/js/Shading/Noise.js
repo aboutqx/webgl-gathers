@@ -1,7 +1,6 @@
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
 import vs from 'shaders/noise/noise.vert'
-import { basicColorFrag } from 'CustomShaders'
 import {
     mat4,
 } from 'gl-matrix'
@@ -18,12 +17,12 @@ export default class Noise extends Pipeline {
 
     }
     init() {
-        this.prg = this.compile(vs, basicColorFrag)
+        this.prg = this.basicColor(vs)
     }
     attrib() {
 
         this.plane = Geom.plane(8, 8, 125, 'xz', gl.LINES)
-
+        this.points = Geom.points([0,0,0], [1,1,1], [2,2,2], [-1,-1,-1])
     }
 
     prepare() {
@@ -31,12 +30,21 @@ export default class Noise extends Pipeline {
         this.orbital.radius = 5
         this.orbital.offset = [ 0, 2, 3]
     }
+
+    _setGUI() {
+        this.addRadio('plane', ['point', 'plane'], 'mesh type')
+    }
+
     uniform() {
         
     }
     render() {
         GlTools.clear()
-
+        if(this.params.point) {
+            this.mesh = this.points
+        } else {
+            this.mesh = this.plane
+        }
         const mMatrix = mat4.create()
         this.prg.use()
         this.prg.style({
@@ -45,7 +53,7 @@ export default class Noise extends Pipeline {
             terrainHeight: .6
         })
 
-        GlTools.draw(this.plane)
+        GlTools.draw(this.mesh)
 
     }
 }

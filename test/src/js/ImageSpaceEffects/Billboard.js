@@ -9,7 +9,7 @@ import {
     GlTools
 } from 'libs/GlTools'
 
-export default class Reflection extends Pipeline {
+export default class Billboard extends Pipeline {
     constructor() {
         super()
 

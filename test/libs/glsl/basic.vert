@@ -21,6 +21,6 @@ void main(void){
     mat3 normalMatrix = transpose(inverse(mat3(mMatrix)));
     vNormal = normalize(normalMatrix * normal);
     
-    vPosition = pos.xyz/pos.w;
+    vPosition = pos.xyz;
     vTexCoord = texCoord;
 }

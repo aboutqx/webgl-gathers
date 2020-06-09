@@ -1,5 +1,7 @@
 
 import GLShader from '../GLShader';
+import { gl } from '../GlTools'
+
 const shaderCache = [];
 
 const definesToString = function (defines) {
@@ -35,11 +37,16 @@ const addInstanceMatrix = (vs) => {
 }
 
 const addPointSize = (vs, size = 1.) => {
+	if(vs.indexOf('gl_PointSize') !== -1) return;
+	const [minSize, maxSize] = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
+	console.log('point size range:', minSize, maxSize)
+	
 	String.prototype.splice = function(idx, rem, str) {
 		return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
 	};
+
 	const glPosIndex = vs.indexOf('gl_Position')
-	vs = vs.splice(glPosIndex, 0, `gl_PointSize = ${size};\n`);
+	vs = vs.splice(glPosIndex, 0, `gl_PointSize = ${parseFloat(size).toFixed(1)};\n`);
 	return vs
 }
 
@@ -73,5 +80,6 @@ const get = (vs, fs, defines = {}) => {
 
 export default {
 	get,
-	addInstanceMatrix
+	addInstanceMatrix,
+	addPointSize
 }

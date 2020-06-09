@@ -3,11 +3,8 @@
 */
 import Pipeline from '../PipeLine'
 import BatchSkyBox from 'libs/helpers/BatchSkyBox'
-import sVs from 'shaders/env_map/env_specular.vert'
 import sFs from 'shaders/env_map/env_specular.frag'
-import rVs from 'shaders/env_map/env_refract.vert'
 import rFs from 'shaders/env_map/env_refract.frag'
-import fVs from 'shaders/env_map/fresnell_chromatic.vert'
 import fFs from 'shaders/env_map/fresnell_chromatic.frag'
 import {
     mat4
@@ -23,9 +20,9 @@ export default class EnvMap extends Pipeline {
     }
     init() {
 
-        this.specularPrg = this.compile(sVs, sFs)
-        this.refractPrg = this.compile(rVs, rFs)
-        this.frenellPrg = this.compile(fVs, fFs)
+        this.specularPrg = this.basicVert(sFs)
+        this.refractPrg = this.basicVert(rFs)
+        this.frenellPrg = this.basicVert(fFs)
     }
     attrib() {
         this.skybox = new BatchSkyBox(40, getAssets.skyboxlake)
@@ -33,12 +30,25 @@ export default class EnvMap extends Pipeline {
 
     }
     prepare() {
-
-
         this.venus = getAssets.venus
 
         this.orbital.radius = 19
         this.orbital.target = [0, 5, 0]
+
+        window.params = {
+            numParticles:20,
+            skipCount:3,
+        
+            metallic:1,
+            roughness:0,
+            specular:1,
+            offset:1,
+        
+            gamma:2.2,
+            exposure:5,
+            showWires:false
+        };
+
     }
     uniform() {
 
@@ -50,23 +60,12 @@ export default class EnvMap extends Pipeline {
         this.skybox.draw()
 
         let mMatrix = mat4.create()
+        
         mat4.translate(mMatrix, mMatrix, [-6, 0, 0])
         this.specularPrg.use()
         this.specularPrg.style({
-            mMatrix: mMatrix,
+            mMatrix,
             skybox: this.skyboxMap,
-            cameraPos: this.camera.position,
-            aoMap: getAssets.venusAo
-        })
-        GlTools.draw(this.venus)
-
-        mMatrix = mat4.create()
-        mat4.translate(mMatrix, mMatrix, [6, 0, 0])
-        this.refractPrg.use()
-        this.refractPrg.style({
-            mMatrix: mMatrix,
-            skybox: this.skyboxMap,
-            cameraPos: this.camera.position,
             aoMap: getAssets.venusAo
         })
         GlTools.draw(this.venus)
@@ -75,9 +74,23 @@ export default class EnvMap extends Pipeline {
         mat4.translate(mMatrix, mMatrix, [0, 0, 0])
         this.refractPrg.use()
         this.refractPrg.style({
-            mMatrix: mMatrix,
+            mMatrix,
+            uRefractionRate: 1.0/1.52,
             skybox: this.skyboxMap,
-            cameraPos: this.camera.position,
+            uAoMap: getAssets.venusAo,
+            uGamma: params.gamma,
+            uExposure: params.exposure,
+            uRoughness: params.roughness
+        })
+        GlTools.draw(this.venus)
+
+        mMatrix = mat4.create()
+        mat4.translate(mMatrix, mMatrix, [6, 0, 0])
+        this.frenellPrg.use()
+        this.frenellPrg.style({
+            mMatrix,
+            skybox: this.skyboxMap,
+            aoMap: getAssets.venusAo,
             etaRatio: [.65, .67, .69],
             fresnelPower: .8,
             fresnelBias: .1,

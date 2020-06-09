@@ -60,6 +60,7 @@ void main(void) {
     Position.y += height * 2.;
 
     gl_Position = uProjectionMatrix * uViewMatrix * mMatrix * vec4(Position, 1.0);
+    gl_PointSize = 3.;
     vTexCoord = texCoord;
     vNormal = normal;
 }

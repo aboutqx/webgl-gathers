@@ -64,7 +64,7 @@ export default class Instance extends Pipeline {
     }
 
     _setGUI() {
-        this.setRadio('bezier', ['singleLine', 'bezier'], 'mesh type')
+        this.addRadio('bezier', ['singleLine', 'bezier'], 'mesh type')
     }
 
     uniform() {

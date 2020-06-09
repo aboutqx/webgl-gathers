@@ -79,7 +79,7 @@ export default class Grass extends Pipeline {
 	}
 	
 	_setGUI() {
-        this.setRadio('grass3', grasses, 'grass type', this.attrib.bind(this))
+        this.addRadio('grass3', grasses, 'grass type', this.attrib.bind(this))
     }
 
     attrib() {
@@ -223,7 +223,7 @@ export default class Grass extends Pipeline {
     prepare() {
 
 		this.orbital.radius = 80
-		// this.orbital.rx.value = Math.PI - 0.1;
+		this.orbital.rx.value = - Math.PI / 2;
 		this.orbital.ry.value = .25;
 		this.orbital.ry.limit(.2, .3);
         this.orbital.offset = [0, 5, 0]
@@ -265,17 +265,16 @@ export default class Grass extends Pipeline {
         for (let i = 0; i < num; i++) {
             const scale = random(.06, .07)
 
-            let mMatrix = mat4.create()
+            const mMatrix = mat4.create()
             let displacement = (Math.random() * 2 - 1) * 40
             x = displacement
-            displacement = Math.random() * 1.2
+            displacement = Math.random() * 1.
             y = displacement
             displacement = (Math.random() * 2 - 1) * 40
             z = displacement
             mat4.translate(mMatrix, mMatrix, [x, y, z])
 			mat4.scale(mMatrix, mMatrix, [scale, scale, scale])
 			
-			console.log(x,y,z,scale)
             instanceMatrix.push(mMatrix)
         }
         return instanceMatrix
@@ -283,7 +282,7 @@ export default class Grass extends Pipeline {
 	
 	_renderFloor(textureHeight, textureNormal) {
 		const { maxHeight } = params;
-		const color = [params.grassColor[0]/255, params.grassColor[1]/255, params.grassColor[2]/255];
+		const color = params.grassColor.map(v => v / 255)
 
 		this.floorPrg.use();
 		// this.floorPrg.uniform('uBaseColor', 'uniform3fv', this.baseColor);
@@ -327,13 +326,12 @@ export default class Grass extends Pipeline {
     }
 
 	_renderHorse() {
-		this.horse.material.shader.bind()
+		//this.horse.material.shader.bind()
 		if(this.horse.animate) {
 			this.horse.animateSpeed = 2.5
 			this.horse.animate()
 		}
 		this.horseInstance.draw(this.horse.material.uniforms)
-		console.log(this.horse)
 		// GlTools.draw(this.horse)
 	}
 

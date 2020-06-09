@@ -6,6 +6,7 @@ import { gl, GlTools } from './GlTools';
 import GLTexture from './GLTexture';
 import GLCubeTexture from './GLCubeTexture';
 import WebglNumbers from './utils/WebglNumber'
+import ModifyShader from './shaders/ModifyShader'
 
 const isSame = (array1, array2) => {
     if (array1.length !== array2.length) {
@@ -61,16 +62,19 @@ const mapping = {
 }
 
 class GLShader {
-    constructor(strVertexShader = defaultVertexShader, strFragmentShader = defaultFragmentShader, mVaryings) {
+    constructor(strVertexShader = defaultVertexShader, strFragmentShader = defaultFragmentShader, settings = {}) {
         this.parameters = [];
         this._uniformTextures = [];
-        this._varyings = mVaryings;
+        this._varyings = settings.mVaryings;
+        this.pointSize = settings.pointSize;
 
         if (!strVertexShader) { strVertexShader = defaultVertexShader; }
         if (!strFragmentShader) { strFragmentShader = defaultVertexShader; }
 
         this._name = strVertexShader.split('//')[1]
         this._name = !this._name ? '' : this.name.split('\n')[0]
+
+        if(this.pointSize) strVertexShader = ModifyShader.addPointSize(strVertexShader, this.pointSize)
 
         const vsShader = this._createShaderProgram(strVertexShader, true);
         const fsShader = this._createShaderProgram(strFragmentShader, false);

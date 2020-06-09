@@ -56,6 +56,16 @@ class GlTool {
         this.camera = camera
     }
 
+    resize() {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+        this.aspectRatio = canvas.width / canvas.height
+
+        this.camera.setAspectRatio(this.aspectRatio);
+
+        gl.viewport(0, 0, canvas.width, canvas.height);	
+    }
+
     useShader(shader) {
         this.shader = shader
         this.shaderProgram = this.shader.shaderProgram
