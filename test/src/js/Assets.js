@@ -82,6 +82,14 @@ let Assets = {
         toyBoxNormal: { url: './assets/toy_box_normal.png' },
         toyBoxDisp: { url: './assets/toy_box_disp.png' },
     },
+    dimSkybox: {
+        dimskyboxPosX: { url: './assets/skybox/dim_skybox_posx.hdr', type: 'binary' },
+        dimskyboxPosY: { url: './assets/skybox/dim_skybox_posy.hdr', type: 'binary' },
+        dimskyboxPosZ: { url: './assets/skybox/dim_skybox_posz.hdr', type: 'binary' },
+        dimskyboxNegX: { url: './assets/skybox/dim_skybox_negx.hdr', type: 'binary' },
+        dimskyboxNegY: { url: './assets/skybox/dim_skybox_negy.hdr', type: 'binary' },
+        dimskyboxNegZ: { url: './assets/skybox/dim_skybox_negz.hdr', type: 'binary' },
+    },
     skybox: {
         outputskyboxPosX: { url: './assets/skybox/output_skybox_posx.hdr', type: 'binary' },
         outputskyboxPosY: { url: './assets/skybox/output_skybox_posy.hdr', type: 'binary' },
@@ -104,7 +112,8 @@ let Assets = {
     },
     statue: {
         statue: { url: './assets/models/statue/statue.obj', type: 'text' },
-        statueAo: { url: './assets/models/statue/statueAo.jpg' }
+        statueAo: { url: './assets/models/statue/statueAo.png' },
+        statueTexture: { url: './assets/models/statue/texture.jpg' }
     },
     gltf: {
         albedo: { "url": "assets/img/albedo.jpg", "type": "image" },
@@ -143,6 +152,20 @@ let Assets = {
     },
     horse: {
         horse: { url: './assets/animate/Horse.gltf', type: 'text' }
+    },
+    refraction: {
+        irrPosX: { url: './assets/pbrflow/refraction/irr_posx.hdr', type: 'binary' },
+        irrPosY: { url: './assets/pbrflow/refraction/irr_posy.hdr', type: 'binary' },
+        irrPosZ: { url: './assets/pbrflow/refraction/irr_posz.hdr', type: 'binary' },
+        irrNegX: { url: './assets/pbrflow/refraction/irr_negx.hdr', type: 'binary' },
+        irrNegY: { url: './assets/pbrflow/refraction/irr_negy.hdr', type: 'binary' },
+        irrNegZ: { url: './assets/pbrflow/refraction/irr_negz.hdr', type: 'binary' },
+        radPosX: { url: './assets/pbrflow/refraction/rad_posx.hdr', type: 'binary' },
+        radPosY: { url: './assets/pbrflow/refraction/rad_posy.hdr', type: 'binary' },
+        radPosZ: { url: './assets/pbrflow/refraction/rad_posz.hdr', type: 'binary' },
+        radNegX: { url: './assets/pbrflow/refraction/rad_negx.hdr', type: 'binary' },
+        radNegY: { url: './assets/pbrflow/refraction/rad_negy.hdr', type: 'binary' },
+        radNegZ: { url: './assets/pbrflow/refraction/rad_negz.hdr', type: 'binary' },
     }
 }
 
@@ -162,10 +185,10 @@ const mapAssets = {
     iblfinal: { ...Assets.hdrSkybox },
     DeferredShading: { ...Assets.nanosuit },
     Ssao: { ...Assets.nanosuit },
-    EnvironmentMapping: { ...Assets.skyboxLake, ...Assets.venus, ...Assets.nanosuit, ...Assets.statue, ...Assets.gltf, },
+    EnvironmentMapping: { ...Assets.venus, ...Assets.statue, ...Assets.refraction },
     Gltf: { ...Assets.skybox, ...Assets.gltf },
     Bloom: { ...Assets.statue, ...Assets.venus },
-    Water: { ...Assets.water, ...Assets.skybox, },
+    Water: { ...Assets.water, ...Assets.dimSkybox, },
     Grass: { ...Assets.grass, ...Assets.horse, ...Assets.gltf, ...Assets.sky },
     FrustumCulling: { ...Assets.statue }
 }

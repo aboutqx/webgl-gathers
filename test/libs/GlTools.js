@@ -27,7 +27,18 @@ class GlTool {
     _inverseModelViewMatrix = mat3.create()
     _modelMatrix
     aspectRatio
-    
+    constructor() {
+        this.customUniforms = [
+            'uProjectionMatrix',
+            'uViewMatrix',
+            'uCameraPos',
+            'uNormalMatrix',
+            'uModelViewMatrixInverse',
+            'uTime',
+            'uModelMatrix'
+        ]
+    }
+
     clear(r = .3, g = .3, b = .3, a = 1) {
         gl.clearColor(r, g, b, a)
         gl.clearDepth(1.0);
@@ -85,17 +96,19 @@ class GlTool {
         mMesh.bind(this.shaderProgram);
         // console.log(this.shader.name, mMesh)
         if (this.shader) {
+            if(!this.camera) console.error('no camera set')
             //	DEFAULT UNIFORMS
-            if (this.camera !== undefined) {
-                this.shader.uniform('uProjectionMatrix', 'mat4', this.camera.projectionMatrix);
-                this.shader.uniform('uViewMatrix', 'mat4', this.camera.viewMatrix);
+            const customUniforms = {
+                'uProjectionMatrix': this.camera.projectionMatrix,
+                'uViewMatrix': this.camera.viewMatrix,
+                'uCameraPos': this.camera.position,
+                'uNormalMatrix': this._normalMatrix,
+                'uModelViewMatrixInverse': this._inverseModelViewMatrix,
+                'uTime': performance.now()
             }
-
-            this.shader.uniform('uCameraPos', 'vec3', this.camera.position);
+            this.shader.style(customUniforms)
             if (!modelMatrix) this.shader.uniform('uModelMatrix', 'mat4', mMesh.matrix);
-            this.shader.uniform('uNormalMatrix', 'mat3', this._normalMatrix);
-            this.shader.uniform('uModelViewMatrixInverse', 'mat3', this._inverseModelViewMatrix);
-            this.shader.uniform('uTime', 'float', performance.now());
+
         }
 
         const drawType = mMesh.drawType;

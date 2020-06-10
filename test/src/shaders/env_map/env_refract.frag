@@ -89,7 +89,6 @@ void main() {
 	//	refraction
 
 	
-	
 	vec3 color;
 	
 	// sample the pre-filtered cubemap at the corresponding mipmap level
@@ -98,7 +97,7 @@ void main() {
 	vec3 lookup			= -reflect( V, N );
 	lookup				= fix_cube_lookup( lookup, 512.0, mip );
 	vec3 radiance		= pow( texture( uRadianceMap, lookup, mip ).rgb, vec3( 2.2 ) );
-	vec3 irradiance		= pow( texture( uIrradianceMap, N ).rgb, vec3( 1 ) );
+	vec3 irradiance		= pow( texture( uIrradianceMap, N ).rgb, vec3( 2.2 ) );
 	
 	// get the approximate reflectance
 	float NoV			= saturate( dot( N, V ) );

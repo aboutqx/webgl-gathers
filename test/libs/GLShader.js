@@ -126,11 +126,16 @@ class GLShader {
         }
 
         let isNumber = false;
+        const customShaders = GlTools.customUniforms
 
         if (!hasUniform) {
             isNumber = uniformType === 'uniform1i' || uniformType === 'uniform1f';
             this.shaderProgram[mName] = gl.getUniformLocation(this.shaderProgram, mName);
-            //console.log(this.shaderProgram[mName], mName)
+
+            if(!this.shaderProgram[mName] && !customShaders.includes(mName)) {
+                if(!this._name.includes('.vert')) console.log(this.shaderProgram[mName], mName, this._name)
+            }
+            
             if (isNumber) {
                 this.parameters.push({ name: mName, type: uniformType, value: mValue, uniformLoc: this.shaderProgram[mName], isNumber });
             } else {
@@ -181,7 +186,9 @@ class GLShader {
 
     uniformObject(mUniformObj) {
         for (const uniformName in mUniformObj) {
-            if (mUniformObj[uniformName] === undefined || typeof mUniformObj[uniformName] === 'function') { console.error('uniform: ', uniformName, 'undefined or function') }
+            if (mUniformObj[uniformName] === undefined || typeof mUniformObj[uniformName] === 'function') { 
+                console.error('uniform: ', uniformName, 'undefined or function') 
+            }
             if (mUniformObj[uniformName] instanceof GLTexture || mUniformObj[uniformName] instanceof GLCubeTexture) {
                 const texture = mUniformObj[uniformName];
 

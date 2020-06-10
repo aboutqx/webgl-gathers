@@ -88,16 +88,7 @@ export default class Pipeline {
     }
 
     _setGUI() {
-        // this.addGUIParams({
-        //   lt: 0.2,
-        //   gt: 0.98,
-        //   clamp: false
-        // })
-        // cconst folder = gui.addFolder('grayFocus')
-        // folder.add(this.params, 'lt', 0, 1).step(0.01)
-        // folder.add(this.params, 'gt', 0, 1).step(0.01)
-        // folder.add(this.params, 'clamp')
-        // folder.open()
+
     }
 
     addGUIParams(o) {
@@ -124,6 +115,19 @@ export default class Pipeline {
         
         this.radioProps.forEach(v => this.params[v] = false)
         if(prop) this.params[prop] = true
+    }
+
+    addPbrParams(params) {
+        this.addGUIParams(params)
+
+        let folder = this.gui.addFolder('material factor')
+        folder.add(this.params, 'metallic', 0, 1).step(.01)
+        folder.add(this.params, 'roughness', 0, 1).step(.01)
+        folder.add(this.params, 'specular', 0, 1).step(.01)
+        folder.add(this.params, 'gamma', 0, 5).step(.1)
+        folder.add(this.params, 'exposure', 1, 10).step(1)
+        folder.addColor(this.params, 'color')
+        folder.open()
     }
 
     get params() {

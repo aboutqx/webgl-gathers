@@ -28,7 +28,7 @@ export default class Water extends Pipeline {
         this.waterPrg = this.compile(waterVs, waterFs)
     }
     attrib() {
-        this.skybox = new BatchSkyBox(400, getAssets.outputskybox)
+        this.skybox = new BatchSkyBox(400, getAssets.dimskybox)
 
         const size = 350
         this.terrainPlane = Geom.plane(size, size, 20, 'xz')
@@ -46,16 +46,16 @@ export default class Water extends Pipeline {
         this._relectionFbo.getTexture().repeat()
     }
     uniform() {
-        let mMatrix = mat4.create()
-
+        const mMatrix = mat4.create()
+        mat4.translate(mMatrix, mMatrix, [0, -10, 0])
         this.terrainPrg.use()
         this.terrainPrg.style({
             mMatrix,
             texture0: this.terrainTexture
         })
 
-        mMatrix = mat4.create()
-
+        mat4.identity(mMatrix)
+        mat4.translate(mMatrix, mMatrix, [0, -10, 0])
         this.waterPrg.use()
         this.waterPrg.style({
             mMatrix
@@ -91,8 +91,8 @@ export default class Water extends Pipeline {
         this.orbital.flipY()
         this.frameBufferGUI.textureList = [{ texture: this._relectionFbo.getTexture(), flipY: true }]
         this._renderScene()
+
         this.waterPrg.use()
-        
         const speed = 0.1
         // console.log(performance.now() / 1000 * speed)
         this.waterPrg.style({
@@ -104,7 +104,6 @@ export default class Water extends Pipeline {
             lightColor: [1., 1., 1.],
             lightPositon: [10., 10., 10.]
         })
-
         GlTools.draw(this.waterPlane)
 
     }

@@ -1,54 +1,152 @@
 #version 300 es
 precision highp float;
-in vec3 vNormal;
-in vec3 vPosition;
-in vec2 vTexCoord;
-uniform vec3 uCameraPos;
-uniform samplerCube skybox;
-uniform sampler2D aoMap;
-uniform float fresnelBias;
-uniform float fresnelScale;
-uniform float fresnelPower;
-uniform vec3 etaRatio;
 
 out vec4 FragColor;
 
-void main()
-{             
-    float ratio = 1.00 / 1.52;
-    vec3 I = normalize(vPosition - uCameraPos);
-    vec3 N = normalize(vNormal);
-    vec3 R = refract(I, N, ratio);
+uniform sampler2D 	uAoMap;
+
+uniform samplerCube uRadianceMap;
+uniform samplerCube uIrradianceMap;
+
+uniform vec3		uBaseColor;
+uniform float		uRoughness;
+uniform float		uMetallic;
+uniform float		uSpecular;
+
+uniform float		uExposure;
+uniform float		uGamma;
+
+uniform float       fresnelBias;
+uniform float       fresnelScale;
+uniform float       fresnelPower;
+uniform vec3        etaRatio;
+
+uniform vec3		uCameraPos;
+in vec3		vNormal;
+in vec3		vPosition;
+in vec2     vTexCoord;
+#define saturate(x) clamp(x, 0.0, 1.0)
+#define PI 3.1415926535897932384626433832795
+
+
+// Filmic tonemapping from
+// http://filmicgames.com/archives/75
+
+const float A = 0.15;
+const float B = 0.50;
+const float C = 0.10;
+const float D = 0.20;
+const float E = 0.02;
+const float F = 0.30;
+
+
+vec3 Uncharted2Tonemap( vec3 x )
+{
+	return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+}
+
+// https://www.unrealengine.com/blog/physically-based-shading-on-mobile
+vec3 EnvBRDFApprox( vec3 SpecularColor, float Roughness, float NoV )
+{
+	const vec4 c0 = vec4( -1, -0.0275, -0.572, 0.022 );
+	const vec4 c1 = vec4( 1, 0.0425, 1.04, -0.04 );
+	vec4 r = Roughness * c0 + c1;
+	float a004 = min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y;
+	vec2 AB = vec2( -1.04, 1.04 ) * a004 + r.zw;
+	return SpecularColor * AB.x + AB.y;
+}
+
+
+// http://the-witness.net/news/2012/02/seamless-cube-map-filtering/
+vec3 fix_cube_lookup( vec3 v, float cube_size, float lod ) {
+	float M = max(max(abs(v.x), abs(v.y)), abs(v.z));
+	float scale = 1.0 - exp2(lod) / cube_size;
+	if (abs(v.x) != M) v.x *= scale;
+	if (abs(v.y) != M) v.y *= scale;
+	if (abs(v.z) != M) v.z *= scale;
+	return v;
+}
+
+vec3 correctGamma(vec3 color, float g) {
+	return pow(color, vec3(1.0/g));
+}
+
+vec3 caculateEnv(vec3 I, vec3 N) {
+    vec3 R = reflect(I, N);
     
     vec3 TRed   = refract(I, N, etaRatio.x);
-
     vec3 TGreen = refract(I, N, etaRatio.y);
-
     vec3 TBlue  = refract(I, N, etaRatio.z);
 
      // Compute the reflection factor
 
     float reflectionFactor = fresnelBias + fresnelScale * pow(1. + dot(I, N), fresnelPower);
-    vec4 reflectedColor = texture(skybox, R);
-
+    vec3 reflectedColor = texture(uRadianceMap, R).rgb;
+	reflectedColor = vec3(0., 0., 0.);
 
     // Compute the refracted environment color
 
-    vec4 refractedColor;
+    vec3 refractedColor;
 
-    refractedColor.r = texture(skybox, TRed).r;
+    refractedColor.r = texture(uRadianceMap, TRed).r;
+    refractedColor.g = texture(uRadianceMap, TGreen).g;
+    refractedColor.b = texture(uRadianceMap, TBlue).b;
 
-    refractedColor.g = texture(skybox, TGreen).g;
+    vec3 envColor = mix(refractedColor, reflectedColor, vec3(reflectionFactor));
+    return envColor;
+}
 
-    refractedColor.b = texture(skybox, TBlue).b;
+void main() {
 
-    refractedColor.a = 1.;
+	float roughness4   = pow(uRoughness, 4.0);
+
+	vec3 N 				= normalize( vNormal );
+	vec3 V 				= normalize( uCameraPos );
+
+    vec3 I = normalize(vPosition - uCameraPos);
+
+    vec3 envColor = caculateEnv(I, N);
+
+    // deduce the diffuse and specular color from the baseColor and how metallic the material is
+	vec3 diffuseColor	= uBaseColor - uBaseColor * uMetallic;
+	vec3 specularColor	= mix( vec3( 0.08 * uSpecular ), uBaseColor, uMetallic );
+	
+	vec3 color;
+	
+	// sample the pre-filtered cubemap at the corresponding mipmap level
+	float numMips		= 6.0;
+	float mip			= numMips - 1.0 + log2(uRoughness);
+	vec3 lookup			= -reflect( V, N );
+	lookup				= fix_cube_lookup( lookup, 512.0, mip );
+	vec3 radiance		= pow( texture( uRadianceMap, lookup, mip ).rgb, vec3( 2.2 ) );
+	vec3 irradiance		= pow( texture( uIrradianceMap, N ).rgb, vec3( 2.2 ) );
+	
+	// get the approximate reflectance
+	float NoV			= saturate( dot( N, V ) );
+	vec3 reflectance	= EnvBRDFApprox( specularColor, roughness4, NoV );
+	
+	// combine the specular IBL and the BRDF
+    vec3 diffuse  		= diffuseColor * irradiance;
+    vec3 specular 		= radiance * reflectance;
+	color				= diffuse + specular;
+	
+
+	vec3 ao 			= texture(uAoMap, vTexCoord).rgb;
+	color 				*= ao;
+
+	color += envColor;
+
+	// apply the tone-mapping
+	color				= Uncharted2Tonemap( color * uExposure );
+	// white balance
+	color				= color * ( 1.0 / Uncharted2Tonemap( vec3( 20.0 ) ) );
+	
+	// gamma correction
+	color				= pow( color, vec3( 1.0 / uGamma ) );
 
 
-    // Compute the final color
 
-    vec4 baseColor = mix(refractedColor, reflectedColor, vec4(reflectionFactor));
-    float ao = texture(aoMap, vTexCoord).r;
-    FragColor = vec4(baseColor + baseColor * .03 * ao);
+	// output the fragment color
+    FragColor		= vec4( color, 1.0 );
 
-}  
+}

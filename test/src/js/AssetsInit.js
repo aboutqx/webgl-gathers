@@ -43,7 +43,7 @@ export default async function AssetsInit(assets, files) {
                 break;
 
             case 'hdr':
-                if (url.split('_').length <= 2) {
+                if (!url.includes('pos') && !url.includes('neg')) {
                     texture = new GLTexture(file);
                     result[name] = texture
                     break;

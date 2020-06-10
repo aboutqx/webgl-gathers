@@ -25,8 +25,7 @@ export default class EnvMap extends Pipeline {
         this.frenellPrg = this.basicVert(fFs)
     }
     attrib() {
-        this.skybox = new BatchSkyBox(40, getAssets.skyboxlake)
-        this.skyboxMap = getAssets.skyboxlake
+        this.skybox = new BatchSkyBox(40, getAssets.rad)
 
     }
     prepare() {
@@ -36,22 +35,34 @@ export default class EnvMap extends Pipeline {
         this.orbital.target = [0, 5, 0]
 
         window.params = {
-            numParticles:20,
-            skipCount:3,
-        
             metallic:1,
             roughness:0,
             specular:1,
-            offset:1,
-        
+
+            
             gamma:2.2,
-            exposure:5,
-            showWires:false
+            exposure:1,
+            color: [.1, .1, .1]
         };
+
+		this.textureIrr = getAssets.irr;
+		this.textureRad = getAssets.rad
+        
+        this.addPbrParams(window.params)
 
     }
     uniform() {
-
+        this.customUniforms = {
+            uRadianceMap: this.textureRad,
+            uIrradianceMap: this.textureIrr,
+            uAoMap: getAssets.venusAo,
+            uGamma: this.params.gamma,
+            uExposure: this.params.exposure,
+            uRoughness: this.params.roughness,
+            uMetallic: this.params.metallic,
+            uSpecular: this.params.specular,
+            uBaseColor: this.params.color.map(v => v/255)
+        }
 
     }
     render() {
@@ -60,13 +71,11 @@ export default class EnvMap extends Pipeline {
         this.skybox.draw()
 
         let mMatrix = mat4.create()
-        
         mat4.translate(mMatrix, mMatrix, [-6, 0, 0])
         this.specularPrg.use()
         this.specularPrg.style({
             mMatrix,
-            skybox: this.skyboxMap,
-            aoMap: getAssets.venusAo
+            ...this.customUniforms
         })
         GlTools.draw(this.venus)
 
@@ -75,12 +84,8 @@ export default class EnvMap extends Pipeline {
         this.refractPrg.use()
         this.refractPrg.style({
             mMatrix,
-            uRefractionRate: 1.0/1.52,
-            skybox: this.skyboxMap,
-            uAoMap: getAssets.venusAo,
-            uGamma: params.gamma,
-            uExposure: params.exposure,
-            uRoughness: params.roughness
+            uRefractionRate: 1.53,
+            ...this.customUniforms
         })
         GlTools.draw(this.venus)
 
@@ -89,8 +94,7 @@ export default class EnvMap extends Pipeline {
         this.frenellPrg.use()
         this.frenellPrg.style({
             mMatrix,
-            skybox: this.skyboxMap,
-            aoMap: getAssets.venusAo,
+            ...this.customUniforms,
             etaRatio: [.65, .67, .69],
             fresnelPower: .8,
             fresnelBias: .1,
