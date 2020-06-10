@@ -551,7 +551,8 @@ Geom.points = function points(points) {
     }
     const mesh = new Mesh(gl.POINTS);
     mesh.bufferVertex(positions);
-
+    mesh.bufferIndex(indices);
+    
     return mesh;
 }
 
@@ -581,9 +582,13 @@ Geom.bezier = (points, offset) => {
             vertices.push(t)
         }
     }
-
+    const indices = []
+    for(let i =0; i < vertices.length; i++) {
+        indices.push(i)
+    }
     const mesh = new Mesh(gl.POINTS);
     mesh.bufferVertex(vertices);
+    mesh.bufferIndex(indices);
 
     return mesh;
 

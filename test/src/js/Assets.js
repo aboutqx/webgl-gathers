@@ -185,7 +185,7 @@ const mapAssets = {
     iblfinal: { ...Assets.hdrSkybox },
     DeferredShading: { ...Assets.nanosuit },
     Ssao: { ...Assets.nanosuit },
-    EnvironmentMapping: { ...Assets.venus, ...Assets.statue, ...Assets.refraction },
+    EnvMapping: { ...Assets.venus, ...Assets.statue, ...Assets.refraction },
     Gltf: { ...Assets.skybox, ...Assets.gltf },
     Bloom: { ...Assets.statue, ...Assets.venus },
     Water: { ...Assets.water, ...Assets.dimSkybox, },

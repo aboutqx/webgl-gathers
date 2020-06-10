@@ -36,15 +36,21 @@ const addInstanceMatrix = (vs) => {
 
 }
 
+String.prototype.splice = function(idx, rem, str) {
+	return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
+};
+
 const addPointSize = (vs, size = 1.) => {
 	if(vs.indexOf('gl_PointSize') !== -1) return;
 	const [minSize, maxSize] = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
 	console.log('point size range:', minSize, maxSize)
 	
-	String.prototype.splice = function(idx, rem, str) {
-		return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
-	};
+	const glPosIndex = vs.indexOf('gl_Position')
+	vs = vs.splice(glPosIndex, 0, `gl_PointSize = ${parseFloat(size).toFixed(1)};\n`);
+	return vs
+}
 
+const addVertIn = (vs, inString) => {
 	const glPosIndex = vs.indexOf('gl_Position')
 	vs = vs.splice(glPosIndex, 0, `gl_PointSize = ${parseFloat(size).toFixed(1)};\n`);
 	return vs
@@ -81,5 +87,6 @@ const get = (vs, fs, defines = {}) => {
 export default {
 	get,
 	addInstanceMatrix,
-	addPointSize
+	addPointSize,
+	addVertIn
 }

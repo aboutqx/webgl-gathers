@@ -5,6 +5,7 @@
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 texCoord;
+in float index;
 
 uniform mat4 mMatrix;
 uniform mat4 uViewMatrix;
@@ -13,6 +14,7 @@ uniform mat4 uProjectionMatrix;
 out vec3 vNormal;
 out vec3 vPosition;
 out vec2 vTexCoord;
+out float vIndex;
 void main(void){
 
 	vec4 pos       = mMatrix * vec4(position, 1.0);
@@ -23,4 +25,5 @@ void main(void){
     
     vPosition = pos.xyz;
     vTexCoord = texCoord;
+    vIndex = index;
 }

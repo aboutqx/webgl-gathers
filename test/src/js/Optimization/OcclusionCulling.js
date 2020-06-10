@@ -17,7 +17,7 @@ export default class Noise extends Pipeline {
 
     }
     init() {
-        this.prg = this.basicVert(fs, { pointSize: 2. })
+        this.prg = this.basicVert(fs, { pointSize: 1., varying: 'float index' })
     }
     attrib() {
 
@@ -27,6 +27,12 @@ export default class Noise extends Pipeline {
             [  75, -60, 0],
             [ 100,  80, 0]
         ], .001)
+        const index = []
+        this.mesh.vertices.map((v, i) => {
+            index.push(i)
+        })
+        this.mesh.bufferFlattenData(index, 'index', 1)
+
     }
 
     prepare() {
@@ -40,37 +46,26 @@ export default class Noise extends Pipeline {
 
     _nextFrame() {
         const pos = this.mesh.vertices
-        const verticesPerFrame = pos.length / 100  // toal 100frame
-        const curPos = []
+        const frames = 150
+        const verticesPerFrame = pos.length / frames // toal 200frame
+
+        const curIndex = []
         const lastPos = []
-        const frameIndex = this._frame % 100
-        const startVertIndex = verticesPerFrame * frameIndex + 1
+        const frameIndex = this._frame % frames
+        const startVertIndex = verticesPerFrame * frameIndex
         const endVertIndex = (frameIndex+1) * verticesPerFrame
 
-        const lastStartIndex = frameIndex == 0 ? 0 :verticesPerFrame * (frameIndex-1)  + 1
-        const lastEndIndex = frameIndex == 0 ? verticesPerFrame :(frameIndex+1 - 1) * verticesPerFrame
-        for(let i = 0; i < 3; i++) {
-            curPos[i] = 0
-            lastPos[i] = 0
-            for(let j = startVertIndex; j < endVertIndex; j++){
-                curPos[i] += pos[j][i]
-            }
+        for(let j = startVertIndex; j < endVertIndex; j++){
+            curIndex.push(j)
 
-            for(let k = lastStartIndex; k <= lastEndIndex; k++){
-                lastPos[i] += pos[k][i]
-            }
-
-            curPos[i] /= verticesPerFrame
-            lastPos[i] /= verticesPerFrame
         }
 
         
         this.prg.use()
-        this.prg.style({
-            flowPos: curPos,
-            flowDirection: vec3.sub([], curPos, lastPos),
-            flowLength: .2
-        })
+        this.prg.uniform('flowIndex', 'float', curIndex)
+        // this.prg.style({
+        //     startIndex: curIndex[0]
+        // })
         this._frame++
     }
 

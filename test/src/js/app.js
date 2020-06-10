@@ -35,7 +35,7 @@ async function loadScene() {
     if (error) console.error(error)
   })
   window.getAssets = await AssetsInit(assets, files)
-  import('./Scene')
+  import('./Module')
 
 }
 loadScene()

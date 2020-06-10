@@ -295,7 +295,7 @@ export default class Mesh extends Object3D {
     }
 
     _updateIndexBuffer() {
-        if (!this._hasIndexBufferChanged && this.drawType !== gl.POINTS) {
+        if (!this._hasIndexBufferChanged) {
             if (!this.iBuffer) { this.iBuffer = gl.createBuffer(); }
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.iBuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this._indices, this._drawType);

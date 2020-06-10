@@ -22,7 +22,7 @@ const importLists = {
         'NormalMapping',
         'HeightMapping',
         'ReliefMapping', // can also provide self-shadowing.
-        'EnvironmentMapping',
+        'EnvMapping',
     ],
     ImageSpaceEffects: [
         'Billboard',

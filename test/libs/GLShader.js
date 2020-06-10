@@ -108,8 +108,9 @@ class GLShader {
 			console.warn('mValue Error:', mName);
 			return;
 		}
-	*/
-        const uniformType = uniformMapping[mType] || mType;
+    */  
+ 
+        const uniformType = (mType == 'float' && mValue.length) ? 'uniform1fv' :(uniformMapping[mType] || mType);
 
         let hasUniform = false;
         let oUniform;

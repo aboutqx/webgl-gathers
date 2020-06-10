@@ -8,15 +8,20 @@ export default class BatchBillboard extends Batch {
       const mesh = Geom.plane(size, size)
     }
 
-    _rotate() {
-
+    _rotate(mMatrix) {
+        let theta
+        // const meshPos = 
+        return theta
     }
 
-    draw() {
+    draw(texture) {
         this.shader.bind()
         const mMatrix = mat4.create()
+        const theta = this._rotate()
+        mat4.rotate(mMatrix, mMatrix, theta, [0,1,0])
         this.shader.style({
-            mMatrix
+            mMatrix,
+            texture0: texture
         })
         super.draw()
     }

@@ -1,7 +1,6 @@
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
 import BatchInstance from 'helpers/BatchInstance'
-import vs from 'shaders/instance/instance.vert'
 import fs from 'shaders/instance/instance.frag'
 import FrameInterval from 'utils/FrameInterval'
 import {
@@ -11,6 +10,7 @@ import {
     gl,
     GlTools
 } from 'libs/GlTools'
+import { basicVert } from 'libs/shaders/CustomShaders'
 
 const random = function (min, max) { return min + Math.random() * (max - min); }
 
@@ -32,8 +32,8 @@ export default class Instance extends Pipeline {
             [ 100,  80, 0]
         ], .01)
 
-        this.lineInstance = new BatchInstance(vs, fs, line, this._caculateMatrix())
-        this.bezierInstance = new BatchInstance(vs, fs, bezier, this._caculateMatrix())
+        this.lineInstance = new BatchInstance(basicVert, fs, { pointSize: 3 }, line, this._caculateMatrix())
+        this.bezierInstance = new BatchInstance(basicVert, fs, { pointSize: 3 }, bezier, this._caculateMatrix())
     }
 
     _caculateMatrix() {
