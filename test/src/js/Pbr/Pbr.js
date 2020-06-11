@@ -9,7 +9,6 @@ import mapFs from 'shaders/pbr/pbr_map.frag'
 import {
     mat4,
 } from 'gl-matrix'
-import Geom from 'libs/Geom'
 
 const lightPositions = [
     [-10., 10., 10.],
@@ -34,7 +33,7 @@ export default class Pbr extends Pipeline {
     }
     attrib() {
 
-        this.mesh = getAssets.venus
+        this.mesh = getAssets.orb
 
     }
     prepare() {
@@ -47,26 +46,24 @@ export default class Pbr extends Pipeline {
     }
     _setGUI() {
         this.addGUIParams({
-            metallic: .88,
-            roughness: .26,
-            color: [230,206, 24],
             map: 'none',
         })
 
-
         this.addRadio('orenNayar', ['lambert', 'orenNayar'], 'diffuse model')
-
-        let folder1 = this.gui.addFolder('material factor')
-        folder1.add(this.params, 'metallic', 0, 1).step(.01)
-        folder1.add(this.params, 'roughness', 0, 1).step(.01)
-        folder1.addColor(this.params, 'color')
-        folder1.open()
 
         let folder2 = this.gui.addFolder('material map')
         folder2.add(this.params, 'map', ['none', 'plastic', 'wall', 'gold', 'grass', 'rusted_iron', 'wood']).listen().onChange(() => {
             this.setTexture()
         })
         folder2.open()
+
+        this.addPbrParams({
+            metallic: .88,
+            roughness: .26,
+            color: [230,206, 24],
+            gamma: 2.2,
+            exposure: 1.
+        })
 
     }
 
@@ -87,7 +84,8 @@ export default class Pbr extends Pipeline {
 
         let mMatrix = mat4.create()
         let baseUniforms = {
-
+            uGamma: this.params.gamma,
+            uExposure: this.params.exposure,
             lambertDiffuse: this.params.lambert,
         }
 

@@ -21,6 +21,8 @@ const int NR_LIGHTS = 4;
 
 uniform Light lights[NR_LIGHTS];
 uniform vec3 uCameraPos;
+uniform float uGamma;
+uniform float uExposure;
 
 in vec3 vNormal;
 in vec3 vPosition;
@@ -91,6 +93,22 @@ vec3 getDiffuse( vec3 diffuseColor, float roughness4, float NoV, float NoL, floa
 	float cosri = VoL - NoV * NoL;
 	float c2 = 0.45 * roughness4 / (roughness4 + 0.09) * cosri * ( cosri >= 0. ? min( 1., NoL / NoV ) : NoL );
 	return diffuseColor / PI * ( NoL * c1 + c2 );
+}
+
+// Filmic tonemapping from
+// http://filmicgames.com/archives/75
+
+const float A = 0.15;
+const float B = 0.50;
+const float C = 0.10;
+const float D = 0.20;
+const float E = 0.02;
+const float F = 0.30;
+
+
+vec3 Uncharted2Tonemap( vec3 x )
+{
+	return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
 }
 
 void main(void){
@@ -167,9 +185,13 @@ void main(void){
     vec3 color = ambient + Lo;
 
     // HDR tonemapping
-    color = color / (color + vec3(1.0));
+	// apply the tone-mapping
+	color				= Uncharted2Tonemap( color * uExposure );
+	// white balance
+	color				= color * ( 1.0 / Uncharted2Tonemap( vec3( 20.0 ) ) );
+
     // gamma correct
-    color = pow(color, vec3(1.0/2.2));
+    color = pow(color, vec3(1.0/uGamma));
 
     FragColor = vec4(color, 1.0);
 

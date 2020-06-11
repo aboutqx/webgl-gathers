@@ -32,8 +32,8 @@ export default class Instance extends Pipeline {
             [ 100,  80, 0]
         ], .01)
 
-        this.lineInstance = new BatchInstance(basicVert, fs, { pointSize: 3 }, line, this._caculateMatrix())
-        this.bezierInstance = new BatchInstance(basicVert, fs, { pointSize: 3 }, bezier, this._caculateMatrix())
+        this.lineInstance = new BatchInstance(basicVert, fs, line, this._caculateMatrix())
+        this.bezierInstance = new BatchInstance(basicVert, fs, bezier, this._caculateMatrix(), { pointSize: 3 })
     }
 
     _caculateMatrix() {

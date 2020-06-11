@@ -4,8 +4,8 @@ import Geom from '../Geom';
 import GLShader from '../GLShader';
 import Batch from './Batch';
 
-import vs from '../glsl/sky.vert'
-import fs from '../glsl/copy.frag'
+import vs from '../glsl/sky/sky.vert'
+import fs from '../glsl/sky/sky.frag'
 
 
 class BatchSky extends Batch {

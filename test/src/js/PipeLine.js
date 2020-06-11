@@ -123,7 +123,7 @@ export default class Pipeline {
         let folder = this.gui.addFolder('material factor')
         folder.add(this.params, 'metallic', 0, 1).step(.01)
         folder.add(this.params, 'roughness', 0, 1).step(.01)
-        folder.add(this.params, 'specular', 0, 1).step(.01)
+        params.specualr!==undefined && folder.add(this.params, 'specular', 0, 1).step(.01)
         folder.add(this.params, 'gamma', 0, 5).step(.1)
         folder.add(this.params, 'exposure', 1, 10).step(1)
         folder.addColor(this.params, 'color')

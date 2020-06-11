@@ -17,7 +17,7 @@ export default class Noise extends Pipeline {
 
     }
     init() {
-        this.prg = this.basicVert(fs, { pointSize: 1., varying: 'float index' })
+        this.prg = this.basicVert(fs, { pointSize: 1., varyings: {float: 'index'} })
     }
     attrib() {
 
@@ -26,7 +26,7 @@ export default class Noise extends Pipeline {
             [ -55, -90, 0],
             [  75, -60, 0],
             [ 100,  80, 0]
-        ], .001)
+        ], .005)
         const index = []
         this.mesh.vertices.map((v, i) => {
             index.push(i)
@@ -46,7 +46,7 @@ export default class Noise extends Pipeline {
 
     _nextFrame() {
         const pos = this.mesh.vertices
-        const frames = 150
+        const frames = 100
         const verticesPerFrame = pos.length / frames // toal 200frame
 
         const curIndex = []
@@ -59,13 +59,10 @@ export default class Noise extends Pipeline {
             curIndex.push(j)
 
         }
-
-        
+        console.log(curIndex)
         this.prg.use()
         this.prg.uniform('flowIndex', 'float', curIndex)
-        // this.prg.style({
-        //     startIndex: curIndex[0]
-        // })
+
         this._frame++
     }
 
@@ -76,8 +73,8 @@ export default class Noise extends Pipeline {
         this.prg.use()
         this.prg.style({
             mMatrix,
-            color: [0., .5 , 0.6],
-            flowColor: [1., 1. ,0]
+            color: [.5, .5 , 0.1],
+            flowColor: [1., 1. ,0.1]
         })
 
         GlTools.draw(this.mesh)

@@ -65,8 +65,9 @@ class GLShader {
     constructor(strVertexShader = defaultVertexShader, strFragmentShader = defaultFragmentShader, settings = {}) {
         this.parameters = [];
         this._uniformTextures = [];
-        this._varyings = settings.mVaryings;
+        this._varyings = settings.varyings;
         this.pointSize = settings.pointSize;
+        this._replaces = settings.replaces;
 
         if (!strVertexShader) { strVertexShader = defaultVertexShader; }
         if (!strFragmentShader) { strFragmentShader = defaultVertexShader; }
@@ -74,12 +75,24 @@ class GLShader {
         this._name = strVertexShader.split('//')[1]
         this._name = !this._name ? '' : this.name.split('\n')[0]
 
-        if(this.pointSize) strVertexShader = ModifyShader.addPointSize(strVertexShader, this.pointSize)
+        
+        strVertexShader = this._modify(strVertexShader)
 
         const vsShader = this._createShaderProgram(strVertexShader, true);
         const fsShader = this._createShaderProgram(strFragmentShader, false);
         this._attachShaderProgram(vsShader, fsShader);
 
+    }
+
+    _modify(strVertexShader) {
+        if(this.pointSize) strVertexShader = ModifyShader.addPointSize(strVertexShader, this.pointSize)
+        if(this._varyings && !this._varyings.length) {
+            for(let key in this._varyings) {
+                strVertexShader = ModifyShader.addVertIn(strVertexShader, key, this._varyings[key])
+            }
+        }
+        if(this.replaces) {}
+        return strVertexShader
     }
 
     use() {
@@ -261,7 +274,7 @@ class GLShader {
         gl.deleteShader(mVertexShader);
         gl.deleteShader(mFragmentShader);
 
-        if (this._varyings) {
+        if (this._varyings && this._varyings.length) {
             console.log('Transform feedback setup : ', this._varyings);
             gl.transformFeedbackVaryings(this.shaderProgram, this._varyings, gl.SEPARATE_ATTRIBS);
         }

@@ -28,3 +28,19 @@ ${mat[3]} ${mat[7]} ${mat[11]} ${mat[15]}
             break;
     }
 }
+
+let logged = false
+console.logOnce = function(arg){
+    if(!logged) {
+
+        Array.prototype.forEach.call(arguments, (v => {
+            console.log(v)
+        }))
+        
+        logged = true
+    }
+}
+
+console.logFrames = function() {
+    
+}

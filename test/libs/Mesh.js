@@ -446,13 +446,4 @@ export default class Mesh extends Object3D {
 
     get isInstanced() { return this._isInstanced; }
 
-    set vertexMin(value) { this._vertexMin = value }
-
-    set vertexMax(value) { this._vertexMax = value }
-
-    get maxLength() {
-        const maxSubMin = vec3.create()
-        vec3.subtract(maxSubMin, this._vertexMax, this._vertexMin)
-        return vec3.length(maxSubMin)
-    }
 }

@@ -42,7 +42,8 @@ const importLists = {
     ],
     NaturalEffects: [
         'Water',
-        'Grass'
+        'Grass',
+        'Particle'
     ]
 }
 

@@ -3,7 +3,7 @@ import BatchSkyBox from 'libs/helpers/BatchSkyBox'
 import GLTFLoader from 'libs/loaders/GLTFLoader'
 import { GlTools } from 'libs/GlTools'
 
-function ObjectPropertyMax(objectes, property) {
+function objectesMaxProp(objectes, property) {
 	let max = objectes[0][property]
 	objectes.forEach(v => {
 		if (v[property] > max) max = v[property]
@@ -53,9 +53,11 @@ export default class GLTF extends Pipeline {
 
 				this.gltfPrg = meshes[0].material.shader
 
-				const scale = skySize / ObjectPropertyMax(meshes, 'maxLength') *.2
-				console.log(ObjectPropertyMax(meshes, 'maxLength'), meshes, scale)
+				const scale = skySize / objectesMaxProp(meshes, 'maxLength') *.2
+				console.log('maxLength:',objectesMaxProp(meshes, 'maxLength'), meshes, 'scale',scale)
+				
 				this.scenes.forEach(scene => {
+					console.log(scene.scaleX, scene.children[0].scaleX )
 					if (scene.scaleX === 1 && scene.children[0].scaleX === 1)
 						scene.scale = scale
 				})

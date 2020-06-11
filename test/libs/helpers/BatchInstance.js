@@ -9,7 +9,7 @@ import ModifyShader from '../shaders/ModifyShader'
 
 class BatchInstance extends Batch {
 
-	constructor(vs, fs, settings, mesh, instanceMatrix) {
+	constructor(vs, fs, mesh, instanceMatrix, settings) {
         vs = ModifyShader.addInstanceMatrix(vs)
 		const shader = new GLShader(vs, fs, settings);
         mesh.bufferInstance(instanceMatrix, 'instanceMatrix', gl.DYNAMIC_DRAW)

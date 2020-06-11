@@ -349,12 +349,12 @@ export default class Grass extends Pipeline {
         const textureNormal = this._fboNoise.getTexture(1);
         const textureNoise = this._fboNoise.getTexture(2);
 
-        gl.disable(gl.CULL_FACE);
-        this._renderGrass(textureHeight, textureNormal, textureNoise)
-		gl.enable(gl.CULL_FACE);
-		this._renderFloor(textureHeight, textureNormal)
+        // gl.disable(gl.CULL_FACE);
+        // this._renderGrass(textureHeight, textureNormal, textureNoise)
+		// gl.enable(gl.CULL_FACE);
+		// this._renderFloor(textureHeight, textureNormal)
 
-		this._renderHorse()
+		// this._renderHorse()
 
 		this.sky.draw(getAssets.nightSky)
     }

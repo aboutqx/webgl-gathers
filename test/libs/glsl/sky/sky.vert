@@ -12,6 +12,7 @@ uniform mat4 uProjectionMatrix;
 
 out vec2 vTexCoord;
 out vec3 vNormal;
+out vec3 vPosition;
 
 void main(void) {
 	mat4 matView = uViewMatrix;
@@ -20,8 +21,9 @@ void main(void) {
 	matView[3][1] = 0.0;
 	matView[3][2] = 0.0;
 	
-    vec4 pos = uProjectionMatrix * matView * uModelMatrix * vec4(position, 1.0);
-	gl_Position = pos.xyzw;
+    vec4 pos = uModelMatrix * vec4(position, 1.0);
+	gl_Position = uProjectionMatrix * matView * pos;
     vTexCoord = texCoord;
     vNormal = normal;
+	vPosition = position;
 }

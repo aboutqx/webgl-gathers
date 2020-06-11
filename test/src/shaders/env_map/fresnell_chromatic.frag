@@ -101,7 +101,7 @@ void main() {
 	float roughness4   = pow(uRoughness, 4.0);
 
 	vec3 N 				= normalize( vNormal );
-	vec3 V 				= normalize( uCameraPos );
+	vec3 V 				= normalize( uCameraPos - vPosition);
 
     vec3 I = normalize(vPosition - uCameraPos);
 

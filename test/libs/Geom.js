@@ -586,7 +586,7 @@ Geom.bezier = (points, offset) => {
     for(let i =0; i < vertices.length; i++) {
         indices.push(i)
     }
-    const mesh = new Mesh(gl.POINTS);
+    const mesh = new Mesh(gl.LINE_STRIP);
     mesh.bufferVertex(vertices);
     mesh.bufferIndex(indices);
 

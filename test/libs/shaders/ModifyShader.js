@@ -50,10 +50,17 @@ const addPointSize = (vs, size = 1.) => {
 	return vs
 }
 
-const addVertIn = (vs, inString) => {
-	const glPosIndex = vs.indexOf('gl_Position')
-	vs = vs.splice(glPosIndex, 0, `gl_PointSize = ${parseFloat(size).toFixed(1)};\n`);
+const addVertIn = (vs, type, varyingName) => {
+	const glPosIndex = vs.indexOf('void main')
+	const firstUpper = varyingName[0].toUpperCase() + varyingName.slice(1)
+	vs = vs.splice(glPosIndex, 0, `in ${type} ${varyingName};\n	out ${type} v${firstUpper};\n`);
+	const lastClose = vs.lastIndexOf('}')
+	vs = vs.splice(lastClose - 1, 0, `\nv${firstUpper} = ${varyingName};\n`);
 	return vs
+}
+
+const replaceHold = (glsl, replace) => {
+	const reg = new RegExp('<<<' + pattern + '>>>', 'g');
 }
 
 const get = (vs, fs, defines = {}) => {

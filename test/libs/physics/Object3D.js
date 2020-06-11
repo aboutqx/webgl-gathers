@@ -193,6 +193,20 @@ class Object3D {
 
 
     get children() { return this._children; }
+
+    set vertexMin(value) { this._vertexMin = value }
+
+    set vertexMax(value) { this._vertexMax = value }
+
+    get maxLength() {
+        const maxSubMin = vec3.create()
+        vec3.subtract(maxSubMin, this._vertexMax, this._vertexMin)
+        return vec3.length(maxSubMin)
+    }
+
+    get hasScale() {
+        
+    }
 }
 
 
