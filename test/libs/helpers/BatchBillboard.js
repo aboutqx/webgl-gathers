@@ -15,14 +15,13 @@ export default class BatchBillboard extends Batch {
     }
 
     draw(texture) {
-        this.shader.bind()
         const mMatrix = mat4.create()
         const theta = this._rotate()
         mat4.rotate(mMatrix, mMatrix, theta, [0,1,0])
-        this.shader.style({
+
+        super.draw({
             mMatrix,
             texture0: texture
         })
-        super.draw()
     }
 }

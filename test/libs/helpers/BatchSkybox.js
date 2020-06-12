@@ -1,9 +1,6 @@
 import { skyboxVert, skyboxFrag } from 'CustomShaders'
 import Program from 'libs/GLShader'
 import Geom from 'libs/Geom'
-import {
-    mat4
-} from 'gl-matrix'
 import Batch from './Batch'
 // batch create skybox
 export default class BatchSkybox extends Batch{
@@ -18,12 +15,10 @@ export default class BatchSkybox extends Batch{
 
     draw(skyMap) {
         if(skyMap) this.skyMap = skyMap
-        this.shader.use()
-        this.shader.style({
+        super.draw({
             uGamma: 2.2,
             uExposure: 5.,
             tex: this.skyMap
-          })
-        super.draw()
+        })
     }
 }

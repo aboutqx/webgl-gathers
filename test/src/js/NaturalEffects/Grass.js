@@ -54,7 +54,7 @@ export default class Grass extends Pipeline {
 		this.floorPrg = this.compile(floorVs, floorFs)
 
         window.params = {
-            gamma:5.2,
+            gamma:2.2,
             exposure:5,
             terrainSize:175,
             maxHeight:1,

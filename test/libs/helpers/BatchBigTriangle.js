@@ -13,9 +13,7 @@ export default class BatchBigTriangle extends Batch {
 
     }
 
-    draw(uniformObject) {
-        this.shader.use()
-        this.shader.style(uniformObject)
-        super.draw()
+    draw(style) {
+        super.draw(style)
     }
 }

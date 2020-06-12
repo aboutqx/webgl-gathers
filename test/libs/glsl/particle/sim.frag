@@ -1,10 +1,12 @@
+#version 300 es
 // sim.frag
 
 #define SHADER_NAME SIMPLE_TEXTURE
 
 precision highp float;
-varying vec2 vTextureCoord;
-uniform sampler2D texture;
+in vec2 vTexCoord;
+out vec4 FragColor;
+uniform sampler2D texture0;
 uniform float time;
 uniform float skipCount;
 
@@ -126,27 +128,27 @@ vec3 curlNoise( vec3 p ){
 
 void main(void) {
 
-    if(vTextureCoord.y < .5) {
-    	if(vTextureCoord.x < .5) {
-        vec2 uvVel   = vTextureCoord + vec2(.5, .0);
-        vec2 uvExtra = vTextureCoord + vec2(.5, .5);
-        vec3 pos     = texture2D(texture, vTextureCoord).rgb;
-        vec3 vel     = texture2D(texture, uvVel).rgb;
-        vec3 extra   = texture2D(texture, uvExtra).rgb;
+    if(vTexCoord.y < .5) {
+    	if(vTexCoord.x < .5) {
+        vec2 uvVel   = vTexCoord + vec2(.5, .0);
+        vec2 uvExtra = vTexCoord + vec2(.5, .5);
+        vec3 pos     = texture(texture0, vTexCoord).rgb;
+        vec3 vel     = texture(texture0, uvVel).rgb;
+        vec3 extra   = texture(texture0, uvExtra).rgb;
     		pos += vel;
     		// 
     		// if(length(pos) > maxRadius) {
     		// 	// pos *= .001;
       //     pos = curlNoise(pos*extra) * .1 * extra.b;
     		// }
-    		gl_FragColor = vec4(pos, 1.0);
+    		FragColor = vec4(pos, 1.0);
 		} else {
 			
-      vec2 uvPos      = vTextureCoord - vec2(.5, .0);
-      vec2 uvExtra    = vTextureCoord + vec2(-.5, .5);
-      vec3 pos        = texture2D(texture, uvPos).rgb;
-      vec3 vel        = texture2D(texture, vTextureCoord).rgb;
-      vec3 extra      = texture2D(texture, uvExtra).rgb;
+      vec2 uvPos      = vTexCoord - vec2(.5, .0);
+      vec2 uvExtra    = vTexCoord + vec2(-.5, .5);
+      vec3 pos        = texture(texture0, uvPos).rgb;
+      vec3 vel        = texture(texture0, vTexCoord).rgb;
+      vec3 extra      = texture(texture0, uvExtra).rgb;
       float posOffset = (0.5 + extra.r * 0.25) * .35;
 
 			/*/
@@ -173,9 +175,9 @@ void main(void) {
 			const float decrease = .9;
 			vel *= decrease;
 
-			gl_FragColor = vec4(vel, 1.0);
+			FragColor = vec4(vel, 1.0);
 		}
 	} else {
-		gl_FragColor = texture2D(texture, vTextureCoord);
+		FragColor = texture(texture0, vTexCoord);
 	}
 }

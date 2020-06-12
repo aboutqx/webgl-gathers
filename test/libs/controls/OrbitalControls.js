@@ -40,6 +40,7 @@ export default class OrbitalControls {
     _updateWheel = false
     constructor(cameraPers) {
         this.cameraPers = cameraPers
+        this._ry.limit(-Math.PI / 2, Math.PI / 2);
 
         this._addEvents()
         
@@ -70,7 +71,7 @@ export default class OrbitalControls {
             let diffX = (this._mouse.x - this._preMouse.x) / canvas.width
             let diffY = (this._mouse.y - this._preMouse.y) / canvas.height
 
-            this._rx.value = this._preRx + diffX * Math.PI * 2 * this.sensitivity
+            this._rx.value = this._preRx + diffX * Math.PI  * 2 * this.sensitivity
             this._ry.value = this._preRy + diffY * Math.PI * this.sensitivity
 
         }
@@ -97,9 +98,10 @@ export default class OrbitalControls {
         }
 
         this.position[1] = Math.sin(this._ry.value) * this._radius.value
-        const tr = Math.abs(Math.cos(this._ry.value) * this._radius.value) // 防止y突然从1变成-1，x，z的象限变化
-        this.position[0] = Math.cos(this._rx.value + Math.PI * 0.5) * tr
-        this.position[2] = Math.sin(this._rx.value + Math.PI * 0.5) * tr
+
+        const tr = Math.cos(this._ry.value) * this._radius.value // 防止y突然从1变成-
+        this.position[0] = Math.cos(this._rx.value) * tr
+        this.position[2] = Math.sin(this._rx.value) * tr
 
         vec3.add(this.position, this.position, this.offset)
 

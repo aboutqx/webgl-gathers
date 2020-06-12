@@ -10,9 +10,9 @@ uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 
-varying vec2 vTexCoord;
-varying vec3 vColor;
-varying vec3 vNormal;
+out vec2 vTexCoord;
+out vec3 vColor;
+out vec3 vNormal;
 
 void main(void) {
 	vColor      = position;

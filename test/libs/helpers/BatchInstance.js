@@ -22,9 +22,7 @@ class BatchInstance extends Batch {
     }
     
 	draw(style) {
-        this.shader.bind();
-        this.shader.style(style)
-		super.draw();
+		super.draw(style);
 	}
 }
 

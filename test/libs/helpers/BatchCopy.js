@@ -14,10 +14,6 @@ export default class BatchCopy extends Batch {
     }
 
     draw(texture) {
-        this.shader.use()
-        this.shader.style({
-            texture
-        })
-        super.draw()
+        super.draw({ texture0: texture})
     }
 }

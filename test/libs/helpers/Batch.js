@@ -7,8 +7,9 @@ export default class Batch {
         this._shader = shader
     }
 
-    draw() {
+    draw(style) {
         this._shader.bind()
+        this._shader.style(style)
         GlTools.draw(this._mesh)
     }
 
