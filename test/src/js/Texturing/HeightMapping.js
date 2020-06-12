@@ -1,8 +1,8 @@
 import Pipeline from '../PipeLine'
 import Mesh from 'libs/Mesh'
 
-import vs from 'shaders/bumpmap/normal_map.vert'
-import fs from 'shaders/bumpmap/height_map.frag'
+import vs from 'libs/glsl/bumpmap/normal_map.vert'
+import fs from 'libs/glsl/bumpmap/height_map.frag'
 
 import {
     mat4, vec3, vec2

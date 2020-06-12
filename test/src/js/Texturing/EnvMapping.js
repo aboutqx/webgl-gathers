@@ -3,9 +3,9 @@
 */
 import Pipeline from '../PipeLine'
 import BatchSkyBox from 'libs/helpers/BatchSkyBox'
-import sFs from 'shaders/env_map/env_specular.frag'
-import rFs from 'shaders/env_map/env_refract.frag'
-import fFs from 'shaders/env_map/fresnell_chromatic.frag'
+import sFs from 'libs/glsl/env_map/env_specular.frag'
+import rFs from 'libs/glsl/env_map/env_refract.frag'
+import fFs from 'libs/glsl/env_map/fresnell_chromatic.frag'
 import {
     mat4
 } from 'gl-matrix'

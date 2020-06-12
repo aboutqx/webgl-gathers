@@ -1,7 +1,7 @@
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
 import BatchInstance from 'helpers/BatchInstance'
-import fs from 'shaders/instance/instance.frag'
+import { basicColorFrag }  from 'libs/shaders/CustomShaders'
 import FrameInterval from 'utils/FrameInterval'
 import {
     mat4,
@@ -32,8 +32,8 @@ export default class Instance extends Pipeline {
             [ 100,  80, 0]
         ], .01)
 
-        this.lineInstance = new BatchInstance(basicVert, fs, line, this._caculateMatrix())
-        this.bezierInstance = new BatchInstance(basicVert, fs, bezier, this._caculateMatrix(), { pointSize: 3 })
+        this.lineInstance = new BatchInstance(basicVert, basicColorFrag, line, this._caculateMatrix())
+        this.bezierInstance = new BatchInstance(basicVert, basicColorFrag, bezier, this._caculateMatrix(), { pointSize: 3 })
     }
 
     _caculateMatrix() {
@@ -71,7 +71,7 @@ export default class Instance extends Pipeline {
 
 
         this.style = {
-            objectColor: [0.1, 0.1, .8]
+            color: [0.1, 0.1, .8]
         }
     }
     render() {

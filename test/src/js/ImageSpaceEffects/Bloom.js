@@ -1,7 +1,7 @@
 import Pipeline from '../PipeLine'
-import fs from 'shaders/bloom/bloom.frag'
-import blurFs from 'shaders/bloom/blur.frag'
-import finalFs from 'shaders/bloom/bloom_final.frag'
+import fs from 'libs/glsl/bloom/bloom.frag'
+import blurFs from 'libs/glsl/bloom/blur.frag'
+import finalFs from 'libs/glsl/bloom/bloom_final.frag'
 import {
     mat4
 } from 'gl-matrix'

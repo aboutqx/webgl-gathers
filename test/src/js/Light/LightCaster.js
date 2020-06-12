@@ -1,8 +1,8 @@
 import Pipeline from '../PipeLine'
 import Geom from 'libs/Geom'
-import fs from 'shaders/light_caster/directionalLight.frag'
-import pointFs from 'shaders/light_caster/pointLight.frag'
-import spotFs from 'shaders/light_caster/spotLight.frag'
+import fs from 'libs/glsl/light_caster/directionalLight.frag'
+import pointFs from 'libs/glsl/light_caster/pointLight.frag'
+import spotFs from 'libs/glsl/light_caster/spotLight.frag'
 
 import {
 	mat4, vec3

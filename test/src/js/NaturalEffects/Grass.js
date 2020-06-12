@@ -4,6 +4,7 @@ import vs from 'shaders/grass/grass.vert'
 import fs from 'shaders/grass/grass.frag'
 import floorVs from 'shaders/grass/floor.vert'
 import floorFs from 'shaders/grass/floor.frag'
+import noiseFs from 'shaders/noise.frag'
 import Mesh from 'libs/Mesh'
 import FrameBuffer from 'libs/FrameBuffer'
 import {
@@ -14,7 +15,7 @@ import {
     gl,
     GlTools
 } from 'libs/GlTools'
-import BatchNoise from 'helpers/BatchNoise'
+import BatchBigTriangle from 'helpers/BatchBigTriangle'
 import EaseNumber from 'utils/EaseNumber'
 import BatchSky from 'helpers/BatchSky'
 import BatchInstance from 'helpers/BatchInstance'
@@ -75,7 +76,12 @@ export default class Grass extends Pipeline {
 		let v = 1.0 - (this.position[2] / terrainSize * .5 + .5);
 		this.uvOffset = [u, v];		
 		
+		this._vNoise = new BatchBigTriangle(noiseFs)
 
+
+        this.time = Math.random() * 0xFF;
+		this.seed = Math.random() * 0xFF;
+        this.test = new EaseNumber(0);
 	}
 	
 	_setGUI() {
@@ -231,7 +237,7 @@ export default class Grass extends Pipeline {
 
 		const noiseSize = 64;
         this._fboNoise = new FrameBuffer(noiseSize, noiseSize, { }, 3)
-		this._vNoise = new BatchNoise()
+
 		GlTools.srcBlend()
 
 		this.env = 'studio9'
@@ -279,7 +285,22 @@ export default class Grass extends Pipeline {
         }
         return instanceMatrix
 	}
-	
+
+	_renderNoise() {
+		const { speed, noiseScale, isOne } = params;
+		this.time += speed;
+
+		this.test.value = isOne ? 1 : 0;
+
+		this._vNoise.draw({
+			mTime: this.time,
+			uSeed: this.seed,
+			uNoiseScale: noiseScale
+		});
+		// this.noisePrg.uniform("uTime", "float", this.test.value);
+
+	}
+
 	_renderFloor(textureHeight, textureNormal) {
 		const { maxHeight } = params;
 		const color = params.grassColor.map(v => v / 255)
@@ -342,19 +363,19 @@ export default class Grass extends Pipeline {
         GlTools.clear()
         this._fboNoise.bind();
         GlTools.clear(0, 0, 0, 0);
-        this._vNoise.draw();
+        this._renderNoise()
         this._fboNoise.unbind();
         
         const textureHeight = this._fboNoise.getTexture(0);
         const textureNormal = this._fboNoise.getTexture(1);
         const textureNoise = this._fboNoise.getTexture(2);
 
-        // gl.disable(gl.CULL_FACE);
-        // this._renderGrass(textureHeight, textureNormal, textureNoise)
-		// gl.enable(gl.CULL_FACE);
-		// this._renderFloor(textureHeight, textureNormal)
+        gl.disable(gl.CULL_FACE);
+        this._renderGrass(textureHeight, textureNormal, textureNoise)
+		gl.enable(gl.CULL_FACE);
+		this._renderFloor(textureHeight, textureNormal)
 
-		// this._renderHorse()
+		this._renderHorse()
 
 		this.sky.draw(getAssets.nightSky)
     }
