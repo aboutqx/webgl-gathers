@@ -28,7 +28,7 @@ class FrameBuffer {
         this._numTargets = mNumTargets;
         this._multipleTargets = mNumTargets > 1;
         if (mParameters.hdr == true) {
-            this._parameters = { internalFormat: gl.RGBA16F, type: gl.HALF_FLOAT, minFilter: gl.LINEAR, maxFilter: gl.LINEAR }
+            this._parameters = { internalFormat: gl.RGBA16F, type: gl.HALF_FLOAT, minFilter: mParameters.minFilter, maxFilter: mParameters.magFilter }
         } else this._parameters = mParameters;
 
         if (!hasCheckedMultiRenderSupport) {

@@ -9,6 +9,7 @@ out vec4 FragColor;
 uniform sampler2D texture0;
 uniform float time;
 uniform float skipCount;
+uniform vec2 mousePos;
 
 vec3 mod289(vec3 x) {	return x - floor(x * (1.0 / 289.0)) * 289.0;	}
 
@@ -158,7 +159,8 @@ void main(void) {
 			vec3 acc = vec3(ax, ay, az);
 			/*/
 			vec3 acc = curlNoise(pos * posOffset + time * .3);
-      acc.z += .1;
+      // acc.z += .1;
+ 
 			//*/
 
 
@@ -171,7 +173,7 @@ void main(void) {
       }
 
 			vel += acc * .003 * (skipCount+1.0);
-
+      vel.xy += (mousePos.xy - .5) * .02;
 			const float decrease = .9;
 			vel *= decrease;
 

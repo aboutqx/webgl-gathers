@@ -64,7 +64,7 @@ export default class Pipeline {
     }
     _animate() {
         requestAnimationFrame(this._animate.bind(this))
-
+        
         this.orbital.updateMatrix()
         this.uniform()
         this.render()

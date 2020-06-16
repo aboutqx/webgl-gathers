@@ -1,8 +1,3 @@
-import {
-    canvas
-} from 'libs/GlTools'
-import MouseMove from './MouseMove'
-
 const importLists = {
     Light: [
         'Reflection',
@@ -48,7 +43,7 @@ const importLists = {
 }
 
 function addList() {
-    let list = document.querySelector('.list')
+    const list = document.querySelector('.list')
     for (let dir in importLists) {
         list.innerHTML+= `
             <div>${dir}</div>
@@ -67,18 +62,14 @@ function addList() {
 async function dynamicImport(nameSplit) {
     const dir = nameSplit[0]
     const module = nameSplit[1]
-    let scene = await import(`./${dir}/${module}`) 
+    const scene = await import(`./${dir}/${module}`) 
 
-    let obj = new scene.default()
+    const obj = new scene.default()
 
-    canvas.addEventListener('mousemove', (e) => {
-        let t = MouseMove(e, canvas)
-        obj.mousePos = t.mousePos
-    })
     obj.play()
 
 }
 
-let name = location.search.replace('?', '')
+const name = location.search.replace('?', '')
 if (name) dynamicImport(name.split('/'))
 else addList()

@@ -1,26 +1,10 @@
 import { canvas, toRadian } from 'libs/GlTools'
 import { vec3 } from 'gl-matrix'
 import EaseNumber from '../utils/EaseNumber';
+import Scheduler from 'scheduling'
+import MouseMove from '../utils/MouseMove'
 
 // cameraFront = -(cameraPos - camraTarget)
-const getMouse = function (mEvent, mTarget, finger2) {
-
-    const o = mTarget || {};
-    if (mEvent.touches && !finger2) {
-        o.x = mEvent.touches[0].pageX;
-        o.y = mEvent.touches[0].pageY;
-    } else if (!mEvent.touches) {
-        o.x = mEvent.clientX;
-        o.y = mEvent.clientY;
-
-    } else if (mEvent.touches && finger2) {
-        o.x = mEvent.touches[1].pageX;
-        o.y = mEvent.touches[1].pageY;
-    }
-
-    return o;
-}
-
 export default class OrbitalControls {
     up = [0, 1, 0]
     cameraFront = [0, 0, -1]
@@ -40,26 +24,29 @@ export default class OrbitalControls {
     _updateWheel = false
     constructor(cameraPers) {
         this.cameraPers = cameraPers
-        this._ry.limit(-Math.PI / 2, Math.PI / 2);
+        // this._ry.limit(-Math.PI / 2, Math.PI / 2);
+        this._downBind = e => this._down(e)
+        this._moveBind = e => this._move(e)
+        this._upBind = e => this._up(e)
+        this._wheelBind = (e) => this._wheel(e)
 
         this._addEvents()
-        
+        this._efIndex = Scheduler.addEF(() => this.updateMatrix())
     }
 
 
     _addEvents() {
-        canvas.addEventListener('mousedown', (e) => this._down(e))
-        canvas.addEventListener('mousemove', e => this._move(e))
-        document.addEventListener('mouseup', e => this._up(e))
+        MouseMove.addEvents(this._downBind, this._moveBind, this._upBind, this._wheelBind)
+    }
 
-        canvas.addEventListener('mousewheel', (e) => this._onWheel(e));
-        canvas.addEventListener('DOMMouseScroll', (e) => this._onWheel(e));
+    _removeEvents(){
+        MouseMove.removeEvents(this._downBind, this._moveBind, this._upBind, this._wheelBind)
     }
 
     _down(mEvent) {
         this._mousedown = true
-        getMouse(mEvent, this._mouse)
-        getMouse(mEvent, this._preMouse)
+        MouseMove.getPos(mEvent, this._mouse)
+        MouseMove.getPos(mEvent, this._preMouse)
         // reset 重新开始计算
         this._preRx = this._rx.targetValue;
         this._preRy = this._ry.targetValue;
@@ -67,7 +54,7 @@ export default class OrbitalControls {
 
     _move(mEvent) {
         if (this._mousedown) {
-            getMouse(mEvent, this._mouse)
+            MouseMove.getPos(mEvent, this._mouse)
             let diffX = (this._mouse.x - this._preMouse.x) / canvas.width
             let diffY = (this._mouse.y - this._preMouse.y) / canvas.height
 
@@ -99,9 +86,13 @@ export default class OrbitalControls {
 
         this.position[1] = Math.sin(this._ry.value) * this._radius.value
 
-        const tr = Math.cos(this._ry.value) * this._radius.value // 防止y突然从1变成-
+        const tr = Math.cos(this._ry.value) * this._radius.value
+        
+        if(tr < 0) this.up[1] = -1
+        else this.up[1] = 1
+
         this.position[0] = Math.cos(this._rx.value) * tr
-        this.position[2] = Math.sin(this._rx.value) * tr
+        this.position[2] = Math.sin(this._rx.value) * tr 
 
         vec3.add(this.position, this.position, this.offset)
 
@@ -109,7 +100,7 @@ export default class OrbitalControls {
 
     }
 
-    _onWheel(mEvent) {
+    _wheel(mEvent) {
         const w = mEvent.wheelDelta;
         const d = mEvent.detail;
         let value = 0;
@@ -126,6 +117,11 @@ export default class OrbitalControls {
         this._targetRadius = this._radius.value + (-value * 1)
         if (this._targetRadius <= 1) this._targetRadius = 1
         this._updateWheel = true
+    }
+
+    destroy() {
+        Scheduler.removeEF(this._efIndex)
+        this._removeEvents()
     }
 
     get viewMatrix() {

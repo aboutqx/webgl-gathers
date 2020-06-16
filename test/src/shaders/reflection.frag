@@ -10,7 +10,6 @@ uniform mat4 invMatrix;
 uniform vec3 lightDirection;
 uniform vec3 uCameraPos;
 uniform sampler2D aoMap;
-uniform vec3 ambientColor;
 uniform bool useAo;
 in vec3 positionEye;
 
@@ -25,5 +24,5 @@ void main(void){
     vec3  destColor = diffuseColor * diffuse + .3 * vec3(specular);
     if(useAo) destColor += ao * diffuseColor * .08 ;
     FragColor    = vec4(destColor, 1.);
-    // FragColor    = vec4(positionEye, 1.);
+    FragColor    = vec4(uCameraPos, 1.);
 }

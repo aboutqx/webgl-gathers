@@ -22,7 +22,7 @@ void main(void) {
 	vec3 pos     = mix(currPos, nextPos, percent);
 	vec4 V       = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(pos, 1.0);
 	gl_Position  = V;
-	gl_PointSize = 1.5;
+	gl_PointSize = 1.2;
 
 	float d 	 = V.z/V.w;
 	d 			 = d*.5 + .5;

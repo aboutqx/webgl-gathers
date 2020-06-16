@@ -11,7 +11,7 @@ import {
 } from 'libs/GlTools'
 import BatchBigTriangle from 'helpers/BatchBigTriangle'
 import CameraOrtho from 'libs/cameras/CameraOrtho'
-
+import MouseMove from 'libs/utils/MouseMove'
 
 const random = function (min, max) { return min + Math.random() * (max - min); }
 
@@ -19,8 +19,7 @@ const random = function (min, max) { return min + Math.random() * (max - min); }
 export default class Particle extends Pipeline {
     _count = 0
     constructor() {
-        super()
-
+		super()
     }
     init() {
         this.saveprg = this.compile(vs, fs)
@@ -36,15 +35,20 @@ export default class Particle extends Pipeline {
 
 		this._vSim = new BatchBigTriangle(simFs)
 
+		GlTools.applyHdrExtension()
         const numParticles = params.numParticles;
 		const o = {
 			minFilter:gl.NEAREST,
-			magFilter:gl.NEAREST
+			magFilter:gl.NEAREST,
+			hdr: true
 		}
 		this._fboCurrent = new FrameBuffer(numParticles*2, numParticles*2, o);
 		this._fboTarget  = new FrameBuffer(numParticles*2, numParticles*2, o);
 
-        this.cameraOrtho = new CameraOrtho()
+		this.cameraOrtho = new CameraOrtho()
+		this.orbital.radius = 10
+		this.orbital.updateMatrix()
+		this.orbital.destroy()
 	}
 	
 	_setGUI() {
@@ -53,13 +57,13 @@ export default class Particle extends Pipeline {
 
     attrib() {
         this._initRender()
-        this._initSave()
-        
+		this._initSave()
+		this.mousePos = {x:0, y:0}
+        MouseMove.addEvents(null, (e) => MouseMove.getPos(e, this.mousePos))
     }
 
     prepare() {
-
-		this.orbital.radius = 5
+		this.time = Math.random() * 0xFF;
 
 		GlTools.srcBlend()
 
@@ -73,7 +77,7 @@ export default class Particle extends Pipeline {
         gl.viewport(0, 0, canvas.width, canvas.height);
         GlTools.setCamera(this.camera);
         
-        this.time = Math.random() * 0xFF;
+
     }
     
     _initRender() {
@@ -152,11 +156,12 @@ export default class Particle extends Pipeline {
 	}
 
     _renderSim(texture) {
-        this.time += .01;
+		this.time += .01;
         this._vSim.draw({
             texture0 :texture,
             time: this.time,
-            skipCount: params.skipCount
+			skipCount: params.skipCount,
+			mousePos: [this.mousePos.x/canvas.width, this.mousePos.y/canvas.height]
         })
     }
 
@@ -179,7 +184,7 @@ export default class Particle extends Pipeline {
     
     render() {
 
-        GlTools.clear()
+        GlTools.clear()    
         
         let p = 0;
 
@@ -193,5 +198,6 @@ export default class Particle extends Pipeline {
         GlTools.setCamera(this.camera);
 
 		this._render(this._fboTarget.getTexture(), this._fboCurrent.getTexture(), p);
+
     }
 }
