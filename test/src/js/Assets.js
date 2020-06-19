@@ -1,10 +1,34 @@
-let Assets = {
-    addCustom: function(folder, name) {
-        const names = Array.prototype.slice.call(arguments, 1)
-        this[folder] = {}
-        names.forEach(v => {
-            this[folder][v.split('.')[0]] = `./assets/${folder}/${v}`
+const Assets = {
+    addCustom: function(folder, mName) {
+        const files = Array.prototype.slice.call(arguments, 1)
+        const folderName = folder.includes('/') ? folder.split('/')[1] : folder
+        this[folderName] = {}
+        
+        files.forEach(v => {
+            const suffix = v.split('.')[1]
+            const url = `./assets/${folder}/${v}`
+            const name = v.split('.')[0]
+            
+            switch(suffix) {
+                case 'gltf':
+                case 'obj':
+                case 'mtl':
+                    this[folderName][name] = { url, type: 'text' }
+                    break;
+                case 'hdr':
+                case 'dds':
+                    this[folderName][name] = { url, type: 'binary' }
+                    break;
+                default:
+                    this[folderName][name] = url
+                    break;
+            }
+
         })
+    },
+
+    addCubemap: function(folder, mName, suffix) {
+
     },
     materialMaps: {
         cubeDiffuse: './assets/cubeDiffuse.png',
@@ -106,10 +130,6 @@ let Assets = {
         skyboxlakeNegY: { url: './assets/skybox/skybox_lake_negy.jpg' },
         skyboxlakeNegZ: { url: './assets/skybox/skybox_lake_negz.jpg' },
     },
-    venus: {
-        venus: { url: './assets/models/venus/venus.obj', type: 'text' },
-        venusAo: { url: './assets/models/venus/aomap.jpg' }
-    },
     statue: {
         statue: { url: './assets/models/statue/statue.obj', type: 'text' },
         statueAo: { url: './assets/models/statue/statueAo.png' },
@@ -150,9 +170,6 @@ let Assets = {
         vatican_irradiance: { "url": "assets/img/vatican_irradiance.dds", "type": "binary" },
         vatican_radiance: { "url": "assets/img/vatican_radiance.dds", "type": "binary" }
     },
-    horse: {
-        horse: { url: './assets/animate/Horse.gltf', type: 'text' }
-    },
     refraction: {
         irrPosX: { url: './assets/pbrflow/refraction/irr_posx.hdr', type: 'binary' },
         irrPosY: { url: './assets/pbrflow/refraction/irr_posy.hdr', type: 'binary' },
@@ -166,12 +183,24 @@ let Assets = {
         radNegX: { url: './assets/pbrflow/refraction/rad_negx.hdr', type: 'binary' },
         radNegY: { url: './assets/pbrflow/refraction/rad_negy.hdr', type: 'binary' },
         radNegZ: { url: './assets/pbrflow/refraction/rad_negz.hdr', type: 'binary' },
+    },
+    mountain: {
+        irrPosX: { url: './assets/pbrflow/mountain/irr_posx.hdr', type: 'binary' },
+        irrPosY: { url: './assets/pbrflow/mountain/irr_posy.hdr', type: 'binary' },
+        irrPosZ: { url: './assets/pbrflow/mountain/irr_posz.hdr', type: 'binary' },
+        irrNegX: { url: './assets/pbrflow/mountain/irr_negx.hdr', type: 'binary' },
+        irrNegY: { url: './assets/pbrflow/mountain/irr_negy.hdr', type: 'binary' },
+        irrNegZ: { url: './assets/pbrflow/mountain/irr_negz.hdr', type: 'binary' },
+        radiance: { url: './assets/pbrflow/mountain/studio_radiance.dds', type: 'binary' },
+
     }
 }
 
 Assets.addCustom('water', 'terrain.jpg', 'dudvMap.png', 'normalMap.png', 'matchingNormalMap.png')
 Assets.addCustom('grass', 'grass.png', 'grass1.png', 'grass2.png', 'grass3.png', 'grass4.png')
-Assets.addCustom('sky', 'nightSky.jpg')
+Assets.addCustom('animate/horse', 'horse.gltf')
+Assets.addCustom('models/terrain', 'aoTerrain.jpg', 'terrain.obj')
+Assets.addCustom('models/venus', 'aoVenus.jpg', 'venus.obj')
 
 const mapAssets = {
     Reflection: { ...Assets.statue, ...Assets.venus },
@@ -189,7 +218,8 @@ const mapAssets = {
     Gltf: { ...Assets.skybox, ...Assets.gltf },
     Bloom: { ...Assets.statue, ...Assets.venus },
     Water: { ...Assets.water, ...Assets.dimSkybox, },
-    Grass: { ...Assets.grass, ...Assets.horse, ...Assets.gltf, ...Assets.sky },
+    Grass: { ...Assets.grass, ...Assets.horse, ...Assets.gltf },
+    Mountain: { ...Assets.gltf, ...Assets.terrain, ...Assets.mountain },
     FrustumCulling: { ...Assets.statue }
 }
 export default mapAssets

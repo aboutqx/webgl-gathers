@@ -231,7 +231,7 @@ class GLShader {
             } else {
                 let uniformValue = mUniformObj[uniformName];
                 const uniformType = this.getUniformType(uniformValue, uniformName);
-                // console.log(uniformType, uniformName, uniformValue)
+                //console.log(uniformType, uniformName, uniformValue)
                 if (uniformValue.concat && uniformValue[0].concat) {
                     let tmp = [];
                     for (let i = 0; i < uniformValue.length; i++) {

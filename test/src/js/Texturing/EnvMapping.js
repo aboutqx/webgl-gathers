@@ -52,16 +52,18 @@ export default class EnvMap extends Pipeline {
 
     }
     uniform() {
+        const { metallic, specular, roughness, color, gamma, exposure } = this.params;
+
         this.customUniforms = {
             uRadianceMap: this.textureRad,
             uIrradianceMap: this.textureIrr,
-            uAoMap: getAssets.venusAo,
-            uGamma: this.params.gamma,
-            uExposure: this.params.exposure,
-            uRoughness: this.params.roughness,
-            uMetallic: this.params.metallic,
-            uSpecular: this.params.specular,
-            uBaseColor: this.params.color.map(v => v/255)
+            uAoMap: getAssets.aoVenus,
+            uGamma: gamma,
+            uExposure: exposure,
+            uRoughness: roughness,
+            uMetallic: metallic,
+            uSpecular: specular,
+            uBaseColor: color.map(v => v/255)
         }
 
     }

@@ -151,8 +151,7 @@ export default class Mesh extends Object3D {
     }
 
     // 针对多个array buffer，list可以只激活部分attribute, mProgram 指的是glProgram实例
-    bind() {
-        let mShaderProgram = GlTools.shaderProgram
+    bind(mShaderProgram) {
         if (!mShaderProgram) console.error('no current program used')
 
         //所有data在一个arrybuffer里（现在不支持了）

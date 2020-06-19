@@ -17,10 +17,10 @@ export default class Pipeline {
     radioProps = []
 
     constructor() {
-
+        this.orbital = new OrbitalControls(this.camera)
         GlTools.setCamera(this.camera)
         this._resize() // set canvas width
-        this.orbital = new OrbitalControls(this.camera)
+        
         this.init()
         this.attrib()
         this.prepare()
@@ -29,7 +29,6 @@ export default class Pipeline {
         this.frameBufferGUI = new FrameBufferGUI()
 
         GlTools.customGlState()
-
 
         window.addEventListener('resize', this._resize.bind(this), false);
 
@@ -120,10 +119,10 @@ export default class Pipeline {
     addPbrParams(params) {
         this.addGUIParams(params)
 
-        let folder = this.gui.addFolder('material factor')
+        const folder = this.gui.addFolder('material factor')
         folder.add(this.params, 'metallic', 0, 1).step(.01)
         folder.add(this.params, 'roughness', 0, 1).step(.01)
-        params.specualr!==undefined && folder.add(this.params, 'specular', 0, 1).step(.01)
+        params.specular!==undefined && folder.add(this.params, 'specular', 0, 1).step(.01)
         folder.add(this.params, 'gamma', 0, 5).step(.1)
         folder.add(this.params, 'exposure', 1, 10).step(1)
         folder.addColor(this.params, 'color')

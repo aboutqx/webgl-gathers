@@ -1,12 +1,15 @@
 {
-// 有关 tasks.json 格式的文档，请参见
-    // https://go.microsoft.com/fwlink/?LinkId=733558
-    "version": "2.0.0",
     "tasks": [
         {
             "type": "npm",
             "script": "dev",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "label": "npm: dev",
+            "detail": "set NODE_ENV=development&webpack-dev-server --open && node ./tasks/watch-asset.js",
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
         }
     ]
 }
+//Have to set `shift control p -> Tasks: Manage Automatic Tasks in Folder -> Allow Automatic Tasks in Folder`

@@ -2,7 +2,7 @@
 
 import getTextureParameters from './utils/getTextureParameters';
 import WebglNumber from './utils/WebglNumber';
-import { gl } from './GlTools';
+import { gl, GlTools } from './GlTools';
 import Scheduler from 'scheduling';
 
 class GLTexture {
@@ -45,7 +45,7 @@ class GLTexture {
 
 	_uploadTexture() {
 		gl.bindTexture(gl.TEXTURE_2D, this._texture);
-		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, GlTools.unpackFlipY);
 
 		if (this._isSourceHtmlElement()) {
 			gl.texImage2D(gl.TEXTURE_2D, 0, this._params.internalFormat, this._params.format, this._texelType, this._source);

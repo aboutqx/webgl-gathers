@@ -31,6 +31,7 @@ export default class OrbitalControls {
         this._wheelBind = (e) => this._wheel(e)
 
         this._addEvents()
+        this.updateMatrix()
         this._efIndex = Scheduler.addEF(() => this.updateMatrix())
     }
 
@@ -91,8 +92,8 @@ export default class OrbitalControls {
         if(tr < 0) this.up[1] = -1
         else this.up[1] = 1
 
-        this.position[0] = Math.cos(this._rx.value) * tr
-        this.position[2] = Math.sin(this._rx.value) * tr 
+        this.position[0] = Math.cos(this._rx.value + Math.PI * .5) * tr // +90度保证初始位置正确
+        this.position[2] = Math.sin(this._rx.value + Math.PI * .5) * tr 
 
         vec3.add(this.position, this.position, this.offset)
 

@@ -65,7 +65,8 @@ export default class Grass extends Pipeline {
             noiseScale:2.5,
             isOne:false,
             numGrass: 800,
-            grassColor:[98, 152, 83]
+			grassColor:[98, 152, 83],
+			fogColor: [253, 232, 153].map(v => v/255 * 1.)
         };
 
         this.position = [0, 2.5, -8.5];
@@ -90,8 +91,8 @@ export default class Grass extends Pipeline {
 
     attrib() {
 
-        if(this.mesh) {
-			this.mesh = null;
+        if(this.grass) {
+			this.grass = null;
 		}
 
 		const positions = [];
@@ -99,18 +100,7 @@ export default class Grass extends Pipeline {
 		const indices = [];
 		const normals = [];
 
-		let NUM_GRASS
-		for(let i = 0; i < grasses.length; i++) {
-			if(this.params[grasses[i]] && grasses[i] === 'grass') {
-				NUM_GRASS = params.numGrass * 2
-				break;
-			} else {
-				NUM_GRASS = params.numGrass * 2
-				
-				break;
-			}
-		}
-		if(this.params['grass'] === undefined)  NUM_GRASS = params.numGrass * 2
+		let NUM_GRASS = params.numGrass * 2
 
 		const RANGE = params.terrainSize/2 * .8;
 
@@ -130,9 +120,8 @@ export default class Grass extends Pipeline {
 
 			return vv;
 		}
-
+		const yOffset = -W - 2.;
 		function addPlane(angle) {
-			const yOffset = -W;
 			positions.push(rotate([-W, 0+yOffset, 0], angle));
 			positions.push(rotate([ W, 0+yOffset, 0], angle));
 			positions.push(rotate([ W, H+yOffset, 0], angle));
@@ -165,7 +154,7 @@ export default class Grass extends Pipeline {
 
 		const terrainSize = params.terrainSize
 
-		function getMesh(numInstances) {
+		function getGrass(numInstances) {
 			const mesh = new Mesh(undefined, 'grass');
 			mesh.bufferVertex(positions);
 			mesh.bufferNormal(normals);
@@ -201,7 +190,7 @@ export default class Grass extends Pipeline {
 				let pos2D;
 				cnt = 0;
 				do {
-					pos = [random(-RANGE, RANGE), random(1.65, 1.5), random(-RANGE, RANGE)];	
+					pos = [random(-RANGE, RANGE), random(1.65 - 2., 1.5 - 2.), random(-RANGE, RANGE)];	
 					cnt ++;
 				} while(checkDist(pos) && cnt < 100);
 
@@ -216,7 +205,7 @@ export default class Grass extends Pipeline {
 			return mesh;
 		}
 
-		this.mesh = getMesh(NUM_GRASS);
+		this.grass = getGrass(NUM_GRASS);
 
 
 		this.floor = Geom.plane(terrainSize, terrainSize, 125, 'xz');
@@ -230,10 +219,10 @@ export default class Grass extends Pipeline {
 
 		this.orbital.radius = 80
 		this.orbital.rx.value = - Math.PI / 2;
-		this.orbital.ry.value = .25;
-		this.orbital.ry.limit(.2, .3);
+		this.orbital.ry.value = .05;
+		this.orbital.ry.limit(-.2, .0);
         this.orbital.offset = [0, 5, 0]
-		this.orbital.target = [0, 5, 0]
+		// this.orbital.target = [0, 5, 0]
 
 		const noiseSize = 64;
         this._fboNoise = new FrameBuffer(noiseSize, noiseSize, { }, 3)
@@ -343,7 +332,7 @@ export default class Grass extends Pipeline {
             uLightIntensity: this._lightIntensity.value
 		})
 
-		GlTools.draw(this.mesh)
+		GlTools.draw(this.grass)
     }
 
 	_renderHorse() {
@@ -371,12 +360,12 @@ export default class Grass extends Pipeline {
         const textureNoise = this._fboNoise.getTexture(2);
 
         gl.disable(gl.CULL_FACE);
-        this._renderGrass(textureHeight, textureNormal, textureNoise)
+        //this._renderGrass(textureHeight, textureNormal, textureNoise)
 		gl.enable(gl.CULL_FACE);
 		this._renderFloor(textureHeight, textureNormal)
 
-		this._renderHorse()
+		// this._renderHorse()
 
-		this.sky.draw(getAssets.nightSky)
+		this.sky.draw(getAssets.nightSky, params.fogColor)
     }
 }

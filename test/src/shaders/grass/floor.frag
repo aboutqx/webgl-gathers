@@ -41,7 +41,7 @@ void main(void) {
 	vec3 color 	= uBaseColor * d;
 
 	float shadowWolf = getShadow(vTextureCoord);
-	color -= shadowWolf;
+	// color -= shadowWolf;
 
 	color 		*= uLightIntensity;
 

@@ -36,6 +36,7 @@ const importLists = {
         'LOD'
     ],
     NaturalEffects: [
+        'Mountain',
         'Water',
         'Grass',
         'Particle'

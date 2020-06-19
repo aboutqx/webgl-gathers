@@ -173,7 +173,7 @@ void main(void) {
       }
 
 			vel += acc * .003 * (skipCount+1.0);
-      vel.xy += (mousePos.xy - .5) * .02;
+      vel.xy -= (mousePos.xy - .5) * .02;
 			const float decrease = .9;
 			vel *= decrease;
 

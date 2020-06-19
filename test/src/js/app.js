@@ -6,7 +6,8 @@ import { canvas } from  'libs/GlTools'
 
 const assets = {
   wood: './assets/wood.jpg',
-  flower: './assets/flower.png'
+  flower: './assets/flower.png',
+  nightSky: './assets/sky/nightSky.jpg'
 }
 const name = location.search.replace('?', '')
 

@@ -3,29 +3,24 @@ import Object3D from 'physics/Object3D';
 import { mat3, mat4 } from 'gl-matrix'
 
 const canvas = document.querySelector('canvas')
-const options = {
-    antialias: false,
+const gl = canvas.getContext('webgl2', {
+    antialias: true,
     stencil: true
-}
-
-
-const gl = canvas.getContext('webgl2', options)
+})
 if (!gl) console.error('webgl2 not supported!')
 console.log('webgl2 used.')
 window.useWebgl2 = true
-
-
-const toRadian = (deg) => {
-    return deg / 180 * Math.PI
-}
+//console.log(gl.getContextAttributes())
 
 class GlTool {
     shader
     shaderProgram
+    unpackFlipY = true
+    _matrix = mat4.create()
     identityMatrix = mat4.create()
     _normalMatrix = mat3.create()
     _inverseModelViewMatrix = mat3.create()
-    _modelMatrix
+    _modelMatrix = mat4.create()
     aspectRatio
     constructor() {
         this.customUniforms = [
@@ -52,6 +47,10 @@ class GlTool {
 
     }
 
+    flipY(value) {
+        this.unpackFlipY = value
+    }
+
     applyHdrExtension() {
         gl.getExtension("EXT_color_buffer_float")
         gl.getExtension('OES_texture_half_float_linear')
@@ -65,6 +64,15 @@ class GlTool {
 
     setCamera(camera) {
         this.camera = camera
+
+        mat4.multiply(this._matrix, this.camera.matrix, this._modelMatrix)
+        mat3.fromMat4(this._inverseModelViewMatrix, this._matrix)
+        mat3.invert(this._inverseModelViewMatrix, this._inverseModelViewMatrix)
+
+        mat3.fromMat4(this._normalMatrix, this._matrix)
+        mat3.invert(this._normalMatrix, this._normalMatrix)
+        mat3.transpose(this._normalMatrix, this._normalMatrix)
+
     }
 
     resize() {
@@ -83,6 +91,7 @@ class GlTool {
         this.shaderName = this.shader.name
     }
 
+
     drawMesh(mMesh, modelMatrix) {
         const { material } = mMesh
         // instancing use batchInstance shader
@@ -97,6 +106,7 @@ class GlTool {
         // console.log(this.shader.name, mMesh)
         if (this.shader) {
             if(!this.camera) console.error('no camera set')
+            else this.setCamera(this.camera)
             //	DEFAULT UNIFORMS
             const customUniforms = {
                 'uProjectionMatrix': this.camera.projectionMatrix,
@@ -129,20 +139,6 @@ class GlTool {
     }
 
 
-    // drawMesh(mMesh) {
-    //   const { material, geometry } = mMesh;
-
-    //   if(material.doubleSided) {
-    //     this.disable(GL.CULL_FACE);
-    //   } else {
-    //     this.enable(GL.CULL_FACE);
-    //   }
-
-    //   material.update();
-    //   this.drawGeometry(geometry, mMesh.matrix);
-    // }
-
-
     draw(mObj, modelMatrix) { // modelMatrix flag determine if pass the uNormalMatrix mannully, default is undefined which passes false
         if (!mObj) return
         if (mObj.length) {
@@ -163,4 +159,13 @@ class GlTool {
     }
 }
 let GlTools = new GlTool()
-export { gl, canvas, toRadian, GlTools }
+
+const toRadian = (deg) => {
+    return deg / 180 * Math.PI
+}
+
+const random = (min, max) => { 
+    return min + Math.random() * (max - min); 
+}
+
+export { gl, canvas, toRadian, random, GlTools }

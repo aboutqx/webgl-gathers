@@ -109,5 +109,5 @@ void main(void) {
     textureHeight      = vec4(noise, noise, noise, 1.0);
     textureNormal      = bump;
     textureNoise      = vec4(noisex, noisey, 0.0, 1.0);
-    //gl_FragData[3]      = vec4(1.0, 0.0, 1.0, 1.0);
+
 }

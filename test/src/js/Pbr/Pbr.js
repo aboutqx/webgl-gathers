@@ -51,7 +51,7 @@ export default class Pbr extends Pipeline {
 
         this.addRadio('orenNayar', ['lambert', 'orenNayar'], 'diffuse model')
 
-        let folder2 = this.gui.addFolder('material map')
+        const folder2 = this.gui.addFolder('material map')
         folder2.add(this.params, 'map', ['none', 'plastic', 'wall', 'gold', 'grass', 'rusted_iron', 'wood']).listen().onChange(() => {
             this.setTexture()
         })
@@ -82,11 +82,13 @@ export default class Pbr extends Pipeline {
 
         GlTools.clear()
 
-        let mMatrix = mat4.create()
-        let baseUniforms = {
-            uGamma: this.params.gamma,
-            uExposure: this.params.exposure,
-            lambertDiffuse: this.params.lambert,
+        const { metallic, lambert, roughness, color, gamma, exposure } = this.params;
+
+        const mMatrix = mat4.create()
+        const baseUniforms = {
+            uGamma: gamma,
+            uExposure: exposure,
+            lambertDiffuse: lambert,
         }
 
         if (this.params.map === 'none') {
@@ -100,10 +102,10 @@ export default class Pbr extends Pipeline {
                     [`lights[${i}].Linear`]: .1,
                     [`lights[${i}].Quadratic`]: .12,
                     ...baseUniforms,
-                    albedo: this.params.color.map(v => v/255),
+                    albedo: color.map(v => v/255),
                     ao: .1,
-                    metallic: this.params.metallic,
-                    roughness: this.params.roughness,
+                    metallic: metallic,
+                    roughness: roughness,
                     mMatrix
                 })
     

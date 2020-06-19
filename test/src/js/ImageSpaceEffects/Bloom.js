@@ -11,7 +11,7 @@ import {
     canvas
 } from 'libs/GlTools'
 import Geom from 'libs/Geom'
-import { bigTriangleVert } from 'CustomShaders'
+import BatchBigTriangle from 'helpers/BatchBigTriangle'
 import FrameBuffer from 'libs/FrameBuffer'
 import FboPingPong from 'libs/FboPingPong'
 
@@ -22,8 +22,8 @@ export default class Bloom extends Pipeline {
     init() {
         GlTools.applyHdrExtension()
         this.prg = this.basicVert(fs)
-        this.blurPrg = this.compile(bigTriangleVert, blurFs)
-        this.finalPrg = this.compile(bigTriangleVert, finalFs)
+        this._vBlur = new BatchBigTriangle(blurFs)
+        this._vFinal = new BatchBigTriangle(finalFs)
     }
     attrib() {
         this.statue = Geom.cube(1)
@@ -41,13 +41,13 @@ export default class Bloom extends Pipeline {
     }
     _setGUI() {
         this.addGUIParams({
-            texOffsetScale: 1,
-            blurPassCount: 20,
+            texOffsetScale: .1,
+            blurPassCount: 5,
             lightScale: 1,
             uAlpha: .5
         })
-        this.gui.add(this.params, 'texOffsetScale', 0, 4).step(.02)
-        this.gui.add(this.params, 'blurPassCount', 1, 40).step(1)
+        this.gui.add(this.params, 'texOffsetScale', 0, 5).step(.01)
+        this.gui.add(this.params, 'blurPassCount', 1, 20).step(1)
         this.gui.add(this.params, 'lightScale', .1, 10).step(.1)
         this.gui.add(this.params, 'uAlpha', 0, 1.0).step(.1)
     }
@@ -92,32 +92,32 @@ export default class Bloom extends Pipeline {
         this.fbo.unbind()
 
 
-        this.blurPrg.use()
-        let horizontal = true, amount = this.params.blurPassCount
-        for (let i = 0; i < amount; i++) {
+        let horizontal = true
+
+        for (let i = 0; i < this.params.blurPassCount; i++) {
             this.pingpongFbo.write.bind()
-            this.blurPrg.style({
+            this._vBlur.draw({
                 image: i == 0 ? this.textures[1] : this.pingpongFbo.read.textures[0],
                 horizontal,
                 texOffsetScale: this.params.texOffsetScale
             })
 
-            GlTools.draw(this.quad)
             horizontal = !horizontal;
+            this.pingpongFbo.write.unbind()
+
             this.pingpongFbo.swap()
         }
-        this.pingpongFbo.write.unbind()
+        
 
         GlTools.clear(0, 0, 0)
-        this.finalPrg.use()
-        this.finalPrg.style({
+
+        this._vFinal.draw({
             scene: this.textures[0],
             bloomBlur: this.pingpongFbo.read.textures[0],
             bloom: true,
             exposure: .1
         })
 
-        GlTools.draw(this.quad)
 
     }
 }

@@ -24,5 +24,5 @@ void main(void){
     vec3  destColor = diffuseColor * diffuse + .3 * vec3(specular);
     if(useAo) destColor += ao * diffuseColor * .08 ;
     FragColor    = vec4(destColor, 1.);
-    FragColor    = vec4(uCameraPos, 1.);
+    // FragColor    = vec4(uCameraPos, 1.);
 }

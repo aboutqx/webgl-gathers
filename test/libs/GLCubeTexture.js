@@ -14,7 +14,6 @@ const headerLengthInt = 31;
 class GLCubeTexture {
     constructor(mSource, mParameters = {}, isCubeTexture = false) {
         
-
         if (isCubeTexture) {
             this.texture = mSource;
             return;
