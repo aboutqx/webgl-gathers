@@ -25,7 +25,7 @@ class GLCubeTexture {
         }
 
         // webgl2 rgba16f is filterable, rgba32 not, means filter must set nearest or nearest_mipmap_nearest
-        // while hdr data current is float32
+        // while hdr data current is float32， we store it in float16, make filterable
         this.texture = gl.createTexture();
         this.magFilter = mParameters.magFilter || gl.LINEAR;
         this.minFilter = mParameters.minFilter || gl.LINEAR_MIPMAP_LINEAR;

@@ -13,14 +13,18 @@ uniform mat4 uProjectionMatrix;
 out vec3 vNormal;
 out vec3 vPosition;
 out vec2 vTexCoord;
+out vec4 vViewSpacePosition;
+
 void main(void){
 
 	vec4 pos       = mMatrix * vec4(position, 1.0);
-	gl_Position    = uProjectionMatrix * uViewMatrix * pos;
+    vViewSpacePosition = uViewMatrix * pos;
+	gl_Position    = uProjectionMatrix * vViewSpacePosition;
 
     mat3 normalMatrix = transpose(inverse(mat3(mMatrix)));
     vNormal = normalize(normalMatrix * normal);
     
-    vPosition = pos.xyz / pos.w;
+    vPosition = pos.xyz;
+    
     vTexCoord = texCoord;
 }

@@ -38,7 +38,7 @@ float fogFactorExp2(const float dist, const float density) {
 void main(void) {
     
      vec3 color = texture(texture0, vTexCoord).rgb;
-    // color = contrast(color, 1.) * 1.2;
+    color = contrast(color, 1.) * 1.2;
 
     //sky fog only has a y direction change
     float fogDistance = gl_FragCoord.z / gl_FragCoord.w;
@@ -47,8 +47,8 @@ void main(void) {
 	float offset = smoothstep(5., 1., vPosition.y);
 	color.rgb = mix(color.rgb, uFogColor, offset );
 
-    // float grey = (color.r + color.g + color.b) / 3.0;
-	// color.rgb = mix(color.rgb, vec3(grey), 0.5);
+    float grey = (color.r + color.g + color.b) / 3.0;
+	color.rgb = mix(color.rgb, vec3(grey), 0.5);
 
     FragColor = vec4(color , 1.);
 }

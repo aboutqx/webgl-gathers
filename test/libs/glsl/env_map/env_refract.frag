@@ -71,7 +71,7 @@ vec3 correctGamma(vec3 color, float g) {
 
 void main() {
 
-	float roughness4   = pow(uRoughness, 4.0);
+
 
 	vec3 N 				= normalize( vNormal );
 	vec3 V 				= normalize( uCameraPos - vPosition );
@@ -84,7 +84,7 @@ void main() {
 	// deduce the diffuse and specular color from the baseColor and how metallic the material is
 	vec3 diffuseColor	= uBaseColor - uBaseColor * uMetallic;
 	vec3 specularColor	= mix( vec3( 0.08 * uSpecular ), uBaseColor, uMetallic );
-
+	float roughness4   = pow(uRoughness, 4.0);
 
 	//	refraction
 

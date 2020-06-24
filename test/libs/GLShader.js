@@ -72,7 +72,7 @@ class GLShader {
         if (!strVertexShader) { strVertexShader = defaultVertexShader; }
         if (!strFragmentShader) { strFragmentShader = defaultVertexShader; }
 
-        this._name = strVertexShader.split('//')[1]
+        this._name = strFragmentShader.split('//')[1]
         this._name = !this._name ? '' : this.name.split('\n')[0]
 
         
@@ -147,7 +147,7 @@ class GLShader {
             this.shaderProgram[mName] = gl.getUniformLocation(this.shaderProgram, mName);
 
             if(!this.shaderProgram[mName] && !customShaders.includes(mName)) {
-                if(!this._name.includes('.vert')) console.log(this.shaderProgram[mName], mName, this._name)
+                console.log(this.shaderProgram[mName], mName, this._name)
             }
             
             if (isNumber) {

@@ -11,6 +11,7 @@ if (!gl) console.error('webgl2 not supported!')
 console.log('webgl2 used.')
 window.useWebgl2 = true
 //console.log(gl.getContextAttributes())
+//console.log(window.devicePixelRatio)
 
 class GlTool {
     shader
@@ -30,7 +31,8 @@ class GlTool {
             'uNormalMatrix',
             'uModelViewMatrixInverse',
             'uTime',
-            'uModelMatrix'
+            'uModelMatrix',
+            'uResolution'
         ]
     }
 
@@ -114,7 +116,8 @@ class GlTool {
                 'uCameraPos': this.camera.position,
                 'uNormalMatrix': this._normalMatrix,
                 'uModelViewMatrixInverse': this._inverseModelViewMatrix,
-                'uTime': performance.now()
+                'uTime': performance.now(),
+                'uResolution': [ canvas.width, canvas.height ]
             }
             this.shader.style(customUniforms)
             if (!modelMatrix) this.shader.uniform('uModelMatrix', 'mat4', mMesh.matrix);

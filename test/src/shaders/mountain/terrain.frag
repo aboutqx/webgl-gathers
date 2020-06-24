@@ -10,23 +10,20 @@ uniform samplerCube uIrradianceMap;
 
 uniform vec3		uBaseColor;
 uniform float		uRoughness;
-uniform float		uRoughness4;
 uniform float		uMetallic;
 uniform float		uSpecular;
 uniform float 		uFogOffset;
 uniform float		uExposure;
 uniform float		uGamma;
 uniform float		uFogDensity;
+uniform vec3 		uFogColor;
 uniform float 		uOffset;
 uniform vec3        uCameraPos;
 
 in 		vec3		vNormal;
 in 		vec3        vPosition;
-in 		vec3		vEyePosition;
-in 		vec3		vWsNormal;
-in 		vec3		vWsPosition;
-in 		vec2 		vTextureCoord;
-in 		vec4 		vViewSpace;
+in 		vec2 		vTexCoord;
+in 		vec4 		vViewSpacePosition;
 out 	vec4 		FragColor;
 
 #define saturate(x) clamp(x, 0.0, 1.0)
@@ -80,8 +77,6 @@ float fogFactorExp2(const float dist, const float density) {
   return 1.0 - clamp(exp2(d * d * LOG2), 0.0, 1.0);
 }
 
-#define FOG_DENSITY 0.05
-const vec3 fogColor = vec3(254.0/255.0, 242.0/255.0, 226.0/255.0);
 
 vec3 getPbr(vec3 N, vec3 V, vec3 baseColor, float roughness, float metallic, float specular) {
 	vec3 diffuseColor	= baseColor - baseColor * metallic;
@@ -93,10 +88,10 @@ vec3 getPbr(vec3 N, vec3 V, vec3 baseColor, float roughness, float metallic, flo
 	// sample the pre-filtered cubemap at the corresponding mipmap level
 	float numMips		= 6.0;
 	float mip			= numMips - 1.0 + log2(roughness);
-	vec3 lookup			= reflect( V, N );
+	vec3 lookup			= -reflect( V, N );
 	lookup				= fix_cube_lookup( lookup, 512.0, mip );
-	vec3 radiance		= pow( texture( uRadianceMap, lookup, mip ).rgb, vec3( 2.2 ) );
-	vec3 irradiance		= pow( texture( uIrradianceMap, N ).rgb, vec3( 1 ) );
+	vec3 radiance		= pow( textureLod( uRadianceMap, lookup, mip ).rgb, vec3( 2.2 ) );
+	vec3 irradiance		= pow( texture( uIrradianceMap, N ).rgb, vec3(2.2) );
 	
 	// get the approximate reflectance
 	float NoV			= saturate( dot( N, V ) );
@@ -110,23 +105,21 @@ vec3 getPbr(vec3 N, vec3 V, vec3 baseColor, float roughness, float metallic, flo
 	return color;
 }
 
+float getDiffuse(vec3 N, vec3 L) {
+	return max(dot(N, normalize(L)), 0.0);
+}
+
 void main() {
-	vec3 noise 			= texture( uNoiseMap, vTextureCoord *20.).rgb - .5;
-	vec3 N 				= normalize( vWsNormal + noise * 0.  );
-	vec3 V 				= normalize( vWsPosition - vEyePosition);
+	vec3 noise 			= texture( uNoiseMap, vTexCoord* 5. ).rgb - .5;
+	vec3 N 				= normalize( vNormal + noise * .06);
+	vec3 V 				= normalize( uCameraPos - vPosition );
+
 	vec3 color 			= getPbr(N, V, uBaseColor, uRoughness, uMetallic, uSpecular);
 
-	vec3 ao = texture(uAoMap, vTextureCoord).rgb;
+	
+
+	vec3 ao = texture(uAoMap, vTexCoord).rgb;
 	color.rgb *= ao;
-
-	// float fogDistance = length(vViewSpace);
-	// float fogAmount = fogFactorExp2(fogDistance, uFogDensity);
-
-	// color.rgb = mix(color.rgb, fogColor, fogAmount+uFogOffset);
-
-	// float grey = (color.r + color.g + color.b) / 3.0;
-	// color.rgb = mix(color.rgb, vec3(grey), uOffset);
-
 
 	// apply the tone-mapping
 	color				= Uncharted2Tonemap( color * uExposure );
@@ -136,6 +129,15 @@ void main() {
 	// gamma correction
 	color				= pow( color, vec3( 1.0 / uGamma ) );
 
-    FragColor		= vec4( color, 1.0 );
+	float fogDistance = length(vViewSpacePosition);
+	float fogAmount = fogFactorExp2(fogDistance, uFogDensity);
+
+	color.rgb = mix(color.rgb, uFogColor, fogAmount+uFogOffset);
+
+	
+	// float grey = (color.r + color.g + color.b) / 3.0;
+	// color.rgb = mix(color.rgb, vec3(grey), uOffset);
+
+    FragColor		= vec4(color, 1.0 );
 
 }
