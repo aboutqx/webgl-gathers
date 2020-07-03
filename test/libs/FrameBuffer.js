@@ -155,6 +155,7 @@ class FrameBuffer {
             gl.viewport(0, 0, this.width, this.height);
         }
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+        GlTools.clear(0, 0, 0, 1)
     }
 
 

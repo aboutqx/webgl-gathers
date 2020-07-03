@@ -72,7 +72,7 @@ export default class EnvMap extends Pipeline {
         GlTools.clear()
         this.skybox.draw()
 
-        let mMatrix = mat4.create()
+        const mMatrix = mat4.create()
         mat4.translate(mMatrix, mMatrix, [-6, 0, 0])
         this.specularPrg.use()
         this.specularPrg.style({
@@ -81,7 +81,7 @@ export default class EnvMap extends Pipeline {
         })
         GlTools.draw(this.venus)
 
-        mMatrix = mat4.create()
+        mat4.identity(mMatrix)
         mat4.translate(mMatrix, mMatrix, [0, 0, 0])
         this.refractPrg.use()
         this.refractPrg.style({
@@ -91,7 +91,7 @@ export default class EnvMap extends Pipeline {
         })
         GlTools.draw(this.venus)
 
-        mMatrix = mat4.create()
+        mat4.identity(mMatrix)
         mat4.translate(mMatrix, mMatrix, [6, 0, 0])
         this.frenellPrg.use()
         this.frenellPrg.style({

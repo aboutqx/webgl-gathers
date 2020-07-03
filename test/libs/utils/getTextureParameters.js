@@ -29,7 +29,7 @@ const getTextureParameters = function (mParams, mType, mWidth, mHeight) {
     mParams.anisotropy = mParams.anisotropy || 0;
 
     if (!mParams.internalFormat && (mType !== gl.UNSIGNED_BYTE)) mParams.internalFormat = fixInternalFormat(mType, mParams.format)
-    else mParams.internalFormat = mParams.internalFormat || gl.RGBA
+    else mParams.internalFormat = mParams.internalFormat || mParams.format || gl.RGBA
 
     return mParams;
 };

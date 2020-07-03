@@ -18,7 +18,7 @@ class GLTexture {
 
 		this._params = getTextureParameters(mParam, this._texelType, this._width, this._height);
 
-		// this.showParameters()
+		//this.showParameters()
 		this._checkMipmap();
 		this._checkWrapping();
 

@@ -8,6 +8,9 @@ class FboPingPong extends FboFarray {
         super(2, width, height, params, mNumTargets);
     }
 
+    pingpong(initial, alpha, beta, count, renderFunc) {
+
+    }
 }
 
 export default FboPingPong;

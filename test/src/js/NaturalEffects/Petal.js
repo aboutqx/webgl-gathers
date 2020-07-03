@@ -1,9 +1,8 @@
+import simVelFs from 'shaders/petal/simVel.frag'
 import Pipeline from '../PipeLine'
-import vs from 'libs/glsl/particle/save.vert'
-import fs from 'libs/glsl/particle/save.frag'
-import renderVs from 'libs/glsl/particle/render.vert'
-import renderFs from 'libs/glsl/particle/render.frag'
-import simFs from 'libs/glsl/particle/sim.frag'
+import vs from 'shaders/petal/save.vert'
+import fs from 'shaders/petal/save.frag'
+import petalVs from 'shaders/petal/petal.vert'
 import Mesh from 'libs/Mesh'
 import FrameBuffer from 'libs/FrameBuffer'
 import {
@@ -11,29 +10,29 @@ import {
 } from 'libs/GlTools'
 import BatchBigTriangle from 'helpers/BatchBigTriangle'
 import CameraOrtho from 'libs/cameras/CameraOrtho'
-import MouseMove from 'libs/utils/MouseMove'
+
 
 const random = function (min, max) { return min + Math.random() * (max - min); }
 
-
-export default class Particle extends Pipeline {
+export default class Petal extends Pipeline {
 	_count = 0
 	constructor() {
 		super()
 	}
 	init() {
 		this.saveprg = this.compile(vs, fs)
-		this.renderPrg = this.compile(renderVs, renderFs)
+		this.renderPrg = this.basicColor(petalVs)
 
 		window.params = {
 			gamma: 2.2,
 			exposure: 5,
-			numParticles: 20,
-			skipCount: 3
+			numParticles: 10,
+			skipCount: 2,
+			maxRadius: 12.5
 		};
 
 
-		this._vSim = new BatchBigTriangle(simFs)
+		this._vSim = new BatchBigTriangle(simVelFs)
 
 		GlTools.applyHdrExtension()
 		const numParticles = params.numParticles;
@@ -42,13 +41,12 @@ export default class Particle extends Pipeline {
 			magFilter: gl.NEAREST,
 			hdr: true
 		}
-		this._fboCurrent = new FrameBuffer(numParticles * 2, numParticles * 2, o);
-		this._fboTarget = new FrameBuffer(numParticles * 2, numParticles * 2, o);
+		this._fboCurrent = new FrameBuffer(numParticles * 2, numParticles * 2, o, 3);
+		this._fboTarget = new FrameBuffer(numParticles * 2, numParticles * 2, o, 3);
 
 		this.cameraOrtho = new CameraOrtho()
-		this.orbital.radius = 10
-		this.orbital.updateMatrix()
-		this.orbital.destroy()
+		this.orbital.radius = 5
+
 	}
 
 	_setGUI() {
@@ -59,7 +57,7 @@ export default class Particle extends Pipeline {
 		this._initRender()
 		this._initSave()
 		this.mousePos = { x: 0, y: 0 }
-		MouseMove.addEvents(null, (e) => MouseMove.getPos(e, this.mousePos))
+
 	}
 
 	prepare() {
@@ -70,20 +68,21 @@ export default class Particle extends Pipeline {
 		GlTools.setCamera(this.cameraOrtho);
 
 		this._fboCurrent.bind();
-		GlTools.clear(0, 0, 0, 0);
 		this._renderSave()
-
 		this._fboCurrent.unbind();
-		gl.viewport(0, 0, canvas.width, canvas.height);
-		GlTools.setCamera(this.camera);
 
+		this._fboTarget.bind();
+		this._renderSave()
+		this._fboTarget.unbind();
+
+		GlTools.setCamera(this.camera);
 
 	}
 
 	_initRender() {
-		const positions = [];
-		const indices = [];
-		let count = 0;
+
+		this.mesh = getAssets.petal
+		const uvs = [];
 		const numParticles = params.numParticles;
 		let ux, uy;
 
@@ -91,28 +90,26 @@ export default class Particle extends Pipeline {
 			for (let i = 0; i < numParticles; i++) {
 				ux = i / numParticles;
 				uy = j / numParticles;
-				positions.push([ux, uy, 0]);
-				indices.push(count);
-				count++;
+				uvs.push([ux, uy]);
 
 			}
 		}
 
-		this.mesh = new Mesh(gl.POINTS);
-		this.mesh.bufferVertex(positions);
-		this.mesh.bufferIndex(indices);
+		this.mesh.bufferInstance(uvs, 'aUV');
+
 	}
 
 	_initSave() {
 		const positions = [];
 		const coords = [];
 		const indices = [];
+		const extras = []
 		let count = 0;
 
 		const numParticles = params.numParticles;
 		const totalParticles = numParticles * numParticles;
 		let ux, uy;
-		const range = 1.5;
+		const range = 3;
 
 		for (let j = 0; j < numParticles; j++) {
 			for (let i = 0; i < numParticles; i++) {
@@ -122,29 +119,30 @@ export default class Particle extends Pipeline {
 				uy = j / numParticles - 1.0 + .5 / numParticles;
 				coords.push([ux, uy]);
 				indices.push(count);
-				count++;
+				extras.push([Math.random(), Math.random(), Math.random()])
 
-
-				positions.push([Math.random(), Math.random(), Math.random()]);
-				coords.push([ux, uy + 1.0]);
-				indices.push(count);
 				count++;
 
 			}
 		}
 
-		this.saveMesh = new Mesh(gl.POINTS);
-		this.saveMesh.bufferVertex(positions);
-		this.saveMesh.bufferTexCoord(coords);
-		this.saveMesh.bufferIndex(indices);
+		this.meshSave = new Mesh(gl.POINTS);
+		this.meshSave.bufferData(extras, 'aExtra', 3);
+		this.meshSave.bufferVertex(positions);
+		this.meshSave.bufferTexCoord(coords);
+		this.meshSave.bufferIndex(indices);
 	}
 
-	_render(texture, textureNext, percent) {
+	_renderPetal(textureCurr, textureNext, percent, textureExtra) {
+		this.time += 0.05
 		this.renderPrg.bind();
 		this.renderPrg.style({
-			texture0: texture,
+			textureCurr,
 			textureNext,
-			percent
+			textureExtra,
+			percent,
+			time: this.time,
+			color: [1., 1., 1.]
 		});
 
 		GlTools.draw(this.mesh);
@@ -152,16 +150,17 @@ export default class Particle extends Pipeline {
 
 	_renderSave() {
 		this.saveprg.use()
-		GlTools.draw(this.saveMesh)
+		GlTools.draw(this.meshSave)
 	}
 
-	_renderSim(texture) {
+	_renderSim(textureVel, textureExtra, texturePos) {
 		this.time += .01;
 		this._vSim.draw({
-			texture0: texture,
+			textureVel,
+			textureExtra,
+			texturePos,
 			time: this.time,
-			skipCount: params.skipCount,
-			mousePos: [this.mousePos.x / canvas.width, this.mousePos.y / canvas.height]
+			maxRadius: params.maxRadius
 		})
 	}
 
@@ -169,8 +168,7 @@ export default class Particle extends Pipeline {
 		GlTools.setCamera(this.cameraOrtho);
 
 		this._fboTarget.bind();
-		GlTools.clear(0, 0, 0, 0);
-		this._renderSim(this._fboCurrent.getTexture());
+		this._renderSim(this._fboCurrent.getTexture(2), this._fboCurrent.getTexture(1), this._fboCurrent.getTexture(0));
 		this._fboTarget.unbind();
 
 		GlTools.setCamera(this.camera);
@@ -197,7 +195,9 @@ export default class Particle extends Pipeline {
 
 		GlTools.setCamera(this.camera);
 
-		this._render(this._fboTarget.getTexture(), this._fboCurrent.getTexture(), p);
-		this.frameBufferGUI.textureList = [{ texture: this._fboTarget.getTexture(0) }]
+		this._renderPetal(this._fboTarget.getTexture(), this._fboCurrent.getTexture(), p, this._fboCurrent.getTexture(1));
+		// this.frameBufferGUI.textureList = [{ texture: this._fboCurrent.getTexture(0) }]
+		this._renderSim(this._fboCurrent.getTexture(2), this._fboCurrent.getTexture(1), this._fboCurrent.getTexture(0));
+
 	}
 }

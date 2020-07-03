@@ -93,8 +93,6 @@ export default class Pipeline {
     addGUIParams(o) {
         return Object.assign(this._params, o)
     }
-
-    
     
     addRadio(prop, props, name = 'radio', callback = function() {}) {
         if(props) {
@@ -114,6 +112,13 @@ export default class Pipeline {
         
         this.radioProps.forEach(v => this.params[v] = false)
         if(prop) this.params[prop] = true
+    }
+
+
+    addLabel(labelText, callback = function() {}) {
+        this.addGUIParams({ [labelText]: callback })
+        this.gui.add( this.params, labelText )
+        
     }
 
     addPbrParams(params) {

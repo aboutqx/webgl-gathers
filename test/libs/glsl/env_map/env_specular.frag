@@ -109,6 +109,7 @@ void main() {
 
 	// color += reflectColor;
 
+	// color			= mix(color, reflectColor, .5);
 	// apply the tone-mapping
 	color				= Uncharted2Tonemap( color * uExposure );
 	// white balance

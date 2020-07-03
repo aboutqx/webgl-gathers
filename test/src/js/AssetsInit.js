@@ -66,12 +66,14 @@ export default async function AssetsInit(assets, files) {
                 break;
 
             case 'obj':
-                const mesh = ObjLoader.parse(file);
-                result[name] = mesh
+                const meshes = ObjLoader.parse(file);
+                result[name] = meshes.length == 1 ? meshes[0] : meshes
                 break;
             case 'gltf':
                 result[name] = { gltfInfo : await GLTFLoader.load(url) }
                 break;
+            // case 'mtl':
+            //     break
             default:
                 result[name] = file
                 break

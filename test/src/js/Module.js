@@ -7,7 +7,6 @@ const importLists = {
     ],
     Shading:[
         'Instance',
-        'Gpgpu',
         'DeferredShading',
         'Mask',
         'SSAO',
@@ -39,7 +38,8 @@ const importLists = {
         'Mountain',
         'Water',
         'Grass',
-        'Particle'
+        'Particle',
+        'Petal'
     ]
 }
 

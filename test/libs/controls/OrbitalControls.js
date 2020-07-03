@@ -121,6 +121,7 @@ export default class OrbitalControls {
     }
 
     destroy() {
+        this.updateMatrix()
         Scheduler.removeEF(this._efIndex)
         this._removeEvents()
     }

@@ -47,8 +47,7 @@ export default class Mesh extends Object3D {
         this.drawType = mDrawingType
         this.name = name
         if (material) {
-            this.material = material
-            this._setMaterial()
+            this.setMaterial(material)
         }
 
     }
@@ -408,7 +407,7 @@ export default class Mesh extends Object3D {
         return attr ? attr.source : [];
     }
 
-    _setMaterial() {
+    _setMatTexture() {
 
         for (let key in this.material) {
             if (this.material[key].constructor === HTMLImageElement) {
@@ -419,6 +418,7 @@ export default class Mesh extends Object3D {
 
     setMaterial(material) {
         this.material = material
+        this._setMatTexture()
     }
 
     //	GETTER AND SETTERS

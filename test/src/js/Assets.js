@@ -1,7 +1,8 @@
 const Assets = {
     addCustom: function(folder, mName) {
         const files = Array.prototype.slice.call(arguments, 1)
-        const folderName = folder.includes('/') ? folder.split('/')[1] : folder
+        const folderName = folder.includes('/') ? folder.split('/')[1] : (folder == 'models' ? mName.split('.')[0] : folder)
+        
         this[folderName] = {}
         
         files.forEach(v => {
@@ -201,11 +202,12 @@ Assets.addCustom('grass', 'grass.png', 'grass1.png', 'grass2.png', 'grass3.png',
 Assets.addCustom('animate/horse', 'horse.gltf')
 Assets.addCustom('models/terrain', 'aoTerrain.jpg', 'terrain.obj')
 Assets.addCustom('models/venus', 'aoVenus.jpg', 'venus.obj')
+Assets.addCustom('models',  'petal.obj')
 
 const mapAssets = {
     Reflection: { ...Assets.statue, ...Assets.venus },
     LightCaster: { ...Assets.materialMaps },
-    Material: { ...Assets.nanosuit },
+    Material: { ...Assets.nanosuit, ...Assets.petal },
     NormalMapping: { ...Assets.brickwall },
     HeightMapping: { ...Assets.bricks2 },
     ReliefMapping: { ...Assets.toyBox },
@@ -220,6 +222,7 @@ const mapAssets = {
     Water: { ...Assets.water, ...Assets.dimSkybox, },
     Grass: { ...Assets.grass, ...Assets.horse, ...Assets.gltf },
     Mountain: { ...Assets.gltf, ...Assets.terrain, ...Assets.mountain },
-    FrustumCulling: { ...Assets.statue }
+    FrustumCulling: { ...Assets.statue },
+    Petal: { ...Assets.petal }
 }
 export default mapAssets

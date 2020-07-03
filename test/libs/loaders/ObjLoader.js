@@ -85,6 +85,7 @@ class ObjLoader {
 
 
         const addVertex = (a, b, c) => {
+            if(!this.object) this._startObject(1)
             // 1个face 3个index a,b,c,顶点是依次输入的，所以没用重用，index是连续的，没有重用
             this.object.positions.push([vertices[a], vertices[a + 1], vertices[a + 2]]);
             this.object.positions.push([vertices[b], vertices[b + 1], vertices[b + 2]]);

@@ -12,17 +12,14 @@ class BatchSky extends Batch {
 
 	constructor(size = 50, mFs = fs, seg = 24) {
 		const mesh = Geom.sphere(size, seg, true);
-		const shader = new GLShader(vs, fs);
+		const shader = new GLShader(vs, mFs);
 
 		super(mesh, shader);
 	}
 
-	draw(texture, fogColor) {
+	draw(style) {
 		this.shader.bind();
-		texture.bind(0);
-		this.shader.style({
-			uFogColor: fogColor
-		})
+		this.shader.style(style)
 		super.draw();
 	}
 }

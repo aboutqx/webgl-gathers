@@ -14,6 +14,7 @@
     "load-asset": "^1.2.0",
     "mini-css-extract-plugin": "^0.9.0",
     "parse-dds": "^1.2.1",
+    "rng": "^0.2.2",
     "scheduling": "^1.2.0"
   },
   "devDependencies": {

@@ -60,7 +60,7 @@ const addVertIn = (vs, type, varyingName) => {
 }
 
 const replaceHold = (glsl, replace) => {
-	const reg = new RegExp('<<<' + pattern + '>>>', 'g');
+	const reg = new RegExp('${' + pattern + '}', 'g');
 }
 
 const get = (vs, fs, defines = {}) => {

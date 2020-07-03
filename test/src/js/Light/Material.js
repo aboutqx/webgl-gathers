@@ -1,7 +1,5 @@
 import Pipeline from '../PipeLine'
-import vs from 'libs/glsl/basic.vert'
 import fs from 'libs/glsl/obj/objMtl.frag'
-import lampFs from 'libs/glsl/basicColor.frag'
 import Geom from 'libs/Geom'
 import {
     mat4,
@@ -13,9 +11,7 @@ import {
     toRadian,
     GlTools
 } from 'libs/GlTools'
-import OBJLoader from 'libs/loaders/ObjLoader'
 import MTLLoader from 'libs/loaders/MTLLoader'
-
 
 
 const NR_LIGHTS = 32
@@ -40,17 +36,19 @@ export default class Color extends Pipeline {
 
     }
     init() {
-        this.prg = this.compile(vs, fs)
-        this.lampPrg = this.compile(vs, lampFs)
+        this.prg = this.basicVert(fs)
+        this.lampPrg = this.basicColor()
     }
     async attrib() {
 
-        this.lamp = Geom.sphere(.1, 60)
+        this.lamp = Geom.sphere(.2, 60)
 
         const materials = await new MTLLoader('nanosuit.mtl', './assets/models/nanosuit').parse(getAssets.nanosuitMTL)
-        new OBJLoader().load('./assets/models/nanosuit/nanosuit.obj', (o) => {
-            this.nanosuit = OBJLoader.parse(o, materials)
+        this.nanosuit = getAssets.nanosuit.map(v => {
+            v.setMaterial(materials[v.material.name])
+            return v
         })
+
     }
     prepare() {
         this.orbital.radius = 22
@@ -60,8 +58,7 @@ export default class Color extends Pipeline {
     }
     uniform() {
 
-
-        let mMatrix = mat4.create()
+        const mMatrix = mat4.create()
 
         this.prg.use()
         this.prg.style({
@@ -83,8 +80,7 @@ export default class Color extends Pipeline {
 
         GlTools.draw(this.nanosuit)
 
-
-        let mMatrix = mat4.create()
+        const mMatrix = mat4.create()
         mat4.translate(mMatrix, mMatrix, lightPositions[0])
         mat4.scale(mMatrix, mMatrix, [.2, .2, .2])
 
