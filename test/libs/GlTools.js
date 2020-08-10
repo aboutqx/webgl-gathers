@@ -16,7 +16,7 @@ window.useWebgl2 = true
 class GlTool {
     shader
     shaderProgram
-    unpackFlipY = true
+    unpackFlipY = false
     _matrix = mat4.create()
     identityMatrix = mat4.create()
     _normalMatrix = mat3.create()
@@ -49,7 +49,7 @@ class GlTool {
 
     }
 
-    flipY(value) {
+    flipY(value) { //default true
         this.unpackFlipY = value
     }
 

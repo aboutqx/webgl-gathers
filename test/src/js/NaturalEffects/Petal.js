@@ -10,7 +10,7 @@ import {
 } from 'libs/GlTools'
 import BatchBigTriangle from 'helpers/BatchBigTriangle'
 import CameraOrtho from 'libs/cameras/CameraOrtho'
-
+import Geom from 'libs/Geom'
 
 const random = function (min, max) { return min + Math.random() * (max - min); }
 
@@ -174,7 +174,7 @@ export default class Petal extends Pipeline {
 		GlTools.setCamera(this.camera);
 
 		//	PING PONG
-		var tmp = this._fboTarget;
+		const tmp = this._fboTarget;
 		this._fboTarget = this._fboCurrent;
 		this._fboCurrent = tmp;
 
@@ -196,8 +196,8 @@ export default class Petal extends Pipeline {
 		GlTools.setCamera(this.camera);
 
 		this._renderPetal(this._fboTarget.getTexture(), this._fboCurrent.getTexture(), p, this._fboCurrent.getTexture(1));
-		// this.frameBufferGUI.textureList = [{ texture: this._fboCurrent.getTexture(0) }]
-		this._renderSim(this._fboCurrent.getTexture(2), this._fboCurrent.getTexture(1), this._fboCurrent.getTexture(0));
+		this.frameBufferGUI.textureList = [{ texture: this._fboCurrent.getTexture(0) }]
+		//this._renderSim(this._fboCurrent.getTexture(2), this._fboCurrent.getTexture(1), this._fboCurrent.getTexture(0));
 
 	}
 }

@@ -136,6 +136,7 @@ void main(void) {
 	
 	vel += acc * .002;
 
+	// rotate at xz plane 
 	vec2 v = normalize(pos.xz);
 	v = rotate(v, PI * 0.6);
 	vel.xz += v * .005;

@@ -40,7 +40,7 @@ const distance = function(a, b) {
 }
 const grasses = ['grass', 'grass1', 'grass2', 'grass3']
 
-export default class Grass extends Pipeline {
+export default class Pinata extends Pipeline {
 	_traveled = 0
 	_lightIntensity = new EaseNumber(1., 0.01)
 	_speed = new EaseNumber(0.01, 0.005)

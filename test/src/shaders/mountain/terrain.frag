@@ -118,7 +118,7 @@ void main() {
 
 	
 
-	vec3 ao = texture(uAoMap, vTexCoord).rgb;
+	vec3 ao = texture(uAoMap, vec2(vTexCoord.x, 1. - vTexCoord.y)).rgb;
 	color.rgb *= ao;
 
 	// apply the tone-mapping

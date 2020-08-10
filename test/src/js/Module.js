@@ -39,7 +39,8 @@ const importLists = {
         'Water',
         'Grass',
         'Particle',
-        'Petal'
+        'Petal',
+        'Pinata'
     ]
 }
 

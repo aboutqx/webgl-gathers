@@ -17,7 +17,7 @@ class BatchSky extends Batch {
 		super(mesh, shader);
 	}
 
-	draw(style) {
+	draw(style) {		//texture0, uFogColor
 		this.shader.bind();
 		this.shader.style(style)
 		super.draw();

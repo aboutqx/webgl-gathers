@@ -135,7 +135,7 @@ export default class Mountain extends Pipeline {
 	_renderTerrain(textureNoise) {
 		const { metallic, specular, roughness, color, gamma, exposure } = this.params;
 		const mMatrix = mat4.create()
-		mat4.translate(mMatrix, mMatrix, [0, -3, 0])
+		mat4.translate(mMatrix, mMatrix, [0, -4, 0])
 		mat4.scale(mMatrix, mMatrix, [.3, .3 * .1, .3])
 		this.terrainPrg.use();
 		this.terrainPrg.style({
