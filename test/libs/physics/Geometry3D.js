@@ -82,7 +82,7 @@ export class AABB extends BoundingVolume{
         )
     }
 
-    getMin() {
+    get min() {
         let p1, p2
         p1 = vec3.create()
         p2 = vec3.create()
@@ -93,7 +93,7 @@ export class AABB extends BoundingVolume{
         return t
     }
 
-    getMax() {
+    get max() {
         let p1, p2
         p1 = vec3.create()
         p2 = vec3.create()
@@ -176,7 +176,7 @@ export class Sphere extends BoundingVolume{
 
 export class Plane {
     normal
-    distance
+    distance // distance from origin to plane
 
     constructor(normal, distance) {
 

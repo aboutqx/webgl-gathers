@@ -42,8 +42,8 @@ export default class Intersect {
 
 
     static rayAABB(aabb, ray) {
-        const min = aabb.getMin()
-        const max = aabb.getMax()
+        const min = aabb.min
+        const max = aabb.max
 
         const t1 = (min[0] - ray.origin[0]) / (ray.direction[0] == 0 ? 0.00001 : ray.direction[0])
         const t2 = (max[0] - ray.origin[0]) / (ray.direction[0] == 0 ? 0.00001 : ray.direction[0])
@@ -87,9 +87,9 @@ export default class Intersect {
         //plane normal 朝里的，为此negate point
         const pointNegate = vec3.create()
         vec3.negate(pointNegate, point)
-        for(let i = 0; i < 6; i++) {
+        for (let i = 0; i < 6; i++) {
             const side = frustum.planes[i].planeEquation(pointNegate)
-            if(side > 0.) {
+            if (side > 0.) {
                 return false
             }
         }
@@ -99,9 +99,9 @@ export default class Intersect {
     static frustumSphere(frustum, sphere) {
         const pointNegate = vec3.create()
         vec3.negate(pointNegate, sphere.origin)
-        for(let i = 0; i < 6; i++) {
+        for (let i = 0; i < 6; i++) {
             const side = frustum.planes[i].planeEquation(pointNegate)
-            if(side - sphere.radius > 0.) {
+            if (side - sphere.radius > 0.) {
                 return false
             }
         }
@@ -113,8 +113,8 @@ export default class Intersect {
     }
 
     static frustumOBB(frustum, obb) {
-        for(let i = 0; i < 6; i++) {
-            if(side - sphere.radius > 0.) {
+        for (let i = 0; i < 6; i++) {
+            if (side - sphere.radius > 0.) {
                 return false
             }
         }
@@ -122,9 +122,31 @@ export default class Intersect {
     }
 
     static boxPlane(box, plane) {
-        if(box instanceof OBB) {
+        if (box instanceof OBB) {
 
         }
 
     }
+
+    static ShpereSphere(sphere1, sphere2) {
+        const radiusSum = sphere1.radius + sphere2.radius
+        const dist = vec3.dist(sphere1.origin, sphere2.origin)
+        return dist < radiusSum
+    }
+
+    static AABBAABB(aabb1, aabb2) {
+        const aMin = aabb1.min;
+        const aMax = aabb1.max;
+        const bMin = aabb2.min;
+        const bMax = aabb2.max;
+        return (aMin.x <= bMax.x && aMax.x >= bMin.x) &&
+            (aMin.y <= bMax.y && aMax.y >= bMin.y) &&
+            (aMin.z <= bMax.z && aMax.z >= bMin.z);
+    }
+
+    static PlanePlane(plane1, plane2) {
+        let d = vec3.cross(plane1, plane2)
+        return vec3.length(d) !== 0
+    }
+    
 }
