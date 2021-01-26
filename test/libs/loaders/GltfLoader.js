@@ -483,9 +483,7 @@ const _morphTarget = (mesh, originalPos, targetPos, weights, time, interpolation
                     move[2] += weightCurrent[i] * targetPos[i][j][2]
                 }
             }
-            v[0] = originalPos[j][0] + move[0]
-            v[1] = originalPos[j][1] + move[1]
-            v[2] = originalPos[j][2] + move[2]
+            vec3.add(v, originalPos[j], move)
             return v 
         })
         mesh.bufferVertex(newPos)
